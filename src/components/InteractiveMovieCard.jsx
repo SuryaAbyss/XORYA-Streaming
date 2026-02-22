@@ -21,7 +21,7 @@ const InteractiveMovieCard = ({ movie }) => {
                 setRect(cardRef.current.getBoundingClientRect());
                 setShowDetails(true);
             }
-        }, 3000);
+        }, 1500);
     };
 
     const handleMouseLeave = () => {

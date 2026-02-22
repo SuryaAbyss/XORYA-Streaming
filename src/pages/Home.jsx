@@ -45,6 +45,11 @@ const Home = ({ category = 'all' }) => {
         loadYouTubeAPI();
     }, []);
 
+    // Scroll to top on mount or category change
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    }, [category]);
+
     useEffect(() => {
         const fetchSecondary = async () => {
             try {

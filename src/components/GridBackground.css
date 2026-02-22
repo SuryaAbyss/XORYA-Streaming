@@ -1,0 +1,58 @@
+.grid-background-container {
+    position: relative;
+    width: 100%;
+    min-height: 100vh;
+    background-color: var(--bg-dark, #000);
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.grid-pattern {
+    position: absolute;
+    inset: 0;
+    height: 100%;
+    width: 100%;
+    background-size: 20px 20px;
+    background-image:
+        linear-gradient(to right, #262626 1px, transparent 1px),
+        linear-gradient(to bottom, #262626 1px, transparent 1px);
+    z-index: 0;
+    pointer-events: none;
+}
+
+/* 
+   Overlay to give a faded look at the edges (Vignette).
+   The user's snippet used a radial gradient mask on a solid background.
+   We replicate that here.
+*/
+.grid-overlay {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--bg-dark, #000);
+    z-index: 1;
+    pointer-events: none;
+    /* 
+       User's code: [mask-image:radial-gradient(ellipse_at_center,transparent_20%,black)]
+       This puts the overlay (black) at the edges (where mask is black) 
+       and removes it at the center (where mask is transparent).
+       
+       Wait, if mask is transparent, the element is hidden.
+       So the black overlay is HIDDEN at the center (revealing the grid)
+       and VISIBLE at the edges (hiding the grid).
+    */
+    -webkit-mask-image: radial-gradient(ellipse at center, transparent 20%, black 100%);
+    mask-image: radial-gradient(ellipse at center, transparent 20%, black 100%);
+}
+
+.grid-content {
+    position: relative;
+    z-index: 20;
+    width: 100%;
+    height: 100%;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}

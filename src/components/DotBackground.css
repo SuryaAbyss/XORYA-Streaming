@@ -1,0 +1,55 @@
+.dot-background-container {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  background-color: var(--bg-dark, #000);
+  overflow: hidden;
+  /* Ensure no scrollbars from absolute children */
+  display: flex;
+  flex-direction: column;
+}
+
+.dot-pattern {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  width: 100%;
+  background-size: 20px 20px;
+  background-image: radial-gradient(#404040 1px, transparent 1px);
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Light mode support if needed via class or media query, but defaulting to dark as per App style */
+/* 
+@media (prefers-color-scheme: light) {
+  .dot-background-container {
+     background-color: #fff;
+  }
+  .dot-pattern {
+    background-image: radial-gradient(#d4d4d4 1px, transparent 1px);
+  }
+} 
+*/
+
+.dot-mask {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  /* The vignette mask is disabled to allow dots to show through the video fade at the top/bottom */
+  /* background-color: var(--bg-dark, #000); */
+  /* -webkit-mask-image: radial-gradient(ellipse at center, transparent 20%, black 85%); */
+  /* mask-image: radial-gradient(ellipse at center, transparent 20%, black 85%); */
+  display: none;
+}
+
+.dot-content {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  height: 100%;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}

@@ -446,3 +446,94 @@ body::before {
 .animate-spin-around {
   animation: spin-around calc(var(--speed) * 2) infinite linear;
 }
+
+/* Interactive Hover Button styles */
+.interactive-play-btn {
+  position: relative;
+  overflow: hidden;
+  padding: 0.5rem 1.4rem;
+  display: flex;
+  align-items: center;
+  border-radius: 50px;
+  font-weight: 600;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  color: white;
+  border: none;
+  font-size: 0.85rem;
+  height: 38px;
+  min-width: 140px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  outline: none;
+}
+
+.interactive-play-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.interactive-play-btn .primary-content {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  z-index: 1;
+}
+
+.interactive-play-btn .bg-expander {
+  position: absolute;
+  left: 1.4rem;
+  top: 50%;
+  transform: translateY(-50%) scale(0);
+  background-color: white;
+  height: 16px;
+  width: 16px;
+  border-radius: 50%;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+  opacity: 0;
+  z-index: 0;
+}
+
+.interactive-play-btn:hover .bg-expander {
+  transform: translateY(-50%) scale(45);
+  opacity: 1;
+}
+
+.interactive-play-btn .primary-text {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.interactive-play-btn:hover .primary-text {
+  transform: translateX(3rem);
+  opacity: 0;
+}
+
+.interactive-play-btn .secondary-content {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 2;
+  display: flex;
+  height: 100%;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  opacity: 0;
+  transform: translateX(1.5rem);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  color: black;
+  font-weight: 700;
+}
+
+.interactive-play-btn:hover .secondary-content {
+  transform: translateX(0);
+  opacity: 1;
+}

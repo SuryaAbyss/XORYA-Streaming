@@ -7,7 +7,7 @@ import { servers, getServerUrl } from '../config/servers';
 import ServerSelector from '../components/ServerSelector';
 import EpisodesSidebar from '../components/EpisodesSidebar';
 import MovieInfoSidebar from '../components/MovieInfoSidebar';
-
+import PixelImage from '../components/PixelImage';
 
 const VideoPlayer = () => {
     const { type, id, season: urlSeason, episode: urlEpisode } = useParams();
@@ -187,14 +187,17 @@ const VideoPlayer = () => {
                                 left: '-5%',
                                 width: '110%',
                                 height: '110%',
-                                backgroundImage: `url(${imageUrl(contentData.backdrop_path || contentData.poster_path, 'w1280')})`,
-                                backgroundSize: 'cover',
-                                backgroundPosition: 'center',
                                 filter: 'blur(3px) brightness(0.5)',
                                 opacity: 0.7,
                                 transform: 'scale(1.1)', // Prevent blur edges
                             }}
-                        />
+                        >
+                            <PixelImage
+                                src={imageUrl(contentData.backdrop_path || contentData.poster_path, 'w1280')}
+                                customGrid={{ rows: 12, cols: 12 }}
+                                style={{ width: '100%', height: '100%' }}
+                            />
+                        </div>
                         {/* Overlay to ensure text readability and blend edges */}
                         <div
                             style={{

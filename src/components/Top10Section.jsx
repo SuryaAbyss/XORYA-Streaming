@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { imageUrl } from '../api/tmdb';
+import { BlurFade } from './ui/blur-fade';
 
 
 
@@ -16,7 +17,11 @@ const Top10Card = ({ movie, index, isLandscape }) => {
     };
 
     return (
-        <div
+        <BlurFade
+            delay={index * 0.05}
+            inView
+            inViewMargin="-20px"
+            direction="down"
             style={{
                 position: 'relative',
                 minWidth: isLandscape ? '280px' : '180px',
@@ -97,7 +102,7 @@ const Top10Card = ({ movie, index, isLandscape }) => {
                     </h3>
                 </div>
             </div>
-        </div>
+        </BlurFade>
     );
 };
 
@@ -131,69 +136,69 @@ const Top10Section = ({ movies }) => {
         }}>
             {/* Highlighted header box - title area only (like Spotlight Picks) */}
             <div style={{ display: 'flex', justifyContent: 'left', marginBottom: '2rem' }}>
-            <div style={{
-                display: 'inline-block',
-                padding: '1rem 1.5rem 1.25rem',
-                background: 'rgba(255, 255, 255, 0.06)',
-                border: '1px solid rgba(255, 255, 255, 0.2)',
-                borderRadius: '16px',
-                boxShadow: '0 4px 24px rgba(0, 0, 0, 0.3)',
-            }}>
-                <span style={{
-                    display: 'block',
-                    fontSize: '0.7rem',
-                    fontWeight: '600',
-                    letterSpacing: '0.25em',
-                    color: 'rgba(255, 255, 255, 0.6)',
-                    marginBottom: '0.35rem',
-                }}>
-                    DISCOVERY
-                </span>
                 <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '1rem',
+                    display: 'inline-block',
+                    padding: '1rem 1.5rem 1.25rem',
+                    background: 'rgba(255, 255, 255, 0.06)',
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    borderRadius: '16px',
+                    boxShadow: '0 4px 24px rgba(0, 0, 0, 0.3)',
                 }}>
-                    <h2 style={{
-                        fontSize: '2.5rem',
-                        fontWeight: '900',
-                        color: 'transparent',
-                        WebkitTextStroke: '2px #dc2626',
-                        textStroke: '2px #dc2626',
-                        letterSpacing: '-0.05em',
-                        margin: 0,
-                        lineHeight: 1
+                    <span style={{
+                        display: 'block',
+                        fontSize: '0.7rem',
+                        fontWeight: '600',
+                        letterSpacing: '0.25em',
+                        color: 'rgba(255, 255, 255, 0.6)',
+                        marginBottom: '0.35rem',
                     }}>
-                        TOP 10
-                    </h2>
+                        DISCOVERY
+                    </span>
                     <div style={{
                         display: 'flex',
-                        flexDirection: 'column',
-                        justifyContent: 'center'
+                        alignItems: 'center',
+                        gap: '1rem',
                     }}>
-                        <span style={{
-                            fontSize: '0.85rem',
-                            fontWeight: '600',
-                            letterSpacing: '0.2em',
-                            color: '#fff'
-                        }}>CONTENT</span>
-                        <span style={{
-                            fontSize: '0.85rem',
-                            fontWeight: '600',
-                            letterSpacing: '0.2em',
-                            color: '#fff'
-                        }}>TODAY</span>
+                        <h2 style={{
+                            fontSize: '2.5rem',
+                            fontWeight: '900',
+                            color: 'transparent',
+                            WebkitTextStroke: '2px #dc2626',
+                            textStroke: '2px #dc2626',
+                            letterSpacing: '-0.05em',
+                            margin: 0,
+                            lineHeight: 1
+                        }}>
+                            TOP 10
+                        </h2>
+                        <div style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            justifyContent: 'center'
+                        }}>
+                            <span style={{
+                                fontSize: '0.85rem',
+                                fontWeight: '600',
+                                letterSpacing: '0.2em',
+                                color: '#fff'
+                            }}>CONTENT</span>
+                            <span style={{
+                                fontSize: '0.85rem',
+                                fontWeight: '600',
+                                letterSpacing: '0.2em',
+                                color: '#fff'
+                            }}>TODAY</span>
+                        </div>
                     </div>
+                    <span style={{
+                        display: 'block',
+                        fontSize: '0.85rem',
+                        color: 'rgba(255, 255, 255, 0.8)',
+                        marginTop: '0.5rem',
+                    }}>
+                        Trending Right Now
+                    </span>
                 </div>
-                <span style={{
-                    display: 'block',
-                    fontSize: '0.85rem',
-                    color: 'rgba(255, 255, 255, 0.8)',
-                    marginTop: '0.5rem',
-                }}>
-                    Trending Right Now
-                </span>
-            </div>
             </div>
 
             {/* Navigation Buttons */}

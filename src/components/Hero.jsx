@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { imageUrl, getMovieImages, getMovieVideos } from '../api/tmdb';
-import { Play, Info, Volume2, VolumeX } from 'lucide-react';
+import { Play, Info, Volume2, VolumeX, ArrowRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import useYouTubePlayer from '../hooks/useYouTubePlayer';
 import { selectBestTrailer } from '../utils/trailerSelector';
@@ -309,38 +309,19 @@ const Hero = ({ movie, onPlay, onInfo, onTrailerStart, isTrailerPlaying, onTrail
                                 if (onPlay) onPlay(movie);
                                 if (movie?.id) navigate(`/watch/movie/${movie.id}`);
                             }}
-                            style={{
-                                padding: '0.5rem 1.2rem',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '0.4rem',
-                                borderRadius: '50px',
-                                fontWeight: '600',
-                                cursor: 'pointer',
-                                background: 'rgba(255, 255, 255, 0.06)',
-                                backdropFilter: 'blur(20px)',
-                                WebkitBackdropFilter: 'blur(20px)',
-                                color: 'white',
-                                border: 'none',
-                                fontSize: '0.8rem',
-                                height: '36px',
-                                transition: 'all 0.3s ease',
-                                boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
-                                outline: 'none'
-                            }}
-                            onMouseEnter={(e) => {
-                                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.12)';
-                                e.currentTarget.style.transform = 'translateY(-2px)';
-                                e.currentTarget.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)';
-                            }}
-                            onMouseLeave={(e) => {
-                                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.06)';
-                                e.currentTarget.style.transform = 'translateY(0)';
-                                e.currentTarget.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)';
-                            }}
+                            className="interactive-play-btn"
                         >
-                            <Play fill="white" color="white" size={16} />
-                            <span>Play Now</span>
+                            <div className="bg-expander"></div>
+                            <div className="primary-content">
+                                <span className="primary-text">
+                                    <Play fill="white" color="white" size={16} />
+                                    <span>Play Now</span>
+                                </span>
+                            </div>
+                            <div className="secondary-content">
+                                <span>Play Now</span>
+                                <Play fill="black" color="black" size={16} />
+                            </div>
                         </button>
                     </motion.div>
 

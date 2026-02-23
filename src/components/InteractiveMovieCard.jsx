@@ -4,8 +4,9 @@ import { imageUrl } from '../api/tmdb';
 import { Play, Star, Eye, Bookmark, ChevronRight } from 'lucide-react';
 import { useMovieModal } from '../context/MovieModalContext';
 import { motion } from 'framer-motion';
+import { BlurFade } from './ui/blur-fade';
 
-const InteractiveMovieCard = ({ movie }) => {
+const InteractiveMovieCard = ({ movie, index = 0 }) => {
     const { openModal } = useMovieModal();
     const [isHovered, setIsHovered] = useState(false);
     const [showDetails, setShowDetails] = useState(false);
@@ -38,12 +39,11 @@ const InteractiveMovieCard = ({ movie }) => {
 
     return (
         <>
-            <motion.div
+            <BlurFade
                 ref={cardRef}
-                variants={{
-                    hidden: { opacity: 0, x: 50 },
-                    visible: { opacity: 1, x: 0, transition: { duration: 0.6, ease: "easeOut" } }
-                }}
+                inView={true}
+                delay={Math.min(index, 6) * 0.05 + 0.1}
+                inViewMargin="-20px"
                 whileHover={{ scale: 1.15, zIndex: 10, transition: { duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] } }}
                 onMouseEnter={handleMouseEnter}
                 onMouseLeave={handleMouseLeave}
@@ -152,7 +152,7 @@ const InteractiveMovieCard = ({ movie }) => {
                         100% { opacity: 1; transform: scale(1); }
                     }
                 `}</style>
-            </motion.div>
+            </BlurFade>
 
             {/* Hover Data Popup Modal that breaks out using React Portal */}
             {showDetails && rect && createPortal(

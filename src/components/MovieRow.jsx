@@ -69,8 +69,8 @@ const MovieRow = ({ title, movies, onMovieClick }) => {
                         msOverflowStyle: 'none'
                     }}
                 >
-                    {movies.map(movie => (
-                        <InteractiveMovieCard key={movie.id} movie={movie} />
+                    {movies.map((movie, index) => (
+                        <InteractiveMovieCard key={movie.id} movie={movie} index={index} />
                     ))}
                 </div>
 

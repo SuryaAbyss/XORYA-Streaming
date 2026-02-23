@@ -107,17 +107,8 @@ const Navbar = () => {
                 animate="visible"
                 onMouseEnter={handleMouseEnter}
                 onMouseLeave={handleMouseLeave}
-                style={{
-                    position: 'fixed',
-                    top: '2rem',
-                    right: '1.8rem',
-                    zIndex: 1000,
-                    display: 'flex',
-                    gap: '0.5rem',
-                    padding: '0.5rem',
-                    borderRadius: '50px',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
-                }}
+                className="navbar-container-glass"
+                style={{}}
             >
                 {navItems.map((item) => {
                     const active = item.path && isActive(item.path);
@@ -162,13 +153,8 @@ const Navbar = () => {
                         <motion.div variants={itemVariants} key={item.path}>
                             <Link
                                 to={item.path}
+                                className={`nav-link-pill ${active ? 'active-pill' : ''}`}
                                 style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '0.5rem',
-                                    padding: '0.7rem 1.2rem',
-                                    borderRadius: '30px',
-                                    textDecoration: 'none',
                                     background: active
                                         ? 'linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 100%)'
                                         : 'transparent',
@@ -176,13 +162,10 @@ const Navbar = () => {
                                         ? '1px solid rgba(255,255,255,0.1)'
                                         : '1px solid transparent',
                                     color: active ? '#fff' : 'rgba(255, 255, 255, 0.6)',
-                                    transition: 'all 0.3s ease',
-                                    position: 'relative',
-                                    overflow: 'hidden'
                                 }}
                             >
                                 <Icon size={18} />
-                                <span style={{ fontSize: '0.9rem', fontWeight: '500' }}>{item.label}</span>
+                                <span className="nav-label" style={{ fontSize: '0.9rem', fontWeight: '500' }}>{item.label}</span>
                                 {active && (
                                     <motion.div
                                         layoutId="navbar-glow"
@@ -206,13 +189,8 @@ const Navbar = () => {
                 animate="visible"
                 onMouseEnter={handleMouseEnter}
                 onMouseLeave={handleMouseLeave}
-                style={{
-                    position: 'fixed',
-                    top: '0.5rem',
-                    left: '0.1rem',
-                    zIndex: 1000,
-                    pointerEvents: isLogoTransparent ? 'none' : 'auto'
-                }}
+                className="navbar-logo-container"
+                style={{ pointerEvents: isLogoTransparent ? 'none' : 'auto' }}
             >
                 <Link to="/">
                     <img

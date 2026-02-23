@@ -84,10 +84,10 @@ const ProvidersSection = () => {
 
     return (
         <div style={{ padding: '2rem 0', position: 'relative', zIndex: 10 }}>
-            <div style={{ padding: '0 2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
+            <div className="providers-header">
                 <div>
-                    <h2 style={{ fontSize: '2rem', fontWeight: 'bold', margin: 0, color: 'white' }}>Providers</h2>
-                    <p style={{ color: '#9ca3af', margin: '0.5rem 0 1.5rem 0', fontSize: '1.1rem' }}>
+                    <h2 className="providers-title">Providers</h2>
+                    <p className="providers-subtitle">
                         Browse content from your favorite streaming services
                     </p>
                 </div>
@@ -136,14 +136,7 @@ const ProvidersSection = () => {
             </div>
 
             {/* Horizontal Scroll of Providers */}
-            <div style={{
-                display: 'flex',
-                gap: '12px',
-                padding: '0 2rem 1.5rem',
-                overflowX: 'auto',
-                scrollbarWidth: 'none', // Firefox
-                msOverflowStyle: 'none',  // IE and Edge
-            }}>
+            <div className="providers-scroll-container">
                 {providers.map((provider) => {
                     const isSelected = selectedProvider?.provider_id === provider.provider_id;
 
@@ -195,8 +188,8 @@ const ProvidersSection = () => {
             {/* Provider Content Row */}
             {selectedProvider && (
                 <div style={{ marginTop: '1rem' }}>
-                    <p style={{ padding: '0 2rem', color: '#9ca3af', marginBottom: '-0.5rem' }}>
-                        Browse top {type === 'movie' ? 'movies' : 'shows'} from <span style={{ color: 'white', fontWeight: 'bold' }}>{selectedProvider.provider_name}</span>
+                    <p className="providers-browse-text">
+                        Browse top {type === 'movie' ? 'movies' : 'shows'} from <span className="text-white font-bold">{selectedProvider.provider_name}</span>
                     </p>
                     {loading ? (
                         <div style={{ height: '220px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

@@ -38,8 +38,7 @@ const MovieRow = ({ title, movies, onMovieClick }) => {
                     hidden: { opacity: 0, x: -20 },
                     visible: { opacity: 1, x: 0, transition: { duration: 0.6 } }
                 }}
-                style={{ marginLeft: '2rem', marginBottom: '1rem', fontSize: '1.5rem', fontWeight: '600' }}
-                className="neon-text"
+                className="movie-row-title"
             >
                 {title}
             </motion.h2>
@@ -47,27 +46,16 @@ const MovieRow = ({ title, movies, onMovieClick }) => {
             <div className="group" style={{ position: 'relative' }}>
                 <button
                     onClick={() => scroll('left')}
-                    style={{
-                        position: 'absolute', left: 0, top: 0, bottom: 0,
-                        zIndex: 20, width: '50px', background: 'linear-gradient(to right, rgba(0,0,0,0.8), transparent)',
-                        border: 'none', color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center'
-                    }}
-                    className="hover:text-cyan-400 transition-colors"
+                    className="movie-row-arrow left"
+                    style={{}}
                 >
                     <ChevronLeft size={30} />
                 </button>
 
                 <div
                     ref={rowRef}
-                    style={{
-                        display: 'flex',
-                        gap: '1rem',
-                        overflowX: 'auto',
-                        padding: '1.5rem 2rem',
-                        scrollBehavior: 'smooth',
-                        scrollbarWidth: 'none',
-                        msOverflowStyle: 'none'
-                    }}
+                    className="movie-row-container"
+                    style={{}}
                 >
                     {movies.map((movie, index) => (
                         <InteractiveMovieCard key={movie.id} movie={movie} index={index} />
@@ -76,12 +64,8 @@ const MovieRow = ({ title, movies, onMovieClick }) => {
 
                 <button
                     onClick={() => scroll('right')}
-                    style={{
-                        position: 'absolute', right: 0, top: 0, bottom: 0,
-                        zIndex: 20, width: '50px', background: 'linear-gradient(to left, rgba(0,0,0,0.8), transparent)',
-                        border: 'none', color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center'
-                    }}
-                    className="hover:text-cyan-400 transition-colors"
+                    className="movie-row-arrow right"
+                    style={{}}
                 >
                     <ChevronRight size={30} />
                 </button>

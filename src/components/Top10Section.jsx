@@ -33,21 +33,10 @@ const Top10Card = ({ movie, index, isLandscape }) => {
             onClick={handleClick}
         >
             {/* Rank Number */}
-            <div style={{
-                position: 'absolute',
-                bottom: '-15px',
-                left: '-8px',
-                fontSize: '6rem',
-                fontWeight: '900',
-                color: isHovered ? '#dc2626' : 'transparent',
-                WebkitTextStroke: '2px #dc2626',
-                textStroke: '2px #dc2626',
-                lineHeight: 1,
-                zIndex: isHovered ? 5 : 2,
-                pointerEvents: 'none',
-                transform: isHovered ? 'scale(1.15) translateX(-8px)' : 'scale(1)',
-                transition: 'all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)'
-            }}>
+            <div
+                className={`top10-rank-number ${isHovered ? 'hovered' : ''}`}
+                style={{}}
+            >
                 {index + 1}
             </div>
 
@@ -136,14 +125,7 @@ const Top10Section = ({ movies }) => {
         }}>
             {/* Highlighted header box - title area only (like Spotlight Picks) */}
             <div style={{ display: 'flex', justifyContent: 'left', marginBottom: '2rem' }}>
-                <div style={{
-                    display: 'inline-block',
-                    padding: '1rem 1.5rem 1.25rem',
-                    background: 'rgba(255, 255, 255, 0.06)',
-                    border: '1px solid rgba(255, 255, 255, 0.2)',
-                    borderRadius: '16px',
-                    boxShadow: '0 4px 24px rgba(0, 0, 0, 0.3)',
-                }}>
+                <div className="top10-header-box">
                     <span style={{
                         display: 'block',
                         fontSize: '0.7rem',
@@ -159,16 +141,7 @@ const Top10Section = ({ movies }) => {
                         alignItems: 'center',
                         gap: '1rem',
                     }}>
-                        <h2 style={{
-                            fontSize: '2.5rem',
-                            fontWeight: '900',
-                            color: 'transparent',
-                            WebkitTextStroke: '2px #dc2626',
-                            textStroke: '2px #dc2626',
-                            letterSpacing: '-0.05em',
-                            margin: 0,
-                            lineHeight: 1
-                        }}>
+                        <h2 className="top10-header-title">
                             TOP 10
                         </h2>
                         <div style={{
@@ -203,65 +176,15 @@ const Top10Section = ({ movies }) => {
 
             {/* Navigation Buttons */}
             <button
+                className="top10-nav-arrow left"
                 onClick={() => scroll('left')}
-                style={{
-                    position: 'absolute',
-                    left: '1%',
-                    top: '60%',
-                    transform: 'translateY(-50%)',
-                    zIndex: 10,
-                    background: 'rgba(0,0,0,0.7)',
-                    border: '1px solid rgba(255,255,255,0.2)',
-                    borderRadius: '50%',
-                    width: '50px',
-                    height: '50px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    cursor: 'pointer',
-                    transition: 'all 0.3s ease',
-                    color: '#fff'
-                }}
-                onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'rgba(255,255,255,0.2)';
-                    e.currentTarget.style.transform = 'translateY(-50%) scale(1.1)';
-                }}
-                onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'rgba(0,0,0,0.7)';
-                    e.currentTarget.style.transform = 'translateY(-50%) scale(1)';
-                }}
             >
                 <ChevronLeft size={24} />
             </button>
 
             <button
+                className="top10-nav-arrow right"
                 onClick={() => scroll('right')}
-                style={{
-                    position: 'absolute',
-                    right: '1%',
-                    top: '60%',
-                    transform: 'translateY(-50%)',
-                    zIndex: 10,
-                    background: 'rgba(0,0,0,0.7)',
-                    border: '1px solid rgba(255,255,255,0.2)',
-                    borderRadius: '50%',
-                    width: '50px',
-                    height: '50px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    cursor: 'pointer',
-                    transition: 'all 0.3s ease',
-                    color: '#fff'
-                }}
-                onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'rgba(255,255,255,0.2)';
-                    e.currentTarget.style.transform = 'translateY(-50%) scale(1.1)';
-                }}
-                onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'rgba(0,0,0,0.7)';
-                    e.currentTarget.style.transform = 'translateY(-50%) scale(1)';
-                }}
             >
                 <ChevronRight size={24} />
             </button>

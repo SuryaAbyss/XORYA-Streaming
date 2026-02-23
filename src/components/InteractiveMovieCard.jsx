@@ -48,16 +48,8 @@ const InteractiveMovieCard = ({ movie, index = 0 }) => {
                 onMouseEnter={handleMouseEnter}
                 onMouseLeave={handleMouseLeave}
                 onClick={handleClick}
-                style={{
-                    minWidth: '300px',
-                    height: '170px',
-                    position: 'relative',
-                    cursor: 'pointer',
-                    borderRadius: '8px',
-                    overflow: 'hidden',
-                    boxShadow: isHovered ? '0 12px 40px rgba(0,0,0,0.7)' : 'none',
-                    backgroundColor: '#1a1a1a'
-                }}
+                className={`interactive-movie-card ${isHovered ? 'hovered' : ''}`}
+                style={{}}
             >
                 {/* Poster Image - always visible */}
                 <div style={{
@@ -78,28 +70,8 @@ const InteractiveMovieCard = ({ movie, index = 0 }) => {
                             objectFit: 'cover'
                         }}
                     />
-                    {/* Gradient overlay */}
-                    <div style={{
-                        position: 'absolute',
-                        bottom: 0,
-                        left: 0,
-                        right: 0,
-                        height: '50%',
-                        background: 'linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 100%)',
-                        display: 'flex',
-                        alignItems: 'flex-end',
-                        padding: '1rem'
-                    }}>
-                        <h3 style={{
-                            color: '#fff',
-                            fontSize: '1rem',
-                            fontWeight: 'bold',
-                            margin: 0,
-                            textShadow: '0 2px 8px rgba(0,0,0,0.8)',
-                            whiteSpace: 'nowrap',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis'
-                        }}>
+                    <div className="gradient-overlay">
+                        <h3 className="movie-card-title">
                             {movie.title || movie.name}
                         </h3>
                     </div>

@@ -19,18 +19,6 @@ export const servers = [
             tv: (tmdbId, season, episode) => `https://vidora.su/tv/${tmdbId}/${season}/${episode}?autoplay=true&colour=00bcd4&autonextepisode=true`
         }
     },
-    // Server #2 - VidKing
-    {
-        id: 'vidking',
-        name: 'VidKing',
-        type: 'alternate',
-        urlTemplate: {
-            movie: (tmdbId) => `https://www.vidking.net/embed/movie/${tmdbId}?color=00bcd4&autoPlay=true`,
-            tv: (tmdbId, season, episode) => `https://www.vidking.net/embed/tv/${tmdbId}/${season}/${episode}?color=00bcd4&autoPlay=true&nextEpisode=true&episodeSelector=true`
-        }
-    },
-
-
     // Server #6 - Videasy Pro
     {
         id: 'videasy-pro',
@@ -39,6 +27,18 @@ export const servers = [
         urlTemplate: {
             movie: (tmdbId) => `https://player.videasy.net/movie/${tmdbId}?color=00bcd4`,
             tv: (tmdbId, season, episode) => `https://player.videasy.net/tv/${tmdbId}/${season}/${episode}?color=00bcd4&nextEpisode=true&autoplayNextEpisode=true`
+        }
+    },
+
+
+    // Server #2 - VidKing
+    {
+        id: 'vidking',
+        name: 'VidKing',
+        type: 'alternate',
+        urlTemplate: {
+            movie: (tmdbId) => `https://www.vidking.net/embed/movie/${tmdbId}?color=00bcd4&autoPlay=true`,
+            tv: (tmdbId, season, episode) => `https://www.vidking.net/embed/tv/${tmdbId}/${season}/${episode}?color=00bcd4&autoPlay=true&nextEpisode=true&episodeSelector=true`
         }
     },
     // Server #7 - MoviesAPI

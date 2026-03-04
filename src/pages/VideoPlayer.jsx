@@ -216,8 +216,9 @@ const VideoPlayer = () => {
                 {/* Floating Glass Header Island */}
                 <div style={{
                     position: 'fixed',
-                    top: '2rem',
-                    left: '2.7rem',
+                    top: '1rem',
+                    left: '1rem',
+                    right: '1rem',
                     background: 'rgba(28, 28, 30, 0.6)',
                     backdropFilter: 'blur(20px)',
                     WebkitBackdropFilter: 'blur(20px)',
@@ -229,7 +230,8 @@ const VideoPlayer = () => {
                     alignItems: 'center',
                     gap: '1.2rem',
                     boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
-                    maxWidth: 'calc(100vw - 300px)', // Avoid overlap with right navbar
+                    maxWidth: 'calc(100vw - 2rem)',
+                    boxSizing: 'border-box',
                 }}>
                     <button
                         onClick={() => navigate(-1)}
@@ -334,11 +336,8 @@ const VideoPlayer = () => {
                 {/* Main Content */}
                 <div style={{ display: 'flex', justifyContent: 'center', padding: '0.75rem 0 2.4rem' }}>
                     <div
-                        className="watch-zoom"
-                        style={{
-                            width: '125%',
-                            zoom: 0.8,
-                        }}
+                        className="watch-layout-outer"
+                        style={{ width: '100%' }}
                     >
                         <div
                             className="watch-layout"
@@ -346,9 +345,9 @@ const VideoPlayer = () => {
                                 display: 'flex',
                                 minHeight: 'calc(100vh - 80px)',
                                 padding: '1.1rem 1.1rem 0',
-                                maxWidth: '1600px', // Widened from 1360px
+                                maxWidth: '1600px',
                                 margin: '0 auto',
-                                gap: '1.5rem', // Slightly increased gap
+                                gap: '1.5rem',
                                 boxSizing: 'border-box',
                             }}
                         >
@@ -383,7 +382,11 @@ const VideoPlayer = () => {
                                             border: 'none'
                                         }}
                                         allowFullScreen
-                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                        webkitAllowFullScreen
+                                        mozAllowFullScreen
+                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
+                                        referrerPolicy="no-referrer-when-downgrade"
+                                        scrolling="no"
                                     />
                                 </div>
 
@@ -520,8 +523,34 @@ const VideoPlayer = () => {
                     }
 
                     @media (max-width: 1200px) {
-                        .watch-layout { flex-direction: column; }
-                        .watch-sidebar { width: 100% !important; }
+                        .watch-layout {
+                            flex-direction: column;
+                        }
+                        .watch-sidebar {
+                            width: 100% !important;
+                            margin-left: 0 !important;
+                            margin-right: 0 !important;
+                        }
+                    }
+
+                    @media (max-width: 768px) {
+                        .watch-layout {
+                            flex-direction: column;
+                            padding: 0.5rem 0.5rem 0;
+                            gap: 1rem;
+                        }
+                        .watch-layout-outer {
+                            width: 100% !important;
+                        }
+                        .watch-main {
+                            width: 100%;
+                        }
+                        .watch-sidebar {
+                            width: 100% !important;
+                            margin-left: 0 !important;
+                            margin-right: 0 !important;
+                            margin-top: 0 !important;
+                        }
                     }
                 `}
                 </style>

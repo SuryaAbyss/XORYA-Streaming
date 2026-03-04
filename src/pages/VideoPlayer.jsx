@@ -217,7 +217,7 @@ const VideoPlayer = () => {
                     position: 'fixed',
                     top: '1rem',
                     left: '1rem',
-                    right: '1rem',
+                    width: 'fit-content',
                     background: 'rgba(28, 28, 30, 0.6)',
                     backdropFilter: 'blur(20px)',
                     WebkitBackdropFilter: 'blur(20px)',

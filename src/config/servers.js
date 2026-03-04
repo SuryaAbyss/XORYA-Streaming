@@ -10,13 +10,14 @@ export const servers = [
             tv: (tmdbId, season, episode) => `https://vidfast.pro/tv/${tmdbId}/${season}/${episode}?autoPlay=true&nextButton=true&autoNext=true&theme=00bcd4`
         }
     },
+    // Server #2 - VidKing
     {
-        id: 'vidora',
-        name: 'Vidora',
+        id: 'vidking',
+        name: 'VidKing',
         type: 'alternate',
         urlTemplate: {
-            movie: (tmdbId) => `https://vidora.su/movie/${tmdbId}?autoplay=true&colour=00bcd4`,
-            tv: (tmdbId, season, episode) => `https://vidora.su/tv/${tmdbId}/${season}/${episode}?autoplay=true&colour=00bcd4&autonextepisode=true`
+            movie: (tmdbId) => `https://www.vidking.net/embed/movie/${tmdbId}?color=00bcd4&autoPlay=true`,
+            tv: (tmdbId, season, episode) => `https://www.vidking.net/embed/tv/${tmdbId}/${season}/${episode}?color=00bcd4&autoPlay=true&nextEpisode=true&episodeSelector=true`
         }
     },
     // Server #6 - Videasy Pro
@@ -27,18 +28,6 @@ export const servers = [
         urlTemplate: {
             movie: (tmdbId) => `https://player.videasy.net/movie/${tmdbId}?color=00bcd4`,
             tv: (tmdbId, season, episode) => `https://player.videasy.net/tv/${tmdbId}/${season}/${episode}?color=00bcd4&nextEpisode=true&autoplayNextEpisode=true`
-        }
-    },
-
-
-    // Server #2 - VidKing
-    {
-        id: 'vidking',
-        name: 'VidKing',
-        type: 'alternate',
-        urlTemplate: {
-            movie: (tmdbId) => `https://www.vidking.net/embed/movie/${tmdbId}?color=00bcd4&autoPlay=true`,
-            tv: (tmdbId, season, episode) => `https://www.vidking.net/embed/tv/${tmdbId}/${season}/${episode}?color=00bcd4&autoPlay=true&nextEpisode=true&episodeSelector=true`
         }
     },
     // Server #7 - MoviesAPI
@@ -58,6 +47,15 @@ export const servers = [
         urlTemplate: {
             movie: (tmdbId) => `https://vidnest.fun/movie/${tmdbId}`,
             tv: (tmdbId, season, episode) => `https://vidnest.fun/tv/${tmdbId}/${season}/${episode}`
+        }
+    },
+    {
+        id: 'vidora',
+        name: 'Vidora',
+        type: 'alternate',
+        urlTemplate: {
+            movie: (tmdbId) => `https://vidora.su/movie/${tmdbId}?autoplay=true&colour=00bcd4`,
+            tv: (tmdbId, season, episode) => `https://vidora.su/tv/${tmdbId}/${season}/${episode}?autoplay=true&colour=00bcd4&autonextepisode=true`
         }
     },
     // Server #3 - VidRock

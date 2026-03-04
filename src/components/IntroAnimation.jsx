@@ -13,13 +13,13 @@ const IntroAnimation = () => {
         if (typeof window !== 'undefined') {
             const lastVisitStr = localStorage.getItem('lastVisitXorya');
             const now = new Date().getTime();
-            const thirtyMinutes = 30 * 60 * 1000;
+            const fortyEightHours = 48 * 60 * 60 * 1000; // 48 hours
 
             if (!lastVisitStr) {
                 window.HERO_DELAY = 10000; // First time ever: text (2.8s) + video (~5.5s)
             } else {
                 const lastVisit = parseInt(lastVisitStr, 10);
-                if (now - lastVisit > thirtyMinutes) {
+                if (now - lastVisit > fortyEightHours) {
                     window.HERO_DELAY = 7000; // Video only (~5.5s)
                 } else {
                     window.HERO_DELAY = 1000; // Short 1s X animation
@@ -33,7 +33,7 @@ const IntroAnimation = () => {
         let textTimer, fadeTimer, doneTimer;
 
         const now = new Date().getTime();
-        const thirtyMinutes = 30 * 60 * 1000;
+        const fortyEightHours = 48 * 60 * 60 * 1000; // 48 hours
 
         if (isFirstMount.current) {
             isFirstMount.current = false;
@@ -43,13 +43,13 @@ const IntroAnimation = () => {
                 const lastVisit = parseInt(lastVisitStr, 10);
                 const timeSinceLastVisit = now - lastVisit;
 
-                if (timeSinceLastVisit > thirtyMinutes) {
-                    // More than 30 minutes passed: Play ONLY the video
+                if (timeSinceLastVisit > fortyEightHours) {
+                    // More than 48 hours passed: Play ONLY the video
                     setStage('video');
                     localStorage.setItem('lastVisitXorya', now.toString());
                     return;
                 } else {
-                    // Less than 30 minutes: Play Short X Animation
+                    // Less than 48 hours: Play Short X Animation
                     setStage('short-x');
                     fadeTimer = setTimeout(() => {
                         setStage('fade-out');

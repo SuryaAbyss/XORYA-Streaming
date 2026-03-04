@@ -7,7 +7,7 @@ import { servers, getServerUrl } from '../config/servers';
 import ServerSelector from '../components/ServerSelector';
 import EpisodesSidebar from '../components/EpisodesSidebar';
 import MovieInfoSidebar from '../components/MovieInfoSidebar';
-import PixelImage from '../components/PixelImage';
+
 
 const VideoPlayer = () => {
     const { type, id, season: urlSeason, episode: urlEpisode } = useParams();
@@ -180,24 +180,23 @@ const VideoPlayer = () => {
             >
                 {contentData && (contentData.backdrop_path || contentData.poster_path) && (
                     <>
-                        <div
+                        {/* Single blurred image — PixelImage (144 copies) crashes iOS GPU */}
+                        <img
+                            src={imageUrl(contentData.backdrop_path || contentData.poster_path, 'w780')}
+                            alt=""
+                            aria-hidden="true"
                             style={{
                                 position: 'absolute',
                                 top: '-5%',
                                 left: '-5%',
                                 width: '110%',
                                 height: '110%',
-                                filter: 'blur(3px) brightness(0.5)',
-                                opacity: 0.7,
-                                transform: 'scale(1.1)', // Prevent blur edges
+                                objectFit: 'cover',
+                                filter: 'blur(18px) brightness(0.45)',
+                                opacity: 0.85,
+                                transform: 'scale(1.1)',
                             }}
-                        >
-                            <PixelImage
-                                src={imageUrl(contentData.backdrop_path || contentData.poster_path, 'w1280')}
-                                customGrid={{ rows: 12, cols: 12 }}
-                                style={{ width: '100%', height: '100%' }}
-                            />
-                        </div>
+                        />
                         {/* Overlay to ensure text readability and blend edges */}
                         <div
                             style={{

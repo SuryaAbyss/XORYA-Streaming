@@ -1,5 +1,10 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 
+// Detect iOS (Safari AND Chrome on iPhone/iPad both use WebKit engine)
+// YouTube IFrame API cannot autoplay on iOS even when muted — it hangs indefinitely
+const isIOS = typeof navigator !== 'undefined' &&
+    /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+
 // Global flag to ensure the YouTube IFrame API script is only loaded once
 let ytApiLoaded = false;
 let ytApiLoadingPromise = null;
@@ -109,8 +114,10 @@ export default function useYouTubePlayer(videoKey, containerRef, options = {}) {
         }
     }, [isMuted]);
 
-    // Create / destroy player
+    // On iOS: YouTube IFrame API cannot autoplay even when muted — skip entirely to prevent freezing/crashing
     useEffect(() => {
+        if (isIOS) return; // No-op on iOS — all safe defaults already set above
+
         if (!videoKey || !containerRef.current || !active) {
             return;
         }

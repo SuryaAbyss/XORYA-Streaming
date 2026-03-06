@@ -4,22 +4,32 @@ import { motion } from 'framer-motion';
 const ServerSelector = ({ servers, activeServer, onServerChange }) => {
     const [isExpanded, setIsExpanded] = React.useState(false);
 
-    // Find autoembed index to split
-    const splitIndex = servers.findIndex(s => s.id === 'autoembed');
-    // If not found, fallback to full length
-    const actualSplitIndex = splitIndex !== -1 ? splitIndex : servers.length - 1;
+    // Filter out testing servers first
+    const testingServers = servers.filter(s => s.category === 'testing');
 
-    const goodServers = servers.slice(0, actualSplitIndex + 1);
-    const poorServers = servers.slice(actualSplitIndex + 1);
+    // The rest are regular servers (good and poor)
+    const regularServers = servers.filter(s => s.category !== 'testing');
+
+    // Find autoembed index to split regular servers
+    const splitIndex = regularServers.findIndex(s => s.id === 'autoembed');
+    // If not found, fallback to full length
+    const actualSplitIndex = splitIndex !== -1 ? splitIndex : regularServers.length - 1;
+
+    const goodServers = regularServers.slice(0, actualSplitIndex + 1);
+    const poorServers = regularServers.slice(actualSplitIndex + 1);
 
     const displayedGood = isExpanded ? goodServers : goodServers.slice(0, 5);
     const displayedPoor = isExpanded ? poorServers : [];
+    // Always display testing servers if they exist, or put them under expansion. Let's just always display them.
+    const displayedTesting = testingServers;
 
-    const renderServerButton = (server, isPoorCategory = false) => {
+    const renderServerButton = (server, isPoorCategory = false, isTestingCategory = false) => {
         const isActive = activeServer === server.id;
 
-        // Colors for Good (Green) vs Poor (Red)
-        const baseColor = isPoorCategory ? '244, 67, 54' : '16, 185, 129';
+        // Colors for Good (Green) vs Poor (Red) vs Testing (Yellow/Amber)
+        let baseColor = '16, 185, 129'; // Green
+        if (isPoorCategory) baseColor = '244, 67, 54'; // Red
+        if (isTestingCategory) baseColor = '245, 158, 11'; // Amber
 
         return (
             <motion.button
@@ -91,9 +101,9 @@ const ServerSelector = ({ servers, activeServer, onServerChange }) => {
                 display: 'flex',
                 flexWrap: 'wrap',
                 gap: '0.8rem',
-                marginBottom: isExpanded && poorServers.length > 0 ? '2rem' : '0'
+                marginBottom: (isExpanded && poorServers.length > 0) || testingServers.length > 0 ? '2rem' : '0'
             }}>
-                {displayedGood.map((server) => renderServerButton(server, false))}
+                {displayedGood.map((server) => renderServerButton(server, false, false))}
 
                 {!isExpanded && (
                     <motion.button
@@ -124,6 +134,32 @@ const ServerSelector = ({ servers, activeServer, onServerChange }) => {
                 )}
             </div>
 
+            {/* Testing Servers Section */}
+            {displayedTesting.length > 0 && (
+                <div style={{ marginBottom: isExpanded && poorServers.length > 0 ? '2rem' : '0' }}>
+                    <h3 style={{
+                        color: 'white',
+                        fontSize: '1.1rem',
+                        fontWeight: '600',
+                        marginBottom: '1rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.5rem',
+                        opacity: 0.9
+                    }}>
+                        <span style={{ width: '4px', height: '16px', background: '#f59e0b', borderRadius: '2px' }}></span>
+                        Testing Servers
+                    </h3>
+                    <div style={{
+                        display: 'flex',
+                        flexWrap: 'wrap',
+                        gap: '0.8rem'
+                    }}>
+                        {displayedTesting.map((server) => renderServerButton(server, false, true))}
+                    </div>
+                </div>
+            )}
+
             {isExpanded && poorServers.length > 0 && (
                 <>
                     <h3 style={{
@@ -144,7 +180,7 @@ const ServerSelector = ({ servers, activeServer, onServerChange }) => {
                         flexWrap: 'wrap',
                         gap: '0.8rem'
                     }}>
-                        {displayedPoor.map((server) => renderServerButton(server, true))}
+                        {displayedPoor.map((server) => renderServerButton(server, true, false))}
 
                         <motion.button
                             onClick={() => setIsExpanded(false)}
@@ -179,3 +215,4 @@ const ServerSelector = ({ servers, activeServer, onServerChange }) => {
 };
 
 export default ServerSelector;
+

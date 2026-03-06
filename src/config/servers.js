@@ -162,6 +162,17 @@ export const servers = [
             movie: (tmdbId) => `https://multiembed.mov/directstream.php?video_id=${tmdbId}&tmdb=1`,
             tv: (tmdbId, season, episode) => `https://multiembed.mov/directstream.php?video_id=${tmdbId}&tmdb=1&s=${season}&e=${episode}`
         }
+    },
+    // Server Testing Area
+    {
+        id: 'cinesrc',
+        name: 'CineSrc',
+        type: 'testing',
+        category: 'testing',
+        urlTemplate: {
+            movie: (tmdbId) => `https://cinesrc.st/embed/movie/${tmdbId}?autoplay=true&color=%2300bcd4`,
+            tv: (tmdbId, season, episode) => `https://cinesrc.st/embed/tv/${tmdbId}?s=${season}&e=${episode}&autoplay=true&autonext=true&color=%2300bcd4`
+        }
     }
 ];
 

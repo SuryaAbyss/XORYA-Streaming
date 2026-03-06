@@ -386,7 +386,6 @@ const VideoPlayer = () => {
                                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
                                         referrerPolicy="no-referrer-when-downgrade"
                                         scrolling="no"
-                                        sandbox="allow-same-origin allow-scripts allow-forms"
                                     />
                                 </div>
 

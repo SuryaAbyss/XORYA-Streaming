@@ -423,6 +423,16 @@ const Home = ({ category = 'all' }) => {
                             )}
                         </div>
                     </div>
+
+                    {/* Smooth bottom fade — blends the last row into the footer */}
+                    <div style={{
+                        position: 'relative',
+                        height: '180px',
+                        marginTop: '-180px',
+                        pointerEvents: 'none',
+                        background: 'linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.6) 40%, #000 100%)',
+                        zIndex: 5,
+                    }} />
                 </div>
             </div>
         </div>

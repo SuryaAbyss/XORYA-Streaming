@@ -35,10 +35,13 @@ export const searchMovies = (query) => tmdb.get(`/search/movie?query=${query}`);
 export const getMovieDetails = (id) => tmdb.get(`/movie/${id}?append_to_response=videos,credits`);
 export const getMovieImages = (id) => tmdb.get(`/movie/${id}/images?include_image_language=en,null`);
 export const getMovieVideos = (id) => tmdb.get(`/movie/${id}/videos`);
+export const getCollectionDetails = (id) => tmdb.get(`/collection/${id}`);
+export const getMovieRecommendations = (id) => tmdb.get(`/movie/${id}/recommendations`);
 
 // TV Show APIs
 export const getTVShowDetails = (id) => tmdb.get(`/tv/${id}?append_to_response=videos,credits`);
 export const getTVShowImages = (id) => tmdb.get(`/tv/${id}/images?include_image_language=en,null`);
+export const getTVShowRecommendations = (id) => tmdb.get(`/tv/${id}/recommendations`);
 export const getTVSeasonDetails = async (id, season) => {
   const response = await tmdb.get(`/tv/${id}/season/${season}`);
   return response.data;

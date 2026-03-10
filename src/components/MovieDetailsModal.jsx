@@ -14,9 +14,8 @@ const MovieDetailsModal = () => {
     const [cast, setCast] = useState([]);
     const [trailerKey, setTrailerKey] = useState(null);
     const [showTrailer, setShowTrailer] = useState(false);
-    const [hideUI, setHideUI] = useState(false);
+    const [isVideoPlaying, setIsVideoPlaying] = useState(false);
     const trailerStartTimerRef = useRef(null);
-    const uiHideTimerRef = useRef(null);
     const playerContainerRef = useRef(null);
 
     const handleTrailerEnd = useCallback(() => {
@@ -26,6 +25,7 @@ const MovieDetailsModal = () => {
     const { isMuted, toggleMute } = useYouTubePlayer(trailerKey, playerContainerRef, {
         active: showTrailer && !!trailerKey,
         onEnd: handleTrailerEnd,
+        onPlaying: () => setIsVideoPlaying(true),
         loop: true,
     });
 
@@ -72,16 +72,10 @@ const MovieDetailsModal = () => {
             trailerStartTimerRef.current = setTimeout(() => {
                 setShowTrailer(true);
             }, 5000);
-
-            // Hide UI after 10 seconds total
-            uiHideTimerRef.current = setTimeout(() => {
-                setHideUI(true);
-            }, 10000);
         }
 
         return () => {
             if (trailerStartTimerRef.current) clearTimeout(trailerStartTimerRef.current);
-            if (uiHideTimerRef.current) clearTimeout(uiHideTimerRef.current);
         };
     }, [trailerKey, selectedMovieId]);
 
@@ -187,7 +181,7 @@ const MovieDetailsModal = () => {
                                 backgroundImage: `url(${imageUrl(movie.backdrop_path, 'original')})`,
                                 backgroundSize: 'cover',
                                 backgroundPosition: 'center',
-                                opacity: showTrailer && trailerKey ? 0 : 1,
+                                opacity: isVideoPlaying ? 0 : 1, // Only fade out when actually playing
                                 transition: 'opacity 1s ease'
                             }} />
 
@@ -201,7 +195,9 @@ const MovieDetailsModal = () => {
                                         width: '100%',
                                         height: '100%',
                                         overflow: 'hidden',
-                                        zIndex: 1
+                                        zIndex: 1,
+                                        opacity: isVideoPlaying ? 1 : 0, // Keep video invisible until frames are actually flowing
+                                        transition: 'opacity 0.5s ease'
                                     }}
                                     onContextMenu={(e) => e.preventDefault()}
                                 >
@@ -272,65 +268,57 @@ const MovieDetailsModal = () => {
                                 </motion.h1>
 
                                 {/* Metadata */}
-                                <AnimatePresence>
-                                    {!hideUI && (
-                                        <motion.div
-                                            initial={{ opacity: 1, y: 0 }}
-                                            exit={{ opacity: 0, y: -10 }}
-                                            transition={{ duration: 0.5 }}
-                                            style={{
-                                                display: 'flex',
-                                                gap: '0.7rem',
-                                                alignItems: 'center',
-                                                marginBottom: '1rem',
-                                                fontSize: '0.85rem',
-                                                flexWrap: 'wrap'
-                                            }}
-                                        >
-                                            <span style={{
-                                                background: 'rgba(255,255,255,0.15)',
-                                                padding: '0.2rem 0.6rem',
-                                                borderRadius: '3px',
-                                                border: '1px solid rgba(255,255,255,0.2)',
-                                            }}>
-                                                {new Date(movie.release_date || movie.first_air_date || Date.now()).getFullYear()}
-                                            </span>
-                                            <span style={{ color: '#ffd700', fontWeight: 'bold' }}>★ {movie.vote_average.toFixed(1)}</span>
-                                            <span>
-                                                {selectedMediaType === 'tv'
-                                                    ? (movie.episode_run_time?.[0] ? `${movie.episode_run_time[0]} min` : `${movie.number_of_seasons} Seasons`)
-                                                    : `${movie.runtime} min`}
-                                            </span>
-                                            <span style={{
-                                                background: 'rgba(255,255,255,0.1)',
-                                                padding: '0.2rem 0.6rem',
-                                                borderRadius: '3px',
-                                            }}>
-                                                {movie.genres[0]?.name || 'Drama'}
-                                            </span>
-                                        </motion.div>
-                                    )}
-                                </AnimatePresence>
+                                <motion.div
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ duration: 0.5 }}
+                                    style={{
+                                        display: 'flex',
+                                        gap: '0.7rem',
+                                        alignItems: 'center',
+                                        marginBottom: '1rem',
+                                        fontSize: '0.85rem',
+                                        flexWrap: 'wrap'
+                                    }}
+                                >
+                                    <span style={{
+                                        background: 'rgba(255,255,255,0.15)',
+                                        padding: '0.2rem 0.6rem',
+                                        borderRadius: '3px',
+                                        border: '1px solid rgba(255,255,255,0.2)',
+                                    }}>
+                                        {new Date(movie.release_date || movie.first_air_date || Date.now()).getFullYear()}
+                                    </span>
+                                    <span style={{ color: '#ffd700', fontWeight: 'bold' }}>★ {movie.vote_average.toFixed(1)}</span>
+                                    <span>
+                                        {selectedMediaType === 'tv'
+                                            ? (movie.episode_run_time?.[0] ? `${movie.episode_run_time[0]} min` : `${movie.number_of_seasons} Seasons`)
+                                            : `${movie.runtime} min`}
+                                    </span>
+                                    <span style={{
+                                        background: 'rgba(255,255,255,0.1)',
+                                        padding: '0.2rem 0.6rem',
+                                        borderRadius: '3px',
+                                    }}>
+                                        {movie.genres[0]?.name || 'Drama'}
+                                    </span>
+                                </motion.div>
 
                                 {/* Description */}
-                                <AnimatePresence>
-                                    {!hideUI && (
-                                        <motion.p
-                                            initial={{ opacity: 1, y: 0 }}
-                                            exit={{ opacity: 0, y: -10 }}
-                                            transition={{ duration: 0.5 }}
-                                            style={{
-                                                fontSize: '0.875rem',
-                                                lineHeight: 1.5,
-                                                maxWidth: '600px',
-                                                marginBottom: '1.5rem',
-                                                textShadow: '0 2px 10px rgba(0,0,0,0.8)'
-                                            }}
-                                        >
-                                            {movie.overview}
-                                        </motion.p>
-                                    )}
-                                </AnimatePresence>
+                                <motion.p
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ duration: 0.5, delay: 0.2 }}
+                                    style={{
+                                        fontSize: '0.875rem',
+                                        lineHeight: 1.5,
+                                        maxWidth: '600px',
+                                        marginBottom: '1.5rem',
+                                        textShadow: '0 2px 10px rgba(0,0,0,0.8)'
+                                    }}
+                                >
+                                    {movie.overview}
+                                </motion.p>
 
                                 {/* Action Buttons */}
                                 <motion.div
@@ -388,51 +376,39 @@ const MovieDetailsModal = () => {
                                         </button>
                                     )}
 
-                                    <AnimatePresence>
-                                        {!hideUI && (
-                                            <>
-                                                <motion.button
-                                                    initial={{ opacity: 1, scale: 1 }}
-                                                    exit={{ opacity: 0, scale: 0.9 }}
-                                                    transition={{ duration: 0.3 }}
-                                                    style={{
-                                                        padding: '0.65rem 1rem',
-                                                        borderRadius: '5px',
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        gap: '0.35rem',
-                                                        background: 'rgba(255,255,255,0.15)',
-                                                        cursor: 'pointer',
-                                                        border: '1px solid rgba(255,255,255,0.3)',
-                                                        color: 'white',
-                                                        fontSize: '0.85rem',
-                                                    }}
-                                                >
-                                                    <Plus size={16} />
-                                                </motion.button>
+                                    <motion.button
+                                        style={{
+                                            padding: '0.65rem 1rem',
+                                            borderRadius: '5px',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '0.35rem',
+                                            background: 'rgba(255,255,255,0.15)',
+                                            cursor: 'pointer',
+                                            border: '1px solid rgba(255,255,255,0.3)',
+                                            color: 'white',
+                                            fontSize: '0.85rem',
+                                        }}
+                                    >
+                                        <Plus size={16} />
+                                    </motion.button>
 
-                                                <motion.button
-                                                    initial={{ opacity: 1, scale: 1 }}
-                                                    exit={{ opacity: 0, scale: 0.9 }}
-                                                    transition={{ duration: 0.3, delay: 0.05 }}
-                                                    style={{
-                                                        padding: '0.65rem 1rem',
-                                                        borderRadius: '5px',
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        gap: '0.35rem',
-                                                        background: 'rgba(255,255,255,0.15)',
-                                                        cursor: 'pointer',
-                                                        border: '1px solid rgba(255,255,255,0.3)',
-                                                        color: 'white',
-                                                        fontSize: '0.85rem',
-                                                    }}
-                                                >
-                                                    <Download size={16} />
-                                                </motion.button>
-                                            </>
-                                        )}
-                                    </AnimatePresence>
+                                    <motion.button
+                                        style={{
+                                            padding: '0.65rem 1rem',
+                                            borderRadius: '5px',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '0.35rem',
+                                            background: 'rgba(255,255,255,0.15)',
+                                            cursor: 'pointer',
+                                            border: '1px solid rgba(255,255,255,0.3)',
+                                            color: 'white',
+                                            fontSize: '0.85rem',
+                                        }}
+                                    >
+                                        <Download size={16} />
+                                    </motion.button>
                                 </motion.div>
                             </div>
                         </div>

@@ -63,13 +63,12 @@ const SearchModal = ({ isOpen, onClose }) => {
 
     const handleCardClick = (item) => {
         if (item.media_type === 'movie') {
-            openModal(item.id);
+            openModal(item.id, 'movie');
             onClose();
             setSearchQuery('');
             setResults([]);
         } else if (item.media_type === 'tv') {
-            // Navigate to TV show video player page (Season 1, Episode 1)
-            navigate(`/watch/tv/${item.id}/season/1/episode/1`);
+            openModal(item.id, 'tv');
             onClose();
             setSearchQuery('');
             setResults([]);

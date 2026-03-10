@@ -2,11 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Heart, Bookmark, ChevronLeft, ChevronRight } from 'lucide-react';
-import { getMovieDetails, getTVShowDetails, imageUrl, getMovieImages, getTVShowImages } from '../api/tmdb';
+import { getMovieDetails, getTVShowDetails, imageUrl, getMovieImages, getTVShowImages, getCollectionDetails, getMovieRecommendations, getTVShowRecommendations } from '../api/tmdb';
 import { servers, getServerUrl } from '../config/servers';
 import ServerSelector from '../components/ServerSelector';
 import EpisodesSidebar from '../components/EpisodesSidebar';
 import MovieInfoSidebar from '../components/MovieInfoSidebar';
+import MovieRow from '../components/MovieRow';
 
 
 const VideoPlayer = () => {
@@ -15,6 +16,8 @@ const VideoPlayer = () => {
 
     const [contentData, setContentData] = useState(null);
     const [logoPath, setLogoPath] = useState(null);
+    const [collectionData, setCollectionData] = useState(null);
+    const [recommendations, setRecommendations] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activeServer, setActiveServer] = useState('vidfast');
 
@@ -33,7 +36,11 @@ const VideoPlayer = () => {
             setCurrentSeason(parseInt(urlSeason));
             setCurrentEpisode(parseInt(urlEpisode));
         }
-    }, [urlSeason, urlEpisode]);
+
+        // Reset collection data on movie change
+        setCollectionData(null);
+        setRecommendations([]);
+    }, [urlSeason, urlEpisode, id]);
 
     const fetchContentData = async () => {
         setLoading(true);
@@ -54,6 +61,24 @@ const VideoPlayer = () => {
                 } catch (imgError) {
                     console.warn('Failed to fetch movie logo:', imgError);
                 }
+
+                // Fetch Collection details if it belongs to one
+                if (data.belongs_to_collection) {
+                    try {
+                        const colResponse = await getCollectionDetails(data.belongs_to_collection.id);
+                        setCollectionData(colResponse.data);
+                    } catch (colError) {
+                        console.warn('Failed to fetch collection Details:', colError);
+                    }
+                }
+
+                // Fetch recommendations
+                try {
+                    const recResponse = await getMovieRecommendations(id);
+                    setRecommendations(recResponse.data.results.filter(r => r.poster_path));
+                } catch (recError) {
+                    console.warn('Failed to fetch movie recommendations:', recError);
+                }
             } else {
                 const response = await getTVShowDetails(id);
                 data = response.data;
@@ -67,6 +92,14 @@ const VideoPlayer = () => {
                     }
                 } catch (imgError) {
                     console.warn('Failed to fetch TV logo:', imgError);
+                }
+
+                // Fetch recommendations
+                try {
+                    const recResponse = await getTVShowRecommendations(id);
+                    setRecommendations(recResponse.data.results.filter(r => r.poster_path));
+                } catch (recError) {
+                    console.warn('Failed to fetch tv recommendations:', recError);
                 }
             }
 
@@ -192,7 +225,7 @@ const VideoPlayer = () => {
                                 width: '110%',
                                 height: '110%',
                                 objectFit: 'cover',
-                                filter: 'blur(18px) brightness(0.45)',
+                                filter: 'blur(5px) brightness(0.45)',
                                 opacity: 0.85,
                                 transform: 'scale(1.1)',
                             }}
@@ -210,7 +243,7 @@ const VideoPlayer = () => {
             </div>
 
             {/* Content Wrapper to ensure it sits above the background */}
-            <div style={{ position: 'relative', zIndex: 10 }}>
+            <div style={{ position: 'relative', zIndex: 10, zoom: 0.8 }}>
                 {/* Header */}
                 {/* Floating Glass Header Island */}
                 <div style={{
@@ -222,12 +255,12 @@ const VideoPlayer = () => {
                     backdropFilter: 'blur(20px)',
                     WebkitBackdropFilter: 'blur(20px)',
                     border: '1px solid rgba(255, 255, 255, 0.25)',
-                    borderRadius: '24px',
-                    padding: '0.5rem 0.75rem',
+                    borderRadius: '28px',
+                    padding: '0.65rem 1rem',
                     zIndex: 100,
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '1.2rem',
+                    gap: '1.4rem',
                     boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
                     maxWidth: 'calc(100vw - 2rem)',
                     boxSizing: 'border-box',
@@ -238,8 +271,8 @@ const VideoPlayer = () => {
                             background: 'rgba(255, 255, 255, 0.1)',
                             border: 'none',
                             borderRadius: '50%',
-                            width: '40px',
-                            height: '40px',
+                            width: '44px',
+                            height: '44px',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
@@ -256,7 +289,7 @@ const VideoPlayer = () => {
                             e.currentTarget.style.transform = 'scale(1)';
                         }}
                     >
-                        <ArrowLeft size={20} />
+                        <ArrowLeft size={22} />
                     </button>
 
                     {logoPath ? (
@@ -265,8 +298,8 @@ const VideoPlayer = () => {
                                 src={imageUrl(logoPath, 'w500')}
                                 alt={title}
                                 style={{
-                                    maxHeight: '40px',
-                                    maxWidth: '150px',
+                                    maxHeight: '44px',
+                                    maxWidth: '180px',
                                     width: 'auto',
                                     objectFit: 'contain'
                                 }}
@@ -284,7 +317,7 @@ const VideoPlayer = () => {
                         </div>
                     ) : (
                         <h1 style={{
-                            fontSize: '1rem',
+                            fontSize: '1.1rem',
                             fontWeight: '600',
                             color: 'rgba(255, 255, 255, 0.9)',
                             margin: 0,
@@ -298,9 +331,9 @@ const VideoPlayer = () => {
                         </h1>
                     )}
 
-                    <div style={{ width: '1px', height: '20px', background: 'rgba(255, 255, 255, 0.1)' }}></div>
+                    <div style={{ width: '1px', height: '24px', background: 'rgba(255, 255, 255, 0.1)' }}></div>
 
-                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <div style={{ display: 'flex', gap: '0.75rem' }}>
                         <button
                             style={{
                                 background: 'transparent',
@@ -313,7 +346,7 @@ const VideoPlayer = () => {
                             onMouseEnter={(e) => e.currentTarget.style.color = 'white'}
                             onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255, 255, 255, 0.7)'}
                         >
-                            <Heart size={20} />
+                            <Heart size={22} />
                         </button>
                         <button
                             style={{
@@ -327,7 +360,7 @@ const VideoPlayer = () => {
                             onMouseEnter={(e) => e.currentTarget.style.color = 'white'}
                             onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255, 255, 255, 0.7)'}
                         >
-                            <Bookmark size={20} />
+                            <Bookmark size={22} />
                         </button>
                     </div>
                 </div>
@@ -449,9 +482,9 @@ const VideoPlayer = () => {
 
                                 {/* Server Selector */}
                                 <div style={{
-                                    width: 'fit-content',
-                                    minWidth: 'min(100%, 600px)', // Ensure it's not too small but fits content
-                                    maxWidth: '100%',
+                                    width: '100%',
+                                    maxWidth: '990px', // Matches the player's maxWidth
+                                    boxSizing: 'border-box',
                                     margin: '1rem auto 0',
                                     borderRadius: '20px',
                                     padding: '1.2rem',
@@ -512,6 +545,165 @@ const VideoPlayer = () => {
                         </div>
                     </div>
                 </div>
+
+                {/* Movie Collection / Next in Sequence */}
+                {collectionData && collectionData.parts && collectionData.parts.length > 1 && (
+                    <div style={{
+                        maxWidth: '1500px',
+                        margin: '2rem auto 4rem',
+                        padding: '0 1rem',
+                        color: 'white',
+                    }}>
+                        <div style={{
+                            background: 'rgba(255, 255, 255, 0.02)',
+                            backdropFilter: 'blur(12px)',
+                            WebkitBackdropFilter: 'blur(12px)',
+                            border: '1px solid rgba(255, 255, 255, 0.05)',
+                            borderRadius: '20px',
+                            padding: '2rem',
+                            position: 'relative',
+                            overflow: 'hidden'
+                        }}>
+                            {/* Inner ambient glow */}
+                            <div style={{
+                                position: 'absolute',
+                                top: '-50%',
+                                left: '-10%',
+                                width: '120%',
+                                height: '200%',
+                                background: 'radial-gradient(circle at top right, rgba(229, 9, 20, 0.05) 0%, transparent 60%)',
+                                pointerEvents: 'none',
+                                zIndex: 0
+                            }} />
+
+                            <h2 style={{
+                                fontSize: '1.5rem',
+                                fontWeight: 'bold',
+                                marginBottom: '1.5rem',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.75rem',
+                                position: 'relative',
+                                zIndex: 1
+                            }}>
+                                <div style={{ width: '4px', height: '24px', background: '#e50914', borderRadius: '4px' }}></div>
+                                Watch in Sequence: {collectionData.name}
+                            </h2>
+
+                            <div style={{
+                                display: 'flex',
+                                gap: '1.5rem',
+                                overflowX: 'auto',
+                                paddingBottom: '1rem',
+                                position: 'relative',
+                                zIndex: 1,
+                                scrollbarWidth: 'thin',
+                                scrollbarColor: 'rgba(255,255,255,0.2) transparent'
+                            }}>
+                                {collectionData.parts
+                                    // Make sure we have a poster and sort by release date roughly
+                                    .filter(p => p.poster_path)
+                                    .sort((a, b) => new Date(a.release_date || '2099') - new Date(b.release_date || '2099'))
+                                    .map((part) => {
+                                        const isCurrent = part.id.toString() === id.toString();
+                                        return (
+                                            <div
+                                                key={part.id}
+                                                onClick={() => {
+                                                    if (!isCurrent) navigate(`/watch/movie/${part.id}`);
+                                                }}
+                                                style={{
+                                                    flex: '0 0 auto',
+                                                    width: '180px',
+                                                    cursor: isCurrent ? 'default' : 'pointer',
+                                                    opacity: isCurrent ? 0.6 : 1,
+                                                    transition: 'all 0.3s ease',
+                                                    filter: isCurrent ? 'grayscale(0.6)' : 'none',
+                                                }}
+                                                onMouseEnter={(e) => {
+                                                    if (!isCurrent) {
+                                                        e.currentTarget.style.transform = 'translateY(-10px)';
+                                                        e.currentTarget.style.filter = 'brightness(1.2) drop-shadow(0 10px 20px rgba(229,9,20,0.2))';
+                                                    }
+                                                }}
+                                                onMouseLeave={(e) => {
+                                                    if (!isCurrent) {
+                                                        e.currentTarget.style.transform = 'translateY(0)';
+                                                        e.currentTarget.style.filter = 'none';
+                                                    }
+                                                }}
+                                            >
+                                                <div style={{
+                                                    width: '100%',
+                                                    aspectRatio: '2/3',
+                                                    borderRadius: '12px',
+                                                    overflow: 'hidden',
+                                                    marginBottom: '0.75rem',
+                                                    position: 'relative',
+                                                    boxShadow: '0 4px 15px rgba(0,0,0,0.4)',
+                                                    border: isCurrent ? '2px solid rgba(255,255,255,0.3)' : '1px solid rgba(255,255,255,0.1)'
+                                                }}>
+                                                    <img
+                                                        src={imageUrl(part.poster_path, 'w300')}
+                                                        alt={part.title}
+                                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                                        loading="lazy"
+                                                    />
+                                                    {isCurrent && (
+                                                        <div style={{
+                                                            position: 'absolute',
+                                                            bottom: 0,
+                                                            left: 0,
+                                                            right: 0,
+                                                            background: 'rgba(0,0,0,0.8)',
+                                                            color: 'white',
+                                                            textAlign: 'center',
+                                                            padding: '0.5rem',
+                                                            fontSize: '0.8rem',
+                                                            fontWeight: 'bold',
+                                                            backdropFilter: 'blur(4px)'
+                                                        }}>
+                                                            Currently Playing
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <h3 style={{
+                                                    fontSize: '0.9rem',
+                                                    fontWeight: '600',
+                                                    margin: 0,
+                                                    color: isCurrent ? 'rgba(255,255,255,0.6)' : 'white',
+                                                    display: '-webkit-box',
+                                                    WebkitLineClamp: 2,
+                                                    WebkitBoxOrient: 'vertical',
+                                                    overflow: 'hidden',
+                                                    lineHeight: 1.3
+                                                }}>
+                                                    {part.title}
+                                                </h3>
+                                                <p style={{
+                                                    fontSize: '0.8rem',
+                                                    color: 'rgba(255,255,255,0.4)',
+                                                    margin: '0.2rem 0 0 0'
+                                                }}>
+                                                    {part.release_date?.split('-')[0]}
+                                                </p>
+                                            </div>
+                                        );
+                                    })}
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Recommended / Similar Content */}
+                {recommendations && recommendations.length > 0 && (
+                    <div style={{ maxWidth: '1500px', margin: '0 auto 4rem', padding: '0 1rem' }}>
+                        <MovieRow
+                            title="More Like This"
+                            movies={recommendations}
+                        />
+                    </div>
+                )}
 
                 {/* Spin animation for loading */}
                 <style>

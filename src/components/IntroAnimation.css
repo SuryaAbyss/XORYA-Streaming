@@ -107,10 +107,12 @@
 .glass-x-symbol {
     width: 120px;
     height: 120px;
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.02) 100%);
-    border-radius: 30px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3), inset 0 0 20px rgba(255, 255, 255, 0.05);
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 50%;
+    border: 1.5px solid rgba(200, 255, 0, 0.3);
+    box-shadow: 0 0 40px rgba(160, 255, 0, 0.25), inset 0 0 20px rgba(160, 255, 0, 0.1);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -127,8 +129,8 @@
     left: 0;
     width: 150%;
     height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-    animation: shine 1.2s ease-in-out forwards;
+    background: linear-gradient(90deg, transparent, rgba(200, 255, 0, 0.2), transparent);
+    animation: shine 1.5s ease-in-out forwards;
     will-change: transform;
 }
 
@@ -137,11 +139,11 @@
     font-weight: 800;
     font-family: 'Inter', sans-serif;
     color: #ffffff;
-    text-shadow: 0 0 20px rgba(0, 188, 212, 0.6);
-    background: linear-gradient(135deg, #fff 0%, #00bcd4 100%);
+    background: linear-gradient(135deg, #eaff00 0%, #00ff88 100%);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 0 15px rgba(200, 255, 0, 0.5));
 }
 
 @keyframes scalePulse {

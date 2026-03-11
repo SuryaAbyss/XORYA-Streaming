@@ -3,6 +3,7 @@ import Hero from '../components/Hero';
 import MovieRow from '../components/MovieRow';
 import Top10Section from '../components/Top10Section';
 import ProvidersSection from '../components/ProvidersSection';
+import SmokeBackground from '../components/SmokeBackground';
 import { imageUrl } from '../api/tmdb';
 import { loadYouTubeAPI } from '../hooks/useYouTubePlayer';
 import {
@@ -206,9 +207,25 @@ const Home = ({ category = 'all' }) => {
                     <MovieRow title={category === 'tv' ? 'Trending TV' : 'Trending Now'} movies={mainData} />
                 </div>
 
-                {/* Full-area striped background: TOP 10 → end of page */}
-                <div className="striped-bg-full" style={{ position: 'relative' }}>
-                    <div style={{ position: 'relative' }}>
+                {/* Full-area animated smoke background: TOP 10 → end of page */}
+                <div style={{
+                    position: 'relative',
+                    marginTop: '-250px',
+                    paddingTop: '250px',
+                    overflow: 'visible'
+                }}>
+                    {/* Animated Smoke Background with a soft fade-in effect at the top */}
+                    <div style={{
+                        position: 'absolute',
+                        inset: 0,
+                        zIndex: 0,
+                        WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 250px)',
+                        maskImage: 'linear-gradient(to bottom, transparent 0%, black 250px)'
+                    }}>
+                        <SmokeBackground smokeColor="#7f1d1d" />
+                    </div>
+
+                    <div style={{ position: 'relative', zIndex: 1 }}>
                         {/* Red box - wraps entire TOP 10 section (header + carousel) */}
                         <div style={{
                             position: 'relative',

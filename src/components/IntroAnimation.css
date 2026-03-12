@@ -107,15 +107,15 @@
 .glass-x-symbol {
     width: 120px;
     height: 120px;
-  background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.08), rgba(0, 0, 0, 0.75));
+    background: radial-gradient(circle at 30% 30%, rgba(220, 220, 230, 0.1), rgba(0, 0, 0, 0.8));
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     border-radius: 50%;
-  border: 1.5px solid rgba(255, 255, 255, 0.22);
-  box-shadow:
-    0 0 40px rgba(255, 200, 120, 0.3),
-    0 0 65px rgba(130, 220, 255, 0.35),
-    inset 0 0 20px rgba(0, 0, 0, 0.65);
+    border: 1.5px solid rgba(200, 210, 220, 0.35);
+    box-shadow:
+        0 0 40px rgba(180, 200, 220, 0.25),
+        0 0 65px rgba(150, 170, 200, 0.2),
+        inset 0 0 20px rgba(0, 0, 0, 0.7);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -132,8 +132,16 @@
     left: 0;
     width: 150%;
     height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(200, 255, 0, 0.2), transparent);
-    animation: shine 1.5s ease-in-out forwards;
+    /* Silver/white shine streak — one pass only */
+    background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0.08) 40%,
+        rgba(255, 255, 255, 0.55) 50%,
+        rgba(255, 255, 255, 0.08) 60%,
+        transparent 100%
+    );
+    animation: shine 1.4s ease-in-out forwards;
     will-change: transform;
 }
 
@@ -141,20 +149,20 @@
     font-size: 5rem;
     font-weight: 800;
     font-family: 'Inter', sans-serif;
-  color: #ffffff;
-  background: conic-gradient(
-    from 210deg,
-    #ffffff 0%,
-    #ffe2b8 20%,
-    #ffb347 35%,
-    #ff6b6b 50%,
-    #7dd3fc 72%,
-    #e5e7eb 100%
-  );
+    /* Silver/chrome metallic gradient — left to right highlight */
+    background: linear-gradient(
+        135deg,
+        #c8cdd4 0%,
+        #f0f2f5 25%,
+        #ffffff 45%,
+        #d0d5dc 65%,
+        #a8adb5 85%,
+        #e8eaed 100%
+    );
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
-  filter: drop-shadow(0 0 18px rgba(255, 255, 255, 0.4));
+    filter: drop-shadow(0 0 14px rgba(200, 210, 230, 0.55));
 }
 
 @keyframes scalePulse {

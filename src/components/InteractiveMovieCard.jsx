@@ -11,6 +11,7 @@ const InteractiveMovieCard = ({ movie, index = 0 }) => {
     const [isHovered, setIsHovered] = useState(false);
     const [showDetails, setShowDetails] = useState(false);
     const [rect, setRect] = useState(null);
+    const [imgError, setImgError] = useState(false);
     const timerRef = useRef(null);
     const cardRef = useRef(null);
 
@@ -41,8 +42,8 @@ const InteractiveMovieCard = ({ movie, index = 0 }) => {
         <>
             <BlurFade
                 ref={cardRef}
-                inView={true}
-                delay={Math.min(index, 6) * 0.05 + 0.1}
+                inView={false}
+                delay={Math.min(index, 6) * 0.05}
                 inViewMargin="-20px"
                 whileHover={{ scale: 1.15, zIndex: 10, transition: { duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] } }}
                 onMouseEnter={handleMouseEnter}
@@ -61,15 +62,22 @@ const InteractiveMovieCard = ({ movie, index = 0 }) => {
                     opacity: 1,
                     zIndex: 1
                 }}>
-                    <img
-                        src={imageUrl(movie.backdrop_path, 'w500')}
-                        alt={movie.title || movie.name}
-                        style={{
-                            width: '100%',
-                            height: '100%',
-                            objectFit: 'cover'
-                        }}
-                    />
+                    {!imgError && movie.backdrop_path ? (
+                        <img
+                            src={imageUrl(movie.backdrop_path, 'w500')}
+                            alt={movie.title || movie.name}
+                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                            onError={() => setImgError(true)}
+                        />
+                    ) : (
+                        // Fallback: gradient placeholder so the card never shows as pure black
+                        <div style={{
+                            width: '100%', height: '100%',
+                            background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            fontSize: '2rem', color: 'rgba(255,255,255,0.15)'
+                        }}>🎬</div>
+                    )}
                     <div className="gradient-overlay">
                         <h3 className="movie-card-title">
                             {movie.title || movie.name}

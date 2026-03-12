@@ -10,7 +10,7 @@ const IntroAnimation = () => {
 
     if (isFirstRender.current) {
         if (typeof window !== 'undefined') {
-            window.HERO_DELAY = 3000; // Always map the main app delay to our new 3-second loader
+            window.HERO_DELAY = 4000; // Sync main hero delay with 4-second intro
         }
         isFirstRender.current = false;
     }
@@ -23,7 +23,7 @@ const IntroAnimation = () => {
         fadeTimer = setTimeout(() => {
             setStage('fade-out');
             doneTimer = setTimeout(() => setStage('done'), 500); // 500ms fade out transition
-        }, 3000); // 3 sec active viewing time
+        }, 4000); // 4 sec active viewing time to let the transition fully play
 
         return () => {
             clearTimeout(fadeTimer);

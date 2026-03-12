@@ -7,7 +7,17 @@ import useYouTubePlayer from '../hooks/useYouTubePlayer';
 import { selectBestTrailer } from '../utils/trailerSelector';
 import ShinyPill from './ShinyPill';
 
+// Detect mobile/touch devices — trailers are disabled on phones
+const isMobileDevice = () => {
+    if (typeof window === 'undefined') return false;
+    // Check for touch capability AND a narrow viewport (phones, not tablets/desktops)
+    const hasTouch = navigator.maxTouchPoints > 0 || 'ontouchstart' in window;
+    const isNarrow = window.innerWidth <= 768;
+    return hasTouch && isNarrow;
+};
+
 const Hero = ({ movie, onPlay, onInfo, onTrailerStart, isTrailerPlaying, onTrailerEnd }) => {
+    const isMobile = isMobileDevice();
     const navigate = useNavigate();
     const [logoPath, setLogoPath] = useState(null);
     const [videoKey, setVideoKey] = useState(null);
@@ -46,7 +56,7 @@ const Hero = ({ movie, onPlay, onInfo, onTrailerStart, isTrailerPlaying, onTrail
     }, []);
 
     const { isMuted, toggleMute, playerReady, player } = useYouTubePlayer(videoKey, playerContainerRef, {
-        active: !!videoKey, // Mount player immediately to preload/buffer during the 5s delay
+        active: !isMobile && !!videoKey, // Never mount on mobile — static backdrop only
         onReady: handlePlayerReady,
         onEnd: handleTrailerEnd,
         onPlaying: handlePlaying,
@@ -70,14 +80,16 @@ const Hero = ({ movie, onPlay, onInfo, onTrailerStart, isTrailerPlaying, onTrail
                 }
             }).catch(console.error);
 
-            // Fetch Video - Use smart selection to get best quality, newest trailer
-            getMovieVideos(movie.id).then(res => {
-                const videos = res.data.results;
-                const bestTrailer = selectBestTrailer(videos);
-                if (bestTrailer) {
-                    setVideoKey(bestTrailer.key);
-                }
-            }).catch(console.error);
+            // Fetch Video - Skip entirely on mobile devices
+            if (!isMobile) {
+                getMovieVideos(movie.id).then(res => {
+                    const videos = res.data.results;
+                    const bestTrailer = selectBestTrailer(videos);
+                    if (bestTrailer) {
+                        setVideoKey(bestTrailer.key);
+                    }
+                }).catch(console.error);
+            }
         }
     }, [movie]);
 
@@ -151,50 +163,52 @@ const Hero = ({ movie, onPlay, onInfo, onTrailerStart, isTrailerPlaying, onTrail
                 overflow: 'hidden'
             }}
         >
-            {/* Video Background - YouTube IFrame Player API */}
-            <div
-                style={{
-                    position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
-                    zIndex: showVideo ? 2 : -1,
-                    opacity: showVideo ? 1 : 0,
-                    transition: 'opacity 1s ease-in-out',
-                    overflow: 'hidden',
-                    maskImage: 'linear-gradient(to bottom, black 80%, transparent 100%)',
-                    WebkitMaskImage: 'linear-gradient(to bottom, black 80%, transparent 100%)'
-                }}
-                onContextMenu={(e) => e.preventDefault()}
-            >
-                {/* Player container - YouTube API renders into this div */}
-                <div
-                    ref={playerContainerRef}
-                    style={{
-                        position: 'absolute',
-                        top: '50%',
-                        left: '50%',
-                        transform: 'translate(-50%, -50%) scale(1.15)',
-                        width: '100vw',
-                        height: '56.25vw',
-                        minWidth: '177.78vh',
-                        pointerEvents: 'none',
-                        filter: 'contrast(1.08) saturate(1.05) brightness(0.95)', // Slight dramatic cinematic tone
-                        willChange: 'transform',
-                    }}
-                />
-                {/* Dark interaction-blocking overlay */}
+            {/* Video Background - YouTube IFrame Player API (desktop only) */}
+            {!isMobile && (
                 <div
                     style={{
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        width: '100%',
-                        height: '100%',
-                        zIndex: 5,
-                        pointerEvents: 'auto',
-                        background: 'transparent',
+                        position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
+                        zIndex: showVideo ? 2 : -1,
+                        opacity: showVideo ? 1 : 0,
+                        transition: 'opacity 1s ease-in-out',
+                        overflow: 'hidden',
+                        maskImage: 'linear-gradient(to bottom, black 80%, transparent 100%)',
+                        WebkitMaskImage: 'linear-gradient(to bottom, black 80%, transparent 100%)'
                     }}
                     onContextMenu={(e) => e.preventDefault()}
-                />
-            </div>
+                >
+                    {/* Player container - YouTube API renders into this div */}
+                    <div
+                        ref={playerContainerRef}
+                        style={{
+                            position: 'absolute',
+                            top: '50%',
+                            left: '50%',
+                            transform: 'translate(-50%, -50%) scale(1.15)',
+                            width: '100vw',
+                            height: '56.25vw',
+                            minWidth: '177.78vh',
+                            pointerEvents: 'none',
+                            filter: 'contrast(1.08) saturate(1.05) brightness(0.95)',
+                            willChange: 'transform',
+                        }}
+                    />
+                    {/* Dark interaction-blocking overlay */}
+                    <div
+                        style={{
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            width: '100%',
+                            height: '100%',
+                            zIndex: 5,
+                            pointerEvents: 'auto',
+                            background: 'transparent',
+                        }}
+                        onContextMenu={(e) => e.preventDefault()}
+                    />
+                </div>
+            )}
 
             {/* Static Background Image - w1280 for fast load, preloaded from Home */}
             <motion.div
@@ -345,32 +359,34 @@ const Hero = ({ movie, onPlay, onInfo, onTrailerStart, isTrailerPlaying, onTrail
                         </button>
                     </motion.div>
 
-                    {/* Mute Toggle - Always visible */}
-                    <motion.div variants={{ hidden: { opacity: 0, x: -20 }, visible: { opacity: 1, x: 0, transition: { duration: 0.6, ease: "easeOut" } } }}>
-                        <button
-                            onClick={toggleMute}
-                            onMouseEnter={() => setIsMuteHovered(true)}
-                            onMouseLeave={() => setIsMuteHovered(false)}
-                            className="glass"
-                            style={{
-                                padding: '0.6rem',
-                                borderRadius: '50%',
-                                background: 'rgba(0,0,0,0.5)',
-                                border: '1px solid rgba(255,255,255,0.2)',
-                                color: 'white',
-                                cursor: 'pointer',
-                                height: '38px',
-                                width: '38px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                opacity: isMuteFaded ? 0.3 : 1,
-                                transition: 'opacity 0.8s ease'
-                            }}
-                        >
-                            {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
-                        </button>
-                    </motion.div>
+                    {/* Mute Toggle - Only on desktop (trailer is desktop-only) */}
+                    {!isMobile && (
+                        <motion.div variants={{ hidden: { opacity: 0, x: -20 }, visible: { opacity: 1, x: 0, transition: { duration: 0.6, ease: "easeOut" } } }}>
+                            <button
+                                onClick={toggleMute}
+                                onMouseEnter={() => setIsMuteHovered(true)}
+                                onMouseLeave={() => setIsMuteHovered(false)}
+                                className="glass"
+                                style={{
+                                    padding: '0.6rem',
+                                    borderRadius: '50%',
+                                    background: 'rgba(0,0,0,0.5)',
+                                    border: '1px solid rgba(255,255,255,0.2)',
+                                    color: 'white',
+                                    cursor: 'pointer',
+                                    height: '38px',
+                                    width: '38px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    opacity: isMuteFaded ? 0.3 : 1,
+                                    transition: 'opacity 0.8s ease'
+                                }}
+                            >
+                                {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
+                            </button>
+                        </motion.div>
+                    )}
                 </motion.div>
             </motion.div>
         </div >

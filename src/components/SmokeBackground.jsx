@@ -1,189 +1,161 @@
-import React, { useEffect, useRef } from 'react';
+'use client';
 
-// --- FRAGMENT SHADER ---
-const fragmentShaderSource = `#version 300 es
-precision highp float;
-out vec4 O;
-uniform float time;
-uniform vec2 resolution;
-uniform vec3 u_color;
+import React from "react";
+import { motion } from "framer-motion";
+import { cn } from "../lib/utils";
 
-#define FC gl_FragCoord.xy
-#define R resolution
-#define T (time+660.)
+export const SmokeBackground = ({
+  // Primary color of the falling elements
+  color = "rgba(248,113,113,0.9)",
+  // Background color behind the pattern
+  backgroundColor = "transparent",
+  // Animation duration in seconds
+  duration = 150,
+  // Blur intensity for the overlay effect
+  blurIntensity = "1em",
+  // Pattern density - affects spacing
+  density = 1,
+  className,
+}) => {
+  const generateBackgroundImage = () => {
+    const patterns = [
+      // Row 1
+      `radial-gradient(4px 100px at 0px 235px, ${color}, transparent)`,
+      `radial-gradient(4px 100px at 300px 235px, ${color}, transparent)`,
+      `radial-gradient(1.5px 1.5px at 150px 117.5px, ${color} 100%, transparent 150%)`,
+      // Row 2
+      `radial-gradient(4px 100px at 0px 252px, ${color}, transparent)`,
+      `radial-gradient(4px 100px at 300px 252px, ${color}, transparent)`,
+      `radial-gradient(1.5px 1.5px at 150px 126px, ${color} 100%, transparent 150%)`,
+      // Row 3
+      `radial-gradient(4px 100px at 0px 150px, ${color}, transparent)`,
+      `radial-gradient(4px 100px at 300px 150px, ${color}, transparent)`,
+      `radial-gradient(1.5px 1.5px at 150px 75px, ${color} 100%, transparent 150%)`,
+      // Row 4
+      `radial-gradient(4px 100px at 0px 253px, ${color}, transparent)`,
+      `radial-gradient(4px 100px at 300px 253px, ${color}, transparent)`,
+      `radial-gradient(1.5px 1.5px at 150px 126.5px, ${color} 100%, transparent 150%)`,
+      // Row 5
+      `radial-gradient(4px 100px at 0px 204px, ${color}, transparent)`,
+      `radial-gradient(4px 100px at 300px 204px, ${color}, transparent)`,
+      `radial-gradient(1.5px 1.5px at 150px 102px, ${color} 100%, transparent 150%)`,
+      // Row 6
+      `radial-gradient(4px 100px at 0px 134px, ${color}, transparent)`,
+      `radial-gradient(4px 100px at 300px 134px, ${color}, transparent)`,
+      `radial-gradient(1.5px 1.5px at 150px 67px, ${color} 100%, transparent 150%)`,
+      // Row 7
+      `radial-gradient(4px 100px at 0px 179px, ${color}, transparent)`,
+      `radial-gradient(4px 100px at 300px 179px, ${color}, transparent)`,
+      `radial-gradient(1.5px 1.5px at 150px 89.5px, ${color} 100%, transparent 150%)`,
+      // Row 8
+      `radial-gradient(4px 100px at 0px 299px, ${color}, transparent)`,
+      `radial-gradient(4px 100px at 300px 299px, ${color}, transparent)`,
+      `radial-gradient(1.5px 1.5px at 150px 149.5px, ${color} 100%, transparent 150%)`,
+      // Row 9
+      `radial-gradient(4px 100px at 0px 215px, ${color}, transparent)`,
+      `radial-gradient(4px 100px at 300px 215px, ${color}, transparent)`,
+      `radial-gradient(1.5px 1.5px at 150px 107.5px, ${color} 100%, transparent 150%)`,
+      // Row 10
+      `radial-gradient(4px 100px at 0px 281px, ${color}, transparent)`,
+      `radial-gradient(4px 100px at 300px 281px, ${color}, transparent)`,
+      `radial-gradient(1.5px 1.5px at 150px 140.5px, ${color} 100%, transparent 150%)`,
+      // Row 11
+      `radial-gradient(4px 100px at 0px 158px, ${color}, transparent)`,
+      `radial-gradient(4px 100px at 300px 158px, ${color}, transparent)`,
+      `radial-gradient(1.5px 1.5px at 150px 79px, ${color} 100%, transparent 150%)`,
+      // Row 12
+      `radial-gradient(4px 100px at 0px 210px, ${color}, transparent)`,
+      `radial-gradient(4px 100px at 300px 210px, ${color}, transparent)`,
+      `radial-gradient(1.5px 1.5px at 150px 105px, ${color} 100%, transparent 150%)`,
+    ];
 
-float rnd(vec2 p){p=fract(p*vec2(12.9898,78.233));p+=dot(p,p+34.56);return fract(p.x*p.y);}
-float noise(vec2 p){vec2 i=floor(p),f=fract(p),u=f*f*(3.-2.*f);return mix(mix(rnd(i),rnd(i+vec2(1,0)),u.x),mix(rnd(i+vec2(0,1)),rnd(i+1.),u.x),u.y);}
-float fbm(vec2 p){float t=.0,a=1.;for(int i=0;i<5;i++){t+=a*noise(p);p*=mat2(1,-1.2,.2,1.2)*2.;a*=.5;}return t;}
+    return patterns.join(", ");
+  };
 
-void main(){
-  vec2 uv=(FC-.5*R)/R.y;
-  vec3 col=vec3(1);
-  uv.x+=.25;
-  uv*=vec2(2,1);
+  const backgroundSizes = [
+    "300px 235px",
+    "300px 235px",
+    "300px 235px",
+    "300px 252px",
+    "300px 252px",
+    "300px 252px",
+    "300px 150px",
+    "300px 150px",
+    "300px 150px",
+    "300px 253px",
+    "300px 253px",
+    "300px 253px",
+    "300px 204px",
+    "300px 204px",
+    "300px 204px",
+    "300px 134px",
+    "300px 134px",
+    "300px 134px",
+    "300px 179px",
+    "300px 179px",
+    "300px 179px",
+    "300px 299px",
+    "300px 299px",
+    "300px 299px",
+    "300px 215px",
+    "300px 215px",
+    "300px 215px",
+    "300px 281px",
+    "300px 281px",
+    "300px 281px",
+    "300px 158px",
+    "300px 158px",
+    "300px 158px",
+    "300px 210px",
+    "300px 210px",
+  ].join(", ");
 
-  float n=fbm(uv*.28-vec2(T*.01,0));
-  n=noise(uv*3.+n*2.);
-
-  col.r-=fbm(uv+vec2(0,T*.015)+n);
-  col.g-=fbm(uv*1.003+vec2(0,T*.015)+n+.003);
-  col.b-=fbm(uv*1.006+vec2(0,T*.015)+n+.006);
-
-  col=mix(col, u_color, dot(col,vec3(.21,.71,.07)));
-
-  col=mix(vec3(.08),col,min(time*.1,1.));
-  col=clamp(col,.08,1.);
-  O=vec4(col,1);
-}`;
-
-// --- RENDERER CLASS ---
-class Renderer {
-  constructor(canvas, fragmentSource) {
-    this.vertexSrc = "#version 300 es\nprecision highp float;\nin vec4 position;\nvoid main(){gl_Position=position;}";
-    this.vertices = [-1, 1, -1, -1, 1, 1, 1, -1];
-
-    this.canvas = canvas;
-    this.gl = canvas.getContext("webgl2");
-    this.program = null;
-    this.vs = null;
-    this.fs = null;
-    this.buffer = null;
-    this.color = [0.5, 0.5, 0.5];
-
-    this.setup(fragmentSource);
-    this.init();
-  }
-
-  updateColor(newColor) {
-    this.color = newColor;
-  }
-
-  updateScale() {
-    const dpr = Math.max(1, window.devicePixelRatio);
-    const { innerWidth: width, innerHeight: height } = window;
-    this.canvas.width = width * dpr;
-    this.canvas.height = height * dpr;
-    if (this.gl) {
-      this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
-    }
-  }
-
-  compile(shader, source) {
-    const gl = this.gl;
-    gl.shaderSource(shader, source);
-    gl.compileShader(shader);
-    if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-      console.error(`Shader compilation error: ${gl.getShaderInfoLog(shader)}`);
-    }
-  }
-
-  reset() {
-    const { gl, program, vs, fs } = this;
-    if (!program) return;
-    if (vs) { gl.detachShader(program, vs); gl.deleteShader(vs); }
-    if (fs) { gl.detachShader(program, fs); gl.deleteShader(fs); }
-    gl.deleteProgram(program);
-    this.program = null;
-  }
-
-  setup(fragmentSource) {
-    const gl = this.gl;
-    this.vs = gl.createShader(gl.VERTEX_SHADER);
-    this.fs = gl.createShader(gl.FRAGMENT_SHADER);
-    const program = gl.createProgram();
-    if (!this.vs || !this.fs || !program) return;
-    this.compile(this.vs, this.vertexSrc);
-    this.compile(this.fs, fragmentSource);
-    this.program = program;
-    gl.attachShader(this.program, this.vs);
-    gl.attachShader(this.program, this.fs);
-    gl.linkProgram(this.program);
-    if (!gl.getProgramParameter(this.program, gl.LINK_STATUS)) {
-      console.error(`Program linking error: ${gl.getProgramInfoLog(this.program)}`);
-    }
-  }
-
-  init() {
-    const { gl, program } = this;
-    if (!program) return;
-    this.buffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.vertices), gl.STATIC_DRAW);
-    const position = gl.getAttribLocation(program, "position");
-    gl.enableVertexAttribArray(position);
-    gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0);
-    Object.assign(program, {
-      resolution: gl.getUniformLocation(program, "resolution"),
-      time: gl.getUniformLocation(program, "time"),
-      u_color: gl.getUniformLocation(program, "u_color"),
-    });
-  }
-
-  render(now = 0) {
-    const { gl, program, buffer, canvas } = this;
-    if (!program || !gl.isProgram(program)) return;
-    gl.clearColor(0, 0, 0, 1);
-    gl.clear(gl.COLOR_BUFFER_BIT);
-    gl.useProgram(program);
-    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-    gl.uniform2f(program.resolution, canvas.width, canvas.height);
-    gl.uniform1f(program.time, now * 1e-3);
-    gl.uniform3fv(program.u_color, this.color);
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-  }
-}
-
-const hexToRgb = (hex) => {
-  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-  return result
-    ? [
-      parseInt(result[1], 16) / 255,
-      parseInt(result[2], 16) / 255,
-      parseInt(result[3], 16) / 255,
-    ]
-    : null;
-};
-
-export const SmokeBackground = ({ smokeColor = "#808080" }) => {
-  const canvasRef = useRef(null);
-  const rendererRef = useRef(null);
-
-  useEffect(() => {
-    if (!canvasRef.current) return;
-    const canvas = canvasRef.current;
-    const renderer = new Renderer(canvas, fragmentShaderSource);
-    rendererRef.current = renderer;
-
-    const handleResize = () => renderer.updateScale();
-    handleResize();
-    window.addEventListener('resize', handleResize);
-
-    let animationFrameId;
-    const loop = (now) => {
-      renderer.render(now);
-      animationFrameId = requestAnimationFrame(loop);
-    };
-    loop(0);
-
-    return () => {
-      window.removeEventListener('resize', handleResize);
-      cancelAnimationFrame(animationFrameId);
-      renderer.reset();
-    };
-  }, []);
-
-  useEffect(() => {
-    const renderer = rendererRef.current;
-    if (renderer) {
-      const rgbColor = hexToRgb(smokeColor);
-      if (rgbColor) {
-        renderer.updateColor(rgbColor);
-      }
-    }
-  }, [smokeColor]);
+  const startPositions =
+    "0px 220px, 3px 220px, 151.5px 337.5px, 25px 24px, 28px 24px, 176.5px 150px, 50px 16px, 53px 16px, 201.5px 91px, 75px 224px, 78px 224px, 226.5px 230.5px, 100px 19px, 103px 19px, 251.5px 121px, 125px 120px, 128px 120px, 276.5px 187px, 150px 31px, 153px 31px, 301.5px 120.5px, 175px 235px, 178px 235px, 326.5px 384.5px, 200px 121px, 203px 121px, 351.5px 228.5px, 225px 224px, 228px 224px, 376.5px 364.5px, 250px 26px, 253px 26px, 401.5px 105px, 275px 75px, 278px 75px, 426.5px 180px";
+  const endPositions =
+    "0px 6800px, 3px 6800px, 151.5px 6917.5px, 25px 13632px, 28px 13632px, 176.5px 13758px, 50px 5416px, 53px 5416px, 201.5px 5491px, 75px 17175px, 78px 17175px, 226.5px 17301.5px, 100px 5119px, 103px 5119px, 251.5px 5221px, 125px 8428px, 128px 8428px, 276.5px 8495px, 150px 9876px, 153px 9876px, 301.5px 9965.5px, 175px 13391px, 178px 13391px, 326.5px 13540.5px, 200px 14741px, 203px 14741px, 351.5px 14848.5px, 225px 18770px, 228px 18770px, 376.5px 18910.5px, 250px 5082px, 253px 5082px, 401.5px 5161px, 275px 6375px, 278px 6375px, 426.5px 6480px";
 
   return (
-    <canvas ref={canvasRef} style={{ width: '100%', height: '100%', display: 'block', pointerEvents: 'none' }} />
+    <div className={cn("relative h-full w-full", className)}>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.2 }}
+        className="size-full"
+      >
+        <motion.div
+          className="relative size-full z-0"
+          style={{
+            backgroundColor,
+            backgroundImage: generateBackgroundImage(),
+            backgroundSize: backgroundSizes,
+          }}
+          variants={{
+            initial: {
+              backgroundPosition: startPositions,
+            },
+            animate: {
+              backgroundPosition: [startPositions, endPositions],
+              transition: {
+                duration: duration,
+                ease: "linear",
+                repeat: Number.POSITIVE_INFINITY,
+              },
+            },
+          }}
+          initial="initial"
+          animate="animate"
+        />
+      </motion.div>
+      <div
+        className="absolute inset-0 z-1 dark:brightness-600"
+        style={{
+          backdropFilter: `blur(${blurIntensity})`,
+          backgroundImage: `radial-gradient(circle at 50% 50%, transparent 0, transparent 2px, ${backgroundColor} 2px)`,
+          backgroundSize: `${8 * density}px ${8 * density}px`,
+        }}
+      />
+    </div>
   );
 };
 

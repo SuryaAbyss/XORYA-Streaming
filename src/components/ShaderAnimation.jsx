@@ -18,7 +18,7 @@ export function ShaderAnimation() {
       }
     `;
 
-    // Fragment shader
+    // Fragment shader - restored original design and color richness
     const fragmentShader = `
       #define TWO_PI 6.2831853072
       #define PI 3.14159265359
@@ -33,8 +33,8 @@ export function ShaderAnimation() {
         float lineWidth = 0.002;
 
         vec3 color = vec3(0.0);
-        for(int j = 0; j < 2; j++){ // Reduced constraint to 2 for performance
-          for(int i = 0; i < 4; i++){ // Reduced constraint to 4 for performance
+        for(int j = 0; j < 3; j++){
+          for(int i = 0; i < 4; i++){
             color[j] += lineWidth*float(i*i) / abs(fract(t - 0.01*float(j)+float(i)*0.01)*5.0 - length(uv) + mod(uv.x+uv.y, 0.2));
           }
         }
@@ -64,17 +64,21 @@ export function ShaderAnimation() {
     const mesh = new THREE.Mesh(geometry, material);
     scene.add(mesh);
 
-    const renderer = new THREE.WebGLRenderer({ 
+    const renderer = new THREE.WebGLRenderer({
       antialias: false,
       powerPreference: "high-performance",
       alpha: false,
       depth: false,
-      stencil: false
-    }); 
-    
-    // Aggressive scaling logic: keep the visual size large, but the internal render map small (.6 or lower)
-    // The image feels slightly softer natively on 4K/Mobile screens, but FPS is astronomically improved across all reflows
-    const dpr = typeof window !== 'undefined' ? (window.innerWidth < 768 ? 0.5 : 0.8) : 1;
+      stencil: false,
+    });
+
+    // Render at a lower internal resolution for smoother performance
+    const dpr =
+      typeof window !== "undefined"
+        ? window.innerWidth < 768
+          ? 0.4
+          : 0.7
+        : 1;
     renderer.setPixelRatio(dpr);
 
     container.appendChild(renderer.domElement);

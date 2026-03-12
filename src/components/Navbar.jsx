@@ -12,6 +12,8 @@ const Navbar = () => {
     const [isLogoTransparent, setIsLogoTransparent] = useState(false);
     const logoTimerRef = useRef(null);
 
+    const isMobile = typeof window !== 'undefined' && navigator.maxTouchPoints > 0 && window.innerWidth <= 768;
+
     const isActive = (path) => location.pathname === path;
 
     const startNavTimer = () => {
@@ -60,18 +62,18 @@ const Navbar = () => {
     ];
 
     const containerVariants = {
-        hidden: { y: -100, opacity: 0 },
+        hidden: { y: isMobile ? 100 : -100, opacity: 0 },
         visible: {
             y: 0,
-            opacity: isTransparent ? 0.3 : 1,
-            backgroundColor: isTransparent
+            opacity: isTransparent ? (isMobile ? 1 : 0.3) : 1, // Never fade on mobile
+            backgroundColor: isTransparent && !isMobile
                 ? 'rgba(255, 255, 255, 0.02)'
-                : 'rgba(255, 255, 255, 0.1)',
-            backdropFilter: isTransparent ? 'blur(4px)' : 'blur(16px)',
-            WebkitBackdropFilter: isTransparent ? 'blur(4px)' : 'blur(16px)',
-            boxShadow: isTransparent
+                : (isMobile ? 'rgba(5, 5, 5, 0.92)' : 'rgba(255, 255, 255, 0.1)'),
+            backdropFilter: isTransparent && !isMobile ? 'blur(4px)' : 'blur(20px)',
+            WebkitBackdropFilter: isTransparent && !isMobile ? 'blur(4px)' : 'blur(20px)',
+            boxShadow: isTransparent && !isMobile
                 ? '0 4px 16px rgba(0, 0, 0, 0.05)'
-                : '0 8px 32px rgba(31, 38, 135, 0.15)',
+                : (isMobile ? '0 -4px 30px rgba(0, 0, 0, 0.5)' : '0 8px 32px rgba(31, 38, 135, 0.15)'),
             border: '1px solid rgba(255, 255, 255, 0.18)',
             transition: {
                 duration: 0.8,
@@ -120,7 +122,23 @@ const Navbar = () => {
                                 variants={itemVariants}
                                 key="search"
                                 onClick={() => setIsSearchOpen(true)}
-                                style={{
+                                style={isMobile ? {
+                                    // Mobile: identical to other tab items
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    flex: '1 1 0',
+                                    gap: '4px',
+                                    padding: '8px 4px',
+                                    height: '100%',
+                                    border: 'none',
+                                    borderRadius: '0',
+                                    background: 'transparent',
+                                    color: 'rgba(255, 255, 255, 0.6)',
+                                    cursor: 'pointer',
+                                } : {
+                                    // Desktop: circular icon button
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
@@ -131,30 +149,39 @@ const Navbar = () => {
                                     background: 'rgba(255, 255, 255, 0.05)',
                                     color: 'rgba(255, 255, 255, 0.8)',
                                     cursor: 'pointer',
-                                    transition: 'all 0.3s ease'
+                                    transition: 'all 0.3s ease',
                                 }}
-                                onMouseEnter={(e) => {
+                                onMouseEnter={!isMobile ? (e) => {
                                     e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)';
                                     e.currentTarget.style.color = '#fff';
                                     e.currentTarget.style.transform = 'scale(1.05)';
-                                }}
-                                onMouseLeave={(e) => {
+                                } : undefined}
+                                onMouseLeave={!isMobile ? (e) => {
                                     e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
                                     e.currentTarget.style.color = 'rgba(255, 255, 255, 0.8)';
                                     e.currentTarget.style.transform = 'scale(1)';
-                                }}
+                                } : undefined}
                             >
-                                <Icon size={20} />
+                                <Icon size={isMobile ? 22 : 20} />
+                                {isMobile && <span className="nav-label">Search</span>}
                             </motion.button>
                         );
                     }
 
                     return (
-                        <motion.div variants={itemVariants} key={item.path}>
+                        <motion.div
+                            variants={itemVariants}
+                            key={item.path}
+                            style={isMobile ? { flex: '1 1 0', display: 'flex', height: '100%' } : undefined}
+                        >
                             <Link
                                 to={item.path}
                                 className={`nav-link-pill ${active ? 'active-pill' : ''}`}
-                                style={{
+                                style={isMobile ? {
+                                    // On mobile let CSS fully control — just supply the active color
+                                    color: active ? '#fff' : 'rgba(255, 255, 255, 0.55)',
+                                    width: '100%',
+                                } : {
                                     background: active
                                         ? 'linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 100%)'
                                         : 'transparent',
@@ -164,9 +191,9 @@ const Navbar = () => {
                                     color: active ? '#fff' : 'rgba(255, 255, 255, 0.6)',
                                 }}
                             >
-                                <Icon size={18} />
-                                <span className="nav-label" style={{ fontSize: '0.9rem', fontWeight: '500' }}>{item.label}</span>
-                                {active && (
+                                <Icon size={isMobile ? 22 : 18} />
+                                <span className="nav-label" style={isMobile ? {} : { fontSize: '0.9rem', fontWeight: '500' }}>{item.label}</span>
+                                {active && !isMobile && (
                                     <motion.div
                                         layoutId="navbar-glow"
                                         style={{
@@ -195,7 +222,7 @@ const Navbar = () => {
                 <Link to="/">
                     <img
                         src="/logo.png"
-                        alt="XORYA Logo"
+                        alt="XORAYA Logo"
                         style={{
                             height: '50px',
                             width: 'auto',

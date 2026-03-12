@@ -107,12 +107,15 @@
 .glass-x-symbol {
     width: 120px;
     height: 120px;
-    background: rgba(0, 0, 0, 0.55);
+  background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.08), rgba(0, 0, 0, 0.75));
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     border-radius: 50%;
-    border: 1.5px solid rgba(200, 255, 0, 0.3);
-    box-shadow: 0 0 40px rgba(160, 255, 0, 0.25), inset 0 0 20px rgba(160, 255, 0, 0.1);
+  border: 1.5px solid rgba(255, 255, 255, 0.22);
+  box-shadow:
+    0 0 40px rgba(255, 200, 120, 0.3),
+    0 0 65px rgba(130, 220, 255, 0.35),
+    inset 0 0 20px rgba(0, 0, 0, 0.65);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -138,12 +141,20 @@
     font-size: 5rem;
     font-weight: 800;
     font-family: 'Inter', sans-serif;
-    color: #ffffff;
-    background: linear-gradient(135deg, #eaff00 0%, #00ff88 100%);
+  color: #ffffff;
+  background: conic-gradient(
+    from 210deg,
+    #ffffff 0%,
+    #ffe2b8 20%,
+    #ffb347 35%,
+    #ff6b6b 50%,
+    #7dd3fc 72%,
+    #e5e7eb 100%
+  );
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
-    filter: drop-shadow(0 0 15px rgba(200, 255, 0, 0.5));
+  filter: drop-shadow(0 0 18px rgba(255, 255, 255, 0.4));
 }
 
 @keyframes scalePulse {

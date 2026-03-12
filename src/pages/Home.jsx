@@ -4,6 +4,7 @@ import MovieRow from '../components/MovieRow';
 import Top10Section from '../components/Top10Section';
 import ProvidersSection from '../components/ProvidersSection';
 import SmokeBackground from '../components/SmokeBackground';
+import GridBackground from '../components/GridBackground';
 import { imageUrl } from '../api/tmdb';
 import { loadYouTubeAPI } from '../hooks/useYouTubePlayer';
 import {
@@ -41,9 +42,12 @@ const Home = ({ category = 'all' }) => {
     const [topRatedTV, setTopRatedTV] = useState([]);
     const [dramaTV, setDramaTV] = useState([]);
 
-    // Preload YouTube API early so trailer loads faster
+    // Preload YouTube API early so trailer loads faster (desktop only)
     useEffect(() => {
-        loadYouTubeAPI();
+        const isMobile = navigator.maxTouchPoints > 0 && window.innerWidth <= 768;
+        if (!isMobile) {
+            loadYouTubeAPI();
+        }
     }, []);
 
     // Scroll to top on mount or category change
@@ -53,84 +57,86 @@ const Home = ({ category = 'all' }) => {
 
     useEffect(() => {
         const fetchSecondary = async () => {
-            try {
-                const [
-                    topRatedRes, actionRes, comedyRes, horrorRes,
-                    romanceRes, docsRes, scifiRes, upcomingRes,
-                    popularTVRes, topRatedTVRes, dramaTVRes
-                ] = await Promise.all([
-                    getTopRatedMovies(), getActionMovies(), getComedyMovies(), getHorrorMovies(),
-                    getRomanceMovies(), getDocumentaries(), getSciFiMovies(), getUpcomingMovies(),
-                    getPopularTVShows(), getTopRatedTVShows(), getDramaTVShows()
-                ]);
+            // allSettled: if any single request fails/throttles, others still succeed
+            const safe = (r) => (r.status === 'fulfilled' ? r.value?.data?.results ?? [] : []);
+            const results = await Promise.allSettled([
+                getTopRatedMovies(), getActionMovies(), getComedyMovies(), getHorrorMovies(),
+                getRomanceMovies(), getDocumentaries(), getSciFiMovies(), getUpcomingMovies(),
+                getPopularTVShows(), getTopRatedTVShows(), getDramaTVShows()
+            ]);
+            const [
+                topRatedRes, actionRes, comedyRes, horrorRes,
+                romanceRes, docsRes, scifiRes, upcomingRes,
+                popularTVRes, topRatedTVRes, dramaTVRes
+            ] = results;
 
-                setTopRated(topRatedRes.data.results);
-                setAction(actionRes.data.results);
-                setComedy(comedyRes.data.results);
-                setHorror(horrorRes.data.results);
-                setRomance(romanceRes.data.results);
-                setDocs(docsRes.data.results);
-                setSciFi(scifiRes.data.results);
-                setUpcoming(upcomingRes.data.results);
+            if (safe(topRatedRes).length) setTopRated(safe(topRatedRes));
+            if (safe(actionRes).length) setAction(safe(actionRes));
+            if (safe(comedyRes).length) setComedy(safe(comedyRes));
+            if (safe(horrorRes).length) setHorror(safe(horrorRes));
+            if (safe(romanceRes).length) setRomance(safe(romanceRes));
+            if (safe(docsRes).length) setDocs(safe(docsRes));
+            if (safe(scifiRes).length) setSciFi(safe(scifiRes));
+            if (safe(upcomingRes).length) setUpcoming(safe(upcomingRes));
 
-                const filterAnimation = (results) => results.filter(item => !item.genre_ids?.includes(16));
-                setPopularTV(filterAnimation(popularTVRes.data.results));
-                setTopRatedTV(filterAnimation(topRatedTVRes.data.results));
-                setDramaTV(filterAnimation(dramaTVRes.data.results));
-            } catch (error) {
-                console.error("Failed to fetch secondary movies:", error);
-            }
+            const filterAnimation = (arr) => arr.filter(item => !item.genre_ids?.includes(16));
+            if (safe(popularTVRes).length) setPopularTV(filterAnimation(safe(popularTVRes)));
+            if (safe(topRatedTVRes).length) setTopRatedTV(filterAnimation(safe(topRatedTVRes)));
+            if (safe(dramaTVRes).length) setDramaTV(filterAnimation(safe(dramaTVRes)));
         };
 
         const fetchPrimary = async () => {
-            try {
-                const [
-                    trendingDayRes1, trendingDayRes2, trendingDayRes3,
-                    trendingWeekRes1, trendingWeekRes2, trendingWeekRes3,
-                    trendingTVDayRes1, trendingTVDayRes2, trendingTVDayRes3,
-                    trendingTVWeekRes1, trendingTVWeekRes2, trendingTVWeekRes3
-                ] = await Promise.all([
-                    getTrendingMovies(1), getTrendingMovies(2), getTrendingMovies(3),
-                    getTrendingMoviesWeek(1), getTrendingMoviesWeek(2), getTrendingMoviesWeek(3),
-                    getTrendingTVShows(1), getTrendingTVShows(2), getTrendingTVShows(3),
-                    getTrendingTVShowsWeek(1), getTrendingTVShowsWeek(2), getTrendingTVShowsWeek(3)
-                ]);
+            // allSettled: one throttled page won't kill the whole batch
+            const safe = (r) => (r.status === 'fulfilled' ? r.value?.data?.results ?? [] : []);
 
-                // Helper to merge, deduplicate by id, and shuffle
-                const mergeAndShuffle = (...arrays) => {
-                    const uniqueMap = new Map();
-                    arrays.forEach(arr => {
-                        arr.forEach(item => uniqueMap.set(item.id, item));
-                    });
-                    const combined = Array.from(uniqueMap.values());
-                    for (let i = combined.length - 1; i > 0; i--) {
-                        const j = Math.floor(Math.random() * (i + 1));
-                        [combined[i], combined[j]] = [combined[j], combined[i]];
-                    }
-                    return combined;
-                };
+            const results = await Promise.allSettled([
+                getTrendingMovies(1), getTrendingMovies(2), getTrendingMovies(3),
+                getTrendingMoviesWeek(1), getTrendingMoviesWeek(2), getTrendingMoviesWeek(3),
+                getTrendingTVShows(1), getTrendingTVShows(2), getTrendingTVShows(3),
+                getTrendingTVShowsWeek(1), getTrendingTVShowsWeek(2), getTrendingTVShowsWeek(3)
+            ]);
 
-                setTrending(mergeAndShuffle(
-                    trendingDayRes1.data.results, trendingDayRes2.data.results, trendingDayRes3.data.results,
-                    trendingWeekRes1.data.results, trendingWeekRes2.data.results, trendingWeekRes3.data.results
-                ));
+            const [
+                trendingDayRes1, trendingDayRes2, trendingDayRes3,
+                trendingWeekRes1, trendingWeekRes2, trendingWeekRes3,
+                trendingTVDayRes1, trendingTVDayRes2, trendingTVDayRes3,
+                trendingTVWeekRes1, trendingTVWeekRes2, trendingTVWeekRes3
+            ] = results;
 
-                const filterAnimation = (results) => results.filter(item => !item.genre_ids?.includes(16));
+            // Helper to merge, deduplicate by id, and shuffle
+            const mergeAndShuffle = (...arrays) => {
+                const uniqueMap = new Map();
+                arrays.forEach(arr => {
+                    arr.forEach(item => uniqueMap.set(item.id, item));
+                });
+                const combined = Array.from(uniqueMap.values());
+                for (let i = combined.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [combined[i], combined[j]] = [combined[j], combined[i]];
+                }
+                return combined;
+            };
 
-                setTrendingTV(mergeAndShuffle(
-                    filterAnimation(trendingTVDayRes1.data.results),
-                    filterAnimation(trendingTVDayRes2.data.results),
-                    filterAnimation(trendingTVDayRes3.data.results),
-                    filterAnimation(trendingTVWeekRes1.data.results),
-                    filterAnimation(trendingTVWeekRes2.data.results),
-                    filterAnimation(trendingTVWeekRes3.data.results)
-                ));
+            const trendingMovies = mergeAndShuffle(
+                safe(trendingDayRes1), safe(trendingDayRes2), safe(trendingDayRes3),
+                safe(trendingWeekRes1), safe(trendingWeekRes2), safe(trendingWeekRes3)
+            );
+            if (trendingMovies.length) setTrending(trendingMovies);
 
-                // Instantly trigger secondary background load once primary is ready
-                fetchSecondary();
-            } catch (error) {
-                console.error("Failed to fetch primary movies:", error);
-            }
+            const filterAnimation = (arr) => arr.filter(item => !item.genre_ids?.includes(16));
+
+            const trendingTVItems = mergeAndShuffle(
+                filterAnimation(safe(trendingTVDayRes1)),
+                filterAnimation(safe(trendingTVDayRes2)),
+                filterAnimation(safe(trendingTVDayRes3)),
+                filterAnimation(safe(trendingTVWeekRes1)),
+                filterAnimation(safe(trendingTVWeekRes2)),
+                filterAnimation(safe(trendingTVWeekRes3))
+            );
+            if (trendingTVItems.length) setTrendingTV(trendingTVItems);
+
+            // Trigger secondary load after primary completes
+            fetchSecondary();
         };
 
         fetchPrimary();
@@ -186,16 +192,19 @@ const Home = ({ category = 'all' }) => {
 
     return (
         <div className="home-page pb-20">
-            <Hero
-                key={heroMovie?.id || 'hero'}
-                movie={heroMovie}
-                onTrailerStart={handleTrailerStart}
-                onTrailerEnd={handleTrailerEnd}
-                isTrailerPlaying={isTrailerPlaying}
-            />
+            {/* Grid pattern only in the hero/header area */}
+            <GridBackground>
+                <Hero
+                    key={heroMovie?.id || 'hero'}
+                    movie={heroMovie}
+                    onTrailerStart={handleTrailerStart}
+                    onTrailerEnd={handleTrailerEnd}
+                    isTrailerPlaying={isTrailerPlaying}
+                />
+            </GridBackground>
 
             <div style={{ position: 'relative', zIndex: 20 }}>
-                {/* Custom XORYA Open Layout */}
+                {/* Custom XORAYA Open Layout */}
                 <div style={{
                     position: 'relative',
                     background: 'linear-gradient(to bottom, transparent 0%, #000 100px)',
@@ -218,11 +227,15 @@ const Home = ({ category = 'all' }) => {
                     <div style={{
                         position: 'absolute',
                         inset: 0,
-                        zIndex: 0,
-                        WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 250px)',
-                        maskImage: 'linear-gradient(to bottom, transparent 0%, black 250px)'
+                        zIndex: 0
                     }}>
-                        <SmokeBackground smokeColor="#7f1d1d" />
+                        <SmokeBackground
+                            color="rgba(248,113,113,0.9)"
+                            backgroundColor="transparent"
+                            duration={160}
+                            blurIntensity="0.75em"
+                            density={1.1}
+                        />
                     </div>
 
                     <div style={{ position: 'relative', zIndex: 1 }}>

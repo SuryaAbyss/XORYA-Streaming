@@ -1,5 +1,5 @@
 {
-  "name": "xorya",
+  "name": "xoraya",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -17,6 +17,7 @@
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-router-dom": "^7.13.0",
+    "react-use-measure": "^2.1.7",
     "svg-dotted-map": "^2.0.1",
     "tailwind-merge": "^3.5.0",
     "three": "^0.183.2"

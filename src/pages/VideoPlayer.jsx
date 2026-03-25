@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Heart, Bookmark, ChevronLeft, ChevronRight } from 'lucide-react';
 import { getMovieDetails, getTVShowDetails, imageUrl, getMovieImages, getTVShowImages, getCollectionDetails, getMovieRecommendations, getTVShowRecommendations } from '../api/tmdb';
+import { useWatchlist } from '../hooks/useWatchlist';
 import { servers, getServerUrl } from '../config/servers';
 import ServerSelector from '../components/ServerSelector';
 import EpisodesSidebar from '../components/EpisodesSidebar';
@@ -13,6 +14,7 @@ import MovieRow from '../components/MovieRow';
 const VideoPlayer = () => {
     const { type, id, season: urlSeason, episode: urlEpisode } = useParams();
     const navigate = useNavigate();
+    const { syncPlaybackWithWatchlist, getEntryByTmdbId } = useWatchlist();
 
     const [contentData, setContentData] = useState(null);
     const [logoPath, setLogoPath] = useState(null);
@@ -21,26 +23,81 @@ const VideoPlayer = () => {
     const [loading, setLoading] = useState(true);
     const [activeServer, setActiveServer] = useState('vidfast');
 
-    // For TV shows
-    const [currentSeason, setCurrentSeason] = useState(parseInt(urlSeason) || 1);
-    const [currentEpisode, setCurrentEpisode] = useState(parseInt(urlEpisode) || 1);
+    // Safe initialisation bypassing ANY state closures by scanning localStorage directly
+    const getInitialProgress = () => {
+        if (type !== 'tv') return { s: 1, e: 1 };
+        if (urlSeason && urlEpisode) return { s: parseInt(urlSeason), e: parseInt(urlEpisode) };
+        try {
+            const raw = localStorage.getItem('xorya_watchlist');
+            if (raw) {
+                const saved = JSON.parse(raw);
+                const entry = saved.entries?.find(e => String(e.tmdbId) === String(id));
+                if (entry?.progress) {
+                    return { s: parseInt(entry.progress.season), e: parseInt(entry.progress.episode) };
+                }
+            }
+        } catch { }
+        return { s: 1, e: 1 };
+    };
+
+    const initProg = getInitialProgress();
+    const [currentSeason, setCurrentSeason] = useState(initProg.s);
+    const [currentEpisode, setCurrentEpisode] = useState(initProg.e);
+
+    // Keep state perfectly in sync if URL changes outside of component load
+    useEffect(() => {
+        if (urlSeason && urlEpisode) {
+            setCurrentSeason(parseInt(urlSeason));
+            setCurrentEpisode(parseInt(urlEpisode));
+        }
+    }, [urlSeason, urlEpisode]);
     const [seasons, setSeasons] = useState([]);
 
     useEffect(() => {
         fetchContentData();
     }, [type, id]);
 
-    // Keep state in sync with URL
+    // Handle Collection Reset & Resume Watch Redirect Side-Effect
     useEffect(() => {
-        if (type === 'tv' && urlSeason && urlEpisode) {
-            setCurrentSeason(parseInt(urlSeason));
-            setCurrentEpisode(parseInt(urlEpisode));
-        }
-
-        // Reset collection data on movie change
         setCollectionData(null);
         setRecommendations([]);
-    }, [urlSeason, urlEpisode, id]);
+
+        // If a user clicks play without specifying episode, strictly enforce the redirect from raw localStorage.
+        if (type === 'tv' && !urlSeason && !urlEpisode) {
+            try {
+                const raw = localStorage.getItem('xorya_watchlist');
+                if (raw) {
+                    const saved = JSON.parse(raw);
+                    const entry = saved.entries?.find(e => String(e.tmdbId) === String(id));
+                    if (entry?.progress) {
+                        navigate(`/watch/tv/${id}/season/${entry.progress.season}/episode/${entry.progress.episode}`, { replace: true });
+                        return;
+                    }
+                }
+            } catch {}
+        }
+    }, [type, id, urlSeason, urlEpisode, navigate, getEntryByTmdbId]);
+
+    // Handle Watchlist Synchronization 
+    useEffect(() => {
+        if (!contentData) return;
+
+         // Debounce network noise, only sync when actually stabilised
+        const timer = setTimeout(() => {
+            syncPlaybackWithWatchlist({
+                tmdbId: id,
+                type: type,
+                title: type === 'movie' ? contentData.title : contentData.name,
+                poster: contentData.poster_path,
+                backdrop: contentData.backdrop_path,
+                year: (contentData.release_date || contentData.first_air_date)?.split('-')[0],
+                rating: contentData.vote_average?.toFixed(1),
+                season: type === 'tv' ? currentSeason : undefined,
+                episode: type === 'tv' ? currentEpisode : undefined
+            });
+        }, 1000);
+        return () => clearTimeout(timer);
+    }, [id, type, contentData, currentSeason, currentEpisode, syncPlaybackWithWatchlist]);
 
     const fetchContentData = async () => {
         setLoading(true);

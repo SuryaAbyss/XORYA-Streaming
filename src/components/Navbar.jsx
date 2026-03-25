@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Home, Search, Monitor, Film } from 'lucide-react';
+import { Home, Search, Monitor, Film, Bookmark } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import SearchModal from './SearchModal';
@@ -58,6 +58,7 @@ const Navbar = () => {
         { path: '/', icon: Home, label: 'Home' },
         { path: '/movies', icon: Film, label: 'Movies' },
         { path: '/series', icon: Monitor, label: 'TV Shows' },
+        { path: '/watchlist', icon: Bookmark, label: 'Watchlist', iconOnly: true },
         { action: 'search', icon: Search, label: 'Search' }
     ];
 
@@ -165,6 +166,62 @@ const Navbar = () => {
                                 <Icon size={isMobile ? 22 : 20} />
                                 {isMobile && <span className="nav-label">Search</span>}
                             </motion.button>
+                        );
+                    }
+
+                    // Icon-only link (desktop: circular pill, mobile: full tab with label)
+                    if (item.iconOnly) {
+                        return (
+                            <motion.div
+                                variants={itemVariants}
+                                key={item.path}
+                                style={isMobile ? { flex: '1 1 0', display: 'flex', height: '100%' } : undefined}
+                            >
+                                <Link
+                                    to={item.path}
+                                    style={isMobile ? {
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        width: '100%',
+                                        height: '100%',
+                                        gap: '4px',
+                                        padding: '8px 4px',
+                                        textDecoration: 'none',
+                                        color: active ? '#fff' : 'rgba(255, 255, 255, 0.6)',
+                                    } : {
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        width: '45px',
+                                        height: '45px',
+                                        borderRadius: '50%',
+                                        background: active
+                                            ? 'rgba(255, 255, 255, 0.15)'
+                                            : 'rgba(255, 255, 255, 0.05)',
+                                        color: active ? '#fff' : 'rgba(255, 255, 255, 0.8)',
+                                        textDecoration: 'none',
+                                        transition: 'all 0.3s ease',
+                                        boxShadow: active ? '0 0 0 1px rgba(255,255,255,0.15)' : 'none',
+                                    }}
+                                    onMouseEnter={!isMobile ? (e) => {
+                                        e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)';
+                                        e.currentTarget.style.color = '#fff';
+                                        e.currentTarget.style.transform = 'scale(1.05)';
+                                    } : undefined}
+                                    onMouseLeave={!isMobile ? (e) => {
+                                        e.currentTarget.style.background = active
+                                            ? 'rgba(255, 255, 255, 0.15)'
+                                            : 'rgba(255, 255, 255, 0.05)';
+                                        e.currentTarget.style.color = active ? '#fff' : 'rgba(255, 255, 255, 0.8)';
+                                        e.currentTarget.style.transform = 'scale(1)';
+                                    } : undefined}
+                                >
+                                    <Icon size={isMobile ? 22 : 20} />
+                                    {isMobile && <span className="nav-label">{item.label}</span>}
+                                </Link>
+                            </motion.div>
                         );
                     }
 

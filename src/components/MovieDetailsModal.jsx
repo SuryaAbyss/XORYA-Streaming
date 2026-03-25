@@ -5,10 +5,12 @@ import { X, Play, Plus, Download, Volume2, VolumeX } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import useYouTubePlayer from '../hooks/useYouTubePlayer';
 import { useMovieModal } from '../context/MovieModalContext';
+import { useWatchlist } from '../hooks/useWatchlist';
 import { selectBestTrailer } from '../utils/trailerSelector';
 
 const MovieDetailsModal = () => {
     const { selectedMovieId, selectedMediaType, closeModal } = useMovieModal();
+    const { getEntryByTmdbId } = useWatchlist();
     const navigate = useNavigate();
     const [movie, setMovie] = useState(null);
     const [cast, setCast] = useState([]);
@@ -331,7 +333,8 @@ const MovieDetailsModal = () => {
                                         onClick={() => {
                                             closeModal();
                                             if (selectedMediaType === 'tv') {
-                                                navigate(`/watch/tv/${selectedMovieId}/season/1/episode/1`);
+                                                // Delegate the resume logic entirely to VideoPlayer which has fresh state
+                                                navigate(`/watch/tv/${selectedMovieId}`);
                                             } else {
                                                 navigate(`/watch/movie/${selectedMovieId}`);
                                             }

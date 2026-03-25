@@ -321,7 +321,10 @@ const Hero = ({ movie, onPlay, onInfo, onTrailerStart, isTrailerPlaying, onTrail
                         <button
                             onClick={() => {
                                 if (onPlay) onPlay(movie);
-                                if (movie?.id) navigate(`/watch/movie/${movie.id}`);
+                                if (movie?.id) {
+                                    const mtype = movie.media_type || (movie.name ? 'tv' : 'movie');
+                                    navigate(`/watch/${mtype}/${movie.id}`);
+                                }
                             }}
                             className="interactive-play-btn"
                         >

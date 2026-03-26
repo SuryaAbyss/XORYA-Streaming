@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import './WatchlistCard.css';
 import {
   Plus, Download, Upload, Trash2, X,
   Eye, Clock, CheckCircle2, LayoutList, Film, Tv, Clapperboard
@@ -234,41 +235,62 @@ const FilterPanel = ({ isOpen, onClose, filter, entries, tiers, onProgress, onSt
 // ── Clickable Stats Card ────────────────────────────────────────────────────────
 const StatsCard = ({ label, value, icon: Icon, color, onClick, filterKey, activeFilter, badge }) => {
   const isActive = activeFilter === filterKey;
-  
-  // Create variations of the color for glow and bg
-  const colorGlow = color + '44';
-  const colorBg = color + '15';
 
   return (
-    <motion.div
-      className={`wl-stat-card ${onClick ? 'clickable' : ''} ${isActive ? 'active' : ''}`}
-      style={{ 
-        '--stat-color': color,
-        '--stat-color-glow': colorGlow,
-        '--stat-color-bg': colorBg
-      }}
-      onClick={onClick}
-      whileHover={onClick ? { scale: 1.02, y: -4 } : {}}
-      whileTap={onClick ? { scale: 0.98 } : {}}
+    <div 
+      className={`hl-card-wrapper ${isActive ? 'active' : ''} ${onClick ? 'clickable' : ''}`} 
+      onClick={onClick} 
+      style={{ '--card-color': color }}
     >
-      <div className="wl-stat-card-header">
-        <div className="wl-stat-icon-box">
-          <Icon size={18} strokeWidth={2.5} />
+      <div className="hl-card">
+        <div className="hl-bg-elements">
+          <div className="hl-bg-gradient"></div>
+          <div className="hl-glow-bot"></div>
+          <div className="hl-ping-top"></div>
+          <div className="hl-ping-bot"></div>
+          <div className="hl-shine"></div>
         </div>
-        {badge && <span className="wl-stat-badge">{badge}</span>}
-      </div>
 
-      <div className="wl-stat-info">
-        <p className="wl-stat-value">{value}</p>
-        <p className="wl-stat-label">{label}</p>
-      </div>
+        <div className="hl-content">
+          <div className="hl-badge-container">
+            {badge && (
+              <span className="hl-badge" style={{ color: color }}>
+                {badge}
+              </span>
+            )}
+          </div>
 
-      {onClick && (
-        <div className="wl-stat-arrow">
-          <Plus size={14} style={{ transform: 'rotate(45deg)' }} />
+          <div className="hl-icon-container">
+            <div className="hl-icon-ring-1"></div>
+            <div className="hl-icon-ring-2"></div>
+            <div className="hl-icon-inner">
+              <div className="hl-icon-spin">
+                <Icon size={24} />
+              </div>
+            </div>
+          </div>
+
+          <h3 className="hl-title">{value}</h3>
+          
+          <div className="hl-desc">
+            {label}
+          </div>
+
+          <div className="hl-divider"></div>
+
+          <div className="hl-dots">
+            <div className="hl-dot"></div>
+            <div className="hl-dot"></div>
+            <div className="hl-dot"></div>
+          </div>
         </div>
-      )}
-    </motion.div>
+
+        <div className="hl-corners">
+          <div className="hl-corner-tl"></div>
+          <div className="hl-corner-br"></div>
+        </div>
+      </div>
+    </div>
   );
 };
 

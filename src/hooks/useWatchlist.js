@@ -3,8 +3,8 @@ import { useState, useEffect, useCallback } from 'react';
 const STORAGE_KEY = 'xorya_watchlist';
 
 const DEFAULT_TIERS = [
-  { id: 'tier_must', name: 'Must Watch', color: '#ff4757', order: 0 },
-  { id: 'tier_good',  name: 'Looks Good', color: '#ffa502', order: 1 },
+  { id: 'tier_must', name: 'Watching', color: '#ff4757', order: 0 },
+  { id: 'tier_good',  name: 'Must Watch', color: '#ffa502', order: 1 },
   { id: 'tier_maybe', name: 'Maybe Later', color: '#7bed9f', order: 2 },
 ];
 
@@ -27,7 +27,15 @@ function saveToStorage(data) {
 export function useWatchlist() {
   const [tiers, setTiers] = useState(() => {
     const saved = loadFromStorage();
-    const initialTiers = saved?.tiers ?? DEFAULT_TIERS;
+    let initialTiers = saved?.tiers ?? DEFAULT_TIERS;
+    
+    // Migrate old names
+    initialTiers = initialTiers.map(t => {
+      if (t.id === 'tier_must' && t.name === 'Must Watch') return { ...t, name: 'Watching' };
+      if (t.id === 'tier_good' && t.name === 'Looks Good') return { ...t, name: 'Must Watch' };
+      return t;
+    });
+
     // Strip all emojis from existing tier names
     return initialTiers.map(t => ({
       ...t,
@@ -137,6 +145,9 @@ export function useWatchlist() {
     entries.filter(e => e.tierId === tierId), [entries]);
 
   const stats = {
+    total: entries.length,
+    watched: entries.filter(e => e.status === 'watched').length,
+    watching: entries.filter(e => e.status === 'watching').length,
     pending: entries.filter(e => e.status === 'pending').length,
   };
 

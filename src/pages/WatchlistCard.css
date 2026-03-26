@@ -1,0 +1,306 @@
+.hl-card-wrapper {
+  perspective: 1000px;
+  cursor: pointer;
+  width: 100%;
+  max-width: 280px;
+  margin: 0 auto;
+}
+
+.hl-card {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  min-height: 240px;
+  border-radius: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(to bottom right, #010101, #0a0a0a, #010101);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(24px);
+}
+
+.hl-card-wrapper:hover .hl-card {
+  transform: scale(1.05) rotate(-1.5deg);
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 0 40px rgba(255,255,255,0.08);
+}
+
+.hl-card-wrapper.active .hl-card {
+  border-color: var(--card-color);
+  box-shadow: 0 0 30px var(--card-color);
+}
+
+.hl-bg-elements {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.hl-bg-gradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top right, rgba(255,255,255,0.02), rgba(255,255,255,0.06));
+  opacity: 0.4;
+  transition: opacity 0.5s;
+}
+
+.hl-card-wrapper:hover .hl-bg-gradient {
+  opacity: 0.8;
+}
+
+.hl-glow-bot {
+  position: absolute;
+  bottom: -4rem;
+  left: -4rem;
+  width: 10rem;
+  height: 10rem;
+  border-radius: 50%;
+  background: linear-gradient(to top right, rgba(255,255,255,0.1), transparent);
+  filter: blur(20px);
+  opacity: 0.3;
+  transition: all 0.7s;
+  animation: hl-bounce 3s infinite;
+}
+
+.hl-card-wrapper:hover .hl-glow-bot {
+  opacity: 0.5;
+  transform: scale(1.2);
+}
+
+.hl-ping-top {
+  position: absolute;
+  top: 2rem;
+  left: 2rem;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.05);
+  filter: blur(12px);
+  animation: hl-ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+.hl-ping-bot {
+  position: absolute;
+  bottom: 3rem;
+  right: 3rem;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.05);
+  filter: blur(10px);
+  animation: hl-ping 2s cubic-bezier(0, 0, 0.2, 1) infinite 1s;
+}
+
+.hl-shine {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to right, transparent, rgba(255,255,255,0.05), transparent);
+  transform: skewX(-12deg) translateX(100%);
+  transition: transform 1s ease;
+}
+
+.hl-card-wrapper:hover .hl-shine {
+  transform: skewX(-12deg) translateX(-200%);
+}
+
+.hl-content {
+  padding: 1.2rem;
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  height: 100%;
+}
+
+.hl-badge-container {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  height: 24px;
+}
+
+.hl-badge {
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  padding: 0.2rem 0.6rem;
+  border-radius: 4px;
+  text-transform: uppercase;
+  background: rgba(255,255,255,0.1);
+  color: #aaa;
+  transition: all 0.3s;
+}
+
+.hl-card-wrapper.active .hl-badge {
+  background: var(--card-color);
+  color: #000;
+}
+
+.hl-icon-container {
+  position: relative;
+  margin-bottom: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.hl-icon-ring-1 {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.15);
+  animation: hl-ping 3s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+.hl-icon-ring-2 {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.08);
+  animation: hl-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.hl-icon-inner {
+  padding: 1rem;
+  border-radius: 50%;
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255,255,255,0.15);
+  background: linear-gradient(to bottom right, rgba(0,0,0,0.8), rgba(0,0,0,0.5));
+  box-shadow: 0 15px 30px -10px rgba(0,0,0,0.5);
+  transition: all 0.5s;
+}
+
+.hl-card-wrapper:hover .hl-icon-inner {
+  transform: rotate(12deg) scale(1.15);
+  box-shadow: 0 0 20px var(--card-color, rgba(255,255,255,0.15));
+  border-color: var(--card-color, rgba(255,255,255,0.3));
+}
+
+.hl-icon-spin {
+  transition: transform 0.7s;
+  color: var(--card-color, #fff);
+  display: flex;
+}
+
+.hl-card-wrapper:hover .hl-icon-spin {
+  transform: rotate(180deg);
+}
+
+.hl-title {
+  margin-bottom: 0.25rem;
+  margin-top: 0.25rem;
+  font-size: 2.25rem;
+  font-weight: 800;
+  background: linear-gradient(to right, #fff, #aaa, #fff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: hl-pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  transition: transform 0.3s;
+}
+
+.hl-card-wrapper:hover .hl-title {
+  transform: scale(1.1);
+  background: linear-gradient(to right, #fff, var(--card-color), #fff);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+.hl-desc {
+  color: #999;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  transition: color 0.3s;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.hl-card-wrapper:hover .hl-desc {
+  color: #ddd;
+}
+
+.hl-divider {
+  margin-top: 1rem;
+  width: 25%;
+  height: 2px;
+  background: linear-gradient(to right, transparent, var(--card-color, #fff), transparent);
+  border-radius: 99px;
+  transition: all 0.5s;
+  animation: hl-pulse 2s infinite;
+}
+
+.hl-card-wrapper:hover .hl-divider {
+  width: 45%;
+  height: 3px;
+}
+
+.hl-dots {
+  display: flex;
+  gap: 0.4rem;
+  margin-top: 1rem;
+  opacity: 0.4;
+  transition: opacity 0.3s;
+}
+
+.hl-card-wrapper:hover .hl-dots {
+  opacity: 1;
+}
+
+.hl-dot {
+  width: 6px;
+  height: 6px;
+  background: #fff;
+  border-radius: 50%;
+  animation: hl-bounce 1s infinite;
+  box-shadow: 0 0 5px #fff;
+}
+
+.hl-dot:nth-child(2) { animation-delay: 0.1s; }
+.hl-dot:nth-child(3) { animation-delay: 0.2s; }
+
+.hl-corners {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.hl-corner-tl {
+  position: absolute;
+  top: 0; left: 0;
+  width: 4rem; height: 4rem;
+  background: linear-gradient(to bottom right, rgba(255,255,255,0.08), transparent);
+  border-bottom-right-radius: 2rem;
+  opacity: 0;
+  transition: opacity 0.5s;
+}
+
+.hl-corner-br {
+  position: absolute;
+  bottom: 0; right: 0;
+  width: 4rem; height: 4rem;
+  background: linear-gradient(to top left, rgba(255,255,255,0.08), transparent);
+  border-top-left-radius: 2rem;
+  opacity: 0;
+  transition: opacity 0.5s;
+}
+
+.hl-card-wrapper:hover .hl-corner-tl,
+.hl-card-wrapper:hover .hl-corner-br {
+  opacity: 1;
+}
+
+@keyframes hl-bounce {
+  0%, 100% { transform: translateY(-25%); animation-timing-function: cubic-bezier(0.8,0,1,1); }
+  50% { transform: translateY(0); animation-timing-function: cubic-bezier(0,0,0.2,1); }
+}
+
+@keyframes hl-ping {
+  75%, 100% { transform: scale(2); opacity: 0; }
+}
+
+@keyframes hl-pulse {
+  50% { opacity: 0.6; }
+}

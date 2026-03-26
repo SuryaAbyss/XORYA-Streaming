@@ -4,6 +4,7 @@ import { Plus, Pencil, Trash2, Check, X, ChevronUp, ChevronDown } from 'lucide-r
 import WatchlistCard from './WatchlistCard';
 import WatchlistSearchModal from './WatchlistSearchModal';
 import { ExpandingCards } from './ui/expanding-cards';
+import { HoverBorderGradient } from './ui/hover-border-gradient';
 import { imageUrl } from '../api/tmdb';
 import { Film, Tv, Play, Info, Star } from 'lucide-react';
 import { useMovieModal } from '../context/MovieModalContext';
@@ -110,10 +111,12 @@ const TierRow = ({
                 <button className="wl-tier-icon-btn cancel" onClick={() => { setIsEditing(false); setEditName(tier.name); }}><X size={14} /></button>
               </div>
             ) : (
-              <div className="wl-tier-name-display">
-                <h3 className="wl-tier-name">{tier.name}</h3>
-                <button className="wl-tier-icon-btn edit" onClick={() => { setIsEditing(true); }} title="Rename"><Pencil size={13} /></button>
-              </div>
+              <HoverBorderGradient>
+                <div className="wl-tier-name-display">
+                  <h3 className="wl-tier-name" style={{ margin: 0 }}>{tier.name}</h3>
+                  <button className="wl-tier-icon-btn edit" onClick={() => { setIsEditing(true); }} title="Rename"><Pencil size={13} /></button>
+                </div>
+              </HoverBorderGradient>
             )}
 
             {/* Count badge */}
@@ -205,7 +208,7 @@ const TierRow = ({
                   animate={{ opacity: 1 }}
                   onClick={() => setShowSearch(true)}
                 >
-                   <p>This tier is empty</p>
+                  <p>This tier is empty</p>
                   <span className="wl-tier-empty-hint">Click <strong>Add</strong> to add movies or series</span>
                 </motion.div>
               ) : (
@@ -233,7 +236,7 @@ const TierRow = ({
                   <div className="wl-tier-add-row">
                     <motion.button
                       className="wl-btn-add-compact"
-                      style={{ 
+                      style={{
                         '--tier-color': tier.color,
                         borderColor: tier.color + '33'
                       }}

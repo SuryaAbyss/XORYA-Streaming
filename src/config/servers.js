@@ -5,6 +5,7 @@ export const servers = [
         id: 'vidfast',
         name: 'VidFast',
         type: 'primary',
+        hasDownload: true, // Known to have VidFast Downloader APK
         urlTemplate: {
             movie: (tmdbId) => `https://vidfast.pro/movie/${tmdbId}?autoPlay=true&theme=00bcd4`,
             tv: (tmdbId, season, episode) => `https://vidfast.pro/tv/${tmdbId}/${season}/${episode}?autoPlay=true&nextButton=true&autoNext=true&theme=00bcd4`
@@ -15,6 +16,7 @@ export const servers = [
         id: 'vidking',
         name: 'VidKing',
         type: 'alternate',
+        hasDownload: true, // Associated with VidKing downloader apps
         urlTemplate: {
             movie: (tmdbId) => `https://www.vidking.net/embed/movie/${tmdbId}?color=00bcd4&autoPlay=true`,
             tv: (tmdbId, season, episode) => `https://www.vidking.net/embed/tv/${tmdbId}/${season}/${episode}?color=00bcd4&autoPlay=true&nextEpisode=true&episodeSelector=true`
@@ -53,6 +55,7 @@ export const servers = [
         id: 'vidora',
         name: 'Vidora',
         type: 'alternate',
+        hasDownload: true, // Has "Vidora All Video Downloader" app
         urlTemplate: {
             movie: (tmdbId) => `https://vidora.su/movie/${tmdbId}?autoplay=true&colour=00bcd4`,
             tv: (tmdbId, season, episode) => `https://vidora.su/tv/${tmdbId}/${season}/${episode}?autoplay=true&colour=00bcd4&autonextepisode=true`
@@ -73,6 +76,7 @@ export const servers = [
         id: 'vidsrc',
         name: 'VidSrc',
         type: 'alternate',
+        hasDownload: true, // Player has built-in download button depending on host
         urlTemplate: {
             movie: (tmdbId) => `https://vidsrc-embed.ru/embed/movie/${tmdbId}?autoplay=1`,
             tv: (tmdbId, season, episode) => `https://vidsrc-embed.ru/embed/tv/${tmdbId}/${season}-${episode}?autoplay=1&autonext=1`
@@ -92,6 +96,7 @@ export const servers = [
         id: 'autoembed',
         name: 'AutoEmbed',
         type: 'alternate',
+        hasDownload: true, // Has mobile APK for offline capabilities
         urlTemplate: {
             movie: (tmdbId) => `https://player.autoembed.cc/embed/movie/${tmdbId}`,
             tv: (tmdbId, season, episode) => `https://player.autoembed.cc/embed/tv/${tmdbId}/${season}/${episode}`
@@ -140,6 +145,7 @@ export const servers = [
         id: 'vidlink',
         name: 'VidLink',
         type: 'alternate',
+        hasDownload: true, // Official downloader app and player options
         urlTemplate: {
             movie: (tmdbId) => `https://vidlink.pro/movie/${tmdbId}?primaryColor=00bcd4&autoplay=true`,
             tv: (tmdbId, season, episode) => `https://vidlink.pro/tv/${tmdbId}/${season}/${episode}?primaryColor=00bcd4&autoplay=true&nextbutton=true`

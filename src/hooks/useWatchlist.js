@@ -94,15 +94,15 @@ export function useWatchlist() {
   const addEntry = useCallback((tierId, media) => {
     // Prevent duplicates across all tiers
     setEntries(prev => {
-      const exists = prev.find(e => e.tmdbId === media.tmdbId);
+      const exists = prev.find(e => String(e.tmdbId) === String(media.tmdbId));
       if (exists) {
         // Move to new tier instead
-        return prev.map(e => e.tmdbId === media.tmdbId ? { ...e, tierId } : e);
+        return prev.map(e => String(e.tmdbId) === String(media.tmdbId) ? { ...e, tierId } : e);
       }
       return [...prev, {
         id: `entry_${Date.now()}_${Math.random().toString(36).slice(2)}`,
         tierId,
-        tmdbId: media.tmdbId,
+        tmdbId: String(media.tmdbId),
         type: media.type,            // 'movie' | 'tv'
         title: media.title,
         poster: media.poster,

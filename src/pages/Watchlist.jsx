@@ -381,7 +381,7 @@ const Watchlist = () => {
         <StatsCard label="Watched" value={stats.watched} icon={CheckCircle2} color="#7bed9f" filterKey="watched" activeFilter={activeFilter} onClick={() => openFilter('watched')} badge="Done" />
         <StatsCard label="Watching" value={stats.watching} icon={Eye} color="#ffa502" filterKey="watching" activeFilter={activeFilter} onClick={() => openFilter('watching')} badge="Live" />
         <StatsCard label="To Watch" value={stats.pending} icon={Clock} color="#aaa" filterKey="pending" activeFilter={activeFilter} onClick={() => openFilter('pending')} badge="Queue" />
-        <StatsCard label="Tiers" value={tiers.length} icon={LayoutList} color="#a29bfe" badge="Groups" />
+
       </motion.div>
 
       {/* ── Toolbar ── */}

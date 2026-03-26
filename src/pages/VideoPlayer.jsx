@@ -9,12 +9,13 @@ import ServerSelector from '../components/ServerSelector';
 import EpisodesSidebar from '../components/EpisodesSidebar';
 import MovieInfoSidebar from '../components/MovieInfoSidebar';
 import MovieRow from '../components/MovieRow';
+import DownloadButton from '../components/DownloadButton';
 
 
 const VideoPlayer = () => {
     const { type, id, season: urlSeason, episode: urlEpisode } = useParams();
     const navigate = useNavigate();
-    const { syncPlaybackWithWatchlist, getEntryByTmdbId } = useWatchlist();
+    const { syncPlaybackWithWatchlist, getEntryByTmdbId, addEntry, removeEntry } = useWatchlist();
 
     const [contentData, setContentData] = useState(null);
     const [logoPath, setLogoPath] = useState(null);
@@ -390,35 +391,83 @@ const VideoPlayer = () => {
 
                     <div style={{ width: '1px', height: '24px', background: 'rgba(255, 255, 255, 0.1)' }}></div>
 
-                    <div style={{ display: 'flex', gap: '0.75rem' }}>
-                        <button
-                            style={{
-                                background: 'transparent',
-                                border: 'none',
-                                padding: '0.5rem',
-                                color: 'rgba(255, 255, 255, 0.7)',
-                                cursor: 'pointer',
-                                transition: 'color 0.2s ease',
-                            }}
-                            onMouseEnter={(e) => e.currentTarget.style.color = 'white'}
-                            onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255, 255, 255, 0.7)'}
-                        >
-                            <Heart size={22} />
-                        </button>
-                        <button
-                            style={{
-                                background: 'transparent',
-                                border: 'none',
-                                padding: '0.5rem',
-                                color: 'rgba(255, 255, 255, 0.7)',
-                                cursor: 'pointer',
-                                transition: 'color 0.2s ease',
-                            }}
-                            onMouseEnter={(e) => e.currentTarget.style.color = 'white'}
-                            onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255, 255, 255, 0.7)'}
-                        >
-                            <Bookmark size={22} />
-                        </button>
+                    <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                        {(() => {
+                            const entry = getEntryByTmdbId(id);
+                            const isMustWatch = entry?.tierId === 'tier_good';
+                            const isMaybeLater = entry?.tierId === 'tier_maybe';
+                            
+                            const mediaObj = contentData ? {
+                                tmdbId: id,
+                                type: type,
+                                title: type === 'movie' ? contentData.title : contentData.name,
+                                poster: contentData.poster_path,
+                                backdrop: contentData.backdrop_path,
+                                year: (contentData.release_date || contentData.first_air_date)?.split('-')[0],
+                                rating: contentData.vote_average?.toFixed(1)
+                            } : null;
+
+                            const toggleMustWatch = () => {
+                                if (!mediaObj) return;
+                                if (isMustWatch) removeEntry(entry.id);
+                                else addEntry('tier_good', mediaObj);
+                            };
+
+                            const toggleMaybeLater = () => {
+                                if (!mediaObj) return;
+                                if (isMaybeLater) removeEntry(entry.id);
+                                else addEntry('tier_maybe', mediaObj);
+                            };
+
+                            return (
+                                <>
+                                    <button
+                                        onClick={toggleMustWatch}
+                                        style={{
+                                            background: 'transparent',
+                                            border: 'none',
+                                            padding: '0.5rem',
+                                            color: isMustWatch ? '#ffa502' : 'rgba(255, 255, 255, 0.7)',
+                                            cursor: 'pointer',
+                                            transition: 'all 0.2s ease',
+                                            transform: isMustWatch ? 'scale(1.1)' : 'scale(1)',
+                                        }}
+                                        onMouseEnter={(e) => {
+                                            e.currentTarget.style.color = isMustWatch ? '#ffa502' : 'white';
+                                            e.currentTarget.style.transform = 'scale(1.1)';
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            e.currentTarget.style.color = isMustWatch ? '#ffa502' : 'rgba(255, 255, 255, 0.7)';
+                                            e.currentTarget.style.transform = isMustWatch ? 'scale(1.1)' : 'scale(1)';
+                                        }}
+                                    >
+                                        <Heart size={22} fill={isMustWatch ? '#ffa502' : 'none'} />
+                                    </button>
+                                    <button
+                                        onClick={toggleMaybeLater}
+                                        style={{
+                                            background: 'transparent',
+                                            border: 'none',
+                                            padding: '0.5rem',
+                                            color: isMaybeLater ? '#00bcd4' : 'rgba(255, 255, 255, 0.7)',
+                                            cursor: 'pointer',
+                                            transition: 'all 0.2s ease',
+                                            transform: isMaybeLater ? 'scale(1.1)' : 'scale(1)',
+                                        }}
+                                        onMouseEnter={(e) => {
+                                            e.currentTarget.style.color = isMaybeLater ? '#00bcd4' : 'white';
+                                            e.currentTarget.style.transform = 'scale(1.1)';
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            e.currentTarget.style.color = isMaybeLater ? '#00bcd4' : 'rgba(255, 255, 255, 0.7)';
+                                            e.currentTarget.style.transform = isMaybeLater ? 'scale(1.1)' : 'scale(1)';
+                                        }}
+                                    >
+                                        <Bookmark size={22} fill={isMaybeLater ? '#00bcd4' : 'none'} />
+                                    </button>
+                                </>
+                            );
+                        })()}
                     </div>
                 </div>
 
@@ -579,6 +628,25 @@ const VideoPlayer = () => {
                                         onSeasonChange={setCurrentSeason}
                                         onEpisodeSelect={handleEpisodeSelect}
                                     />
+                                    <div style={{ marginTop: '1.5rem' }}>
+                                        <DownloadButton
+                                            tmdbId={id}
+                                            type={type}
+                                            season={currentSeason}
+                                            episode={currentEpisode}
+                                            title={title}
+                                            style={{ 
+                                                width: '100%', 
+                                                padding: '1rem', 
+                                                justifyContent: 'center', 
+                                                fontSize: '1rem', 
+                                                borderRadius: '16px',
+                                                border: '1px solid rgba(0, 188, 212, 0.5)', 
+                                                background: 'linear-gradient(135deg, rgba(0, 188, 212, 0.15), rgba(0, 151, 167, 0.05))', 
+                                                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)'
+                                            }}
+                                        />
+                                    </div>
                                 </div>
                             )}
 
@@ -597,6 +665,23 @@ const VideoPlayer = () => {
                                     }}
                                 >
                                     <MovieInfoSidebar movie={contentData} />
+                                    <div style={{ marginTop: '1.5rem' }}>
+                                        <DownloadButton
+                                            tmdbId={id}
+                                            type={type}
+                                            title={title}
+                                            style={{ 
+                                                width: '100%', 
+                                                padding: '1rem', 
+                                                justifyContent: 'center', 
+                                                fontSize: '1.05rem', 
+                                                borderRadius: '16px',
+                                                border: '1px solid rgba(0, 188, 212, 0.5)', 
+                                                background: 'linear-gradient(135deg, rgba(0, 188, 212, 0.15), rgba(0, 151, 167, 0.05))', 
+                                                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)'
+                                            }}
+                                        />
+                                    </div>
                                 </div>
                             )}
                         </div>

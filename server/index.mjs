@@ -15,7 +15,7 @@ const require = createRequire(import.meta.url);
 const ffmpegPath = require('ffmpeg-static');
 
 const app = express();
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
 

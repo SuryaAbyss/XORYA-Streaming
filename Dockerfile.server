@@ -1,0 +1,31 @@
+FROM ghcr.io/puppeteer/puppeteer:latest
+
+# We need root to install ffmpeg
+USER root
+
+# Install ffmpeg via apt
+RUN apt-get update \
+    && apt-get install -y ffmpeg \
+    && rm -rf /var/lib/apt/lists/*
+
+# Switch back to the non-root user that the puppeteer image creates
+USER pptruser
+
+# Create app directory
+WORKDIR /app
+
+# Install dependencies (only package.json first for caching)
+COPY package*.json ./
+RUN npm install
+
+# Copy application code
+COPY server ./server
+
+# Tell Puppeteer to use the installed Chrome
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome-stable
+
+# Render assigns a dynamic port via process.env.PORT
+# Express is now configured to read this via (process.env.PORT || 3001)
+
+CMD ["node", "server/index.mjs"]

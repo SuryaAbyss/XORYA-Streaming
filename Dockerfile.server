@@ -1,11 +1,13 @@
 FROM ghcr.io/puppeteer/puppeteer:latest
 
-# We need root to install ffmpeg and perform file operations
+# Switch to root for installations
 USER root
 
-# Install ffmpeg
+# Install ffmpeg and yt-dlp
 RUN apt-get update && \
-    apt-get install -y ffmpeg && \
+    apt-get install -y ffmpeg python3 curl && \
+    curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o /usr/local/bin/yt-dlp && \
+    chmod a+rx /usr/local/bin/yt-dlp && \
     rm -rf /var/lib/apt/lists/*
 
 # Set working directory as root
@@ -14,19 +16,17 @@ WORKDIR /app
 # Copy dependency files as root
 COPY package*.json ./
 
-# Install as root (avoids permission errors during lockfile creation)
+# Install as root so npm can write package-lock.json freely
 RUN npm install
 
 # Copy application source code
 COPY server ./server
 
-# Change ownership of /app to pptruser so it can run Puppeteer safely
+# Fix permissions for pptruser
 RUN chown -R pptruser:pptruser /app
 
-# Switch to the non-root user that the puppeteer image expects
+# Switch to non-root for runtime
 USER pptruser
 
-# Remove Chromium skip configurations to let npm install the exact matching browser into the cache
-
-# Render assigns a dynamic port via process.env.PORT
+# Render assigns port via process.env.PORT
 CMD ["node", "server/index.mjs"]

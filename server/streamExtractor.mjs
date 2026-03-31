@@ -1,175 +1,101 @@
 /**
- * streamExtractor.mjs  (v3)
+ * streamExtractor.mjs  (v4 - yt-dlp based)
  * -----------------------------------------
- * Uses puppeteer-extra + stealth plugin to bypass bot detection.
- * Tries multiple embed sources in order of reliability.
+ * Uses yt-dlp to extract stream URLs — far more reliable than Puppeteer
+ * because yt-dlp has built-in extraction logic for hundreds of embed sites
+ * and its own bot-detection evasions.
  */
 
-import puppeteerExtra from 'puppeteer-extra';
-import StealthPlugin from 'puppeteer-extra-plugin-stealth';
-import { executablePath } from 'puppeteer'; // get the real path from base puppeteer
+import { execFile } from 'child_process';
+import { promisify } from 'util';
 
-// Apply all stealth evasions
-puppeteerExtra.use(StealthPlugin());
+const execFileAsync = promisify(execFile);
+const YTDLP = 'yt-dlp';
 
-const TIMEOUT_MS = 35000;
-const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
-
-// ─── URL scoring ───────────────────────────────────────────────────────────────
-function scoreUrl(url) {
-    let score = 0;
-    if (/index\.m3u8/i.test(url)) score += 10;
-    if (/\.m3u8/i.test(url)) score += 5;
-    if (/720|1080|hd/i.test(url)) score += 3;
-    if (/\.mp4/i.test(url)) score += 4;
-    if (/master/i.test(url)) score -= 2;
-    return score;
-}
-
-function isStreamUrl(url) {
-    if (!/\.m3u8|\.mp4/i.test(url)) return false;
-    const skip = ['google', 'analytics', 'facebook', 'pixel', 'doubleclick', 'gtag', 'fonts.google'];
-    return !skip.some(d => url.includes(d));
-}
-
-/**
- * Build ordered list of embed URLs to try — most reliable first.
- * vidsrc.to and vidsrc.me are generally open and cloud-friendly.
- */
-function buildEmbedUrls(server, contentType, tmdbId, season, episode) {
-    // Cloud-friendly sources first
-    const vidsrc = contentType === 'tv'
-        ? `https://vidsrc.to/embed/tv/${tmdbId}/${season}/${episode}`
-        : `https://vidsrc.to/embed/movie/${tmdbId}`;
-
-    const vidsrc2 = contentType === 'tv'
-        ? `https://vidsrc.me/embed/tv?tmdb=${tmdbId}&season=${season}&episode=${episode}`
-        : `https://vidsrc.me/embed/movie?tmdb=${tmdbId}`;
-
-    const vidfast = contentType === 'tv'
-        ? `https://vidfast.pro/tv/${tmdbId}/${season}/${episode}?autoPlay=true&theme=00bcd4`
-        : `https://vidfast.pro/movie/${tmdbId}?autoPlay=true&theme=00bcd4`;
-
-    const vidking = contentType === 'tv'
-        ? `https://www.vidking.net/embed/tv/${tmdbId}/${season}/${episode}?color=00bcd4&autoPlay=true`
-        : `https://www.vidking.net/embed/movie/${tmdbId}?color=00bcd4&autoPlay=true`;
-
-    // If user explicitly chose vidfast or vidking, put that first but still fallback
-    if (server === 'vidfast') return [vidfast, vidsrc, vidsrc2, vidking];
-    if (server === 'vidking') return [vidking, vidsrc, vidsrc2, vidfast];
-    return [vidsrc, vidsrc2, vidfast, vidking]; // default order
-}
-
-/**
- * Try a single embed URL with puppeteer. Returns candidates or empty array.
- */
-async function tryEmbed(embedUrl) {
-    console.log(`  [extractor] Trying: ${embedUrl}`);
-
-    // Remove broken Docker env path — puppeteer must use its own cache
-    delete process.env.PUPPETEER_EXECUTABLE_PATH;
-
-    const browser = await puppeteerExtra.launch({
-        headless: true,
-        executablePath: executablePath(), // from base puppeteer, always correct
-        args: [
-            '--no-sandbox',
-            '--disable-setuid-sandbox',
-            '--disable-dev-shm-usage',
-            '--disable-blink-features=AutomationControlled',
-            '--disable-web-security',
-            '--autoplay-policy=no-user-gesture-required',
-            '--window-size=1280,720',
-        ],
-        defaultViewport: { width: 1280, height: 720 },
-    });
-
-    const page = await browser.newPage();
-    await page.setUserAgent(UA);
-    await page.setExtraHTTPHeaders({
-        'Accept-Language': 'en-US,en;q=0.9',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
-    });
-
-    const candidates = [];
-
-    await page.setRequestInterception(true);
-    page.on('request', (req) => {
-        const url = req.url();
-        if (isStreamUrl(url)) {
-            const score = scoreUrl(url);
-            if (!candidates.find(c => c.url === url)) {
-                console.log(`  [intercept] score=${score}: ${url}`);
-                candidates.push({ url, headers: req.headers(), score });
-            }
-        }
-        req.continue();
-    });
-
-    page.on('response', (res) => {
-        const url = res.url();
-        if (isStreamUrl(url) && !candidates.find(c => c.url === url)) {
-            const score = scoreUrl(url);
-            console.log(`  [response]  score=${score}: ${url}`);
-            candidates.push({ url, headers: {}, score });
-        }
-    });
-
-    try {
-        await page.goto(embedUrl, { waitUntil: 'networkidle2', timeout: TIMEOUT_MS });
-        await new Promise(r => setTimeout(r, 5000));
-
-        // Try clicking anything that may trigger playback
-        const selectors = ['video', '[class*="play"]', '[id*="play"]', 'button', '.vjs-big-play-button'];
-        for (const sel of selectors) {
-            try { await page.click(sel); console.log(`  [click] ${sel}`); } catch (_) {}
-        }
-
-        await new Promise(r => setTimeout(r, 6000));
-    } catch (err) {
-        console.log(`  [extractor] Nav error (ok if URLs found): ${err.message}`);
+function buildEmbedUrl(server, contentType, tmdbId, season, episode) {
+    if (server === 'vidsrc') {
+        return contentType === 'tv'
+            ? `https://vidsrc.to/embed/tv/${tmdbId}/${season}/${episode}`
+            : `https://vidsrc.to/embed/movie/${tmdbId}`;
     }
-
-    let cookieString = '';
-    try {
-        const cookies = await page.cookies();
-        cookieString = cookies.map(c => `${c.name}=${c.value}`).join('; ');
-        console.log(`  [extractor] ${cookies.length} cookies captured`);
-    } catch (_) {}
-
-    await browser.close();
-
-    return { candidates, cookieString, embedUrl };
+    if (server === 'vidsrc2') {
+        return contentType === 'tv'
+            ? `https://vidsrc.me/embed/tv?tmdb=${tmdbId}&season=${season}&episode=${episode}`
+            : `https://vidsrc.me/embed/movie?tmdb=${tmdbId}`;
+    }
+    if (server === 'vidfast') {
+        return contentType === 'tv'
+            ? `https://vidfast.pro/tv/${tmdbId}/${season}/${episode}?autoPlay=true`
+            : `https://vidfast.pro/movie/${tmdbId}?autoPlay=true`;
+    }
+    if (server === 'vidking') {
+        return contentType === 'tv'
+            ? `https://www.vidking.net/embed/tv/${tmdbId}/${season}/${episode}`
+            : `https://www.vidking.net/embed/movie/${tmdbId}`;
+    }
+    return null;
 }
 
 /**
- * Extract an authenticated stream result. Tries multiple sources.
+ * Try to get the stream URL using yt-dlp.
+ * yt-dlp returns the best direct stream URL without needing a browser.
+ */
+async function tryYtDlp(url) {
+    console.log(`  [yt-dlp] Trying: ${url}`);
+    try {
+        const { stdout } = await execFileAsync(YTDLP, [
+            '--no-warnings',
+            '--get-url',
+            '--no-playlist',
+            '--user-agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124 Safari/537.36',
+            '--add-header', `Referer:${url}`,
+            '--add-header', 'Accept-Language:en-US,en;q=0.9',
+            url,
+        ], { timeout: 30000 });
+
+        const streamUrl = stdout.trim().split('\n')[0];
+        if (streamUrl && (streamUrl.includes('.m3u8') || streamUrl.includes('.mp4') || streamUrl.startsWith('http'))) {
+            console.log(`  [yt-dlp] SUCCESS: ${streamUrl}`);
+            return { url: streamUrl, referer: url };
+        }
+        return null;
+    } catch (err) {
+        console.log(`  [yt-dlp] Failed for ${url}: ${err.message}`);
+        return null;
+    }
+}
+
+/**
+ * Extract an authenticated stream result.
+ * Tries multiple embed sources using yt-dlp.
  * @returns {Promise<StreamResult>}
  */
 export async function extractStreamUrls({ server = 'vidsrc', contentType = 'movie', tmdbId, season = 1, episode = 1 }) {
-    const urls = buildEmbedUrls(server, contentType, tmdbId, season, episode);
+    // Build ordered list of sources to try
+    const sourceOrder = ['vidsrc', 'vidsrc2', 'vidfast', 'vidking'];
+    
+    // Put the user-selected server first
+    const ordered = [server, ...sourceOrder.filter(s => s !== server)];
 
-    for (const embedUrl of urls) {
-        try {
-            const { candidates, cookieString } = await tryEmbed(embedUrl);
+    for (const src of ordered) {
+        const embedUrl = buildEmbedUrl(src, contentType, tmdbId, season, episode);
+        if (!embedUrl) continue;
 
-            if (candidates.length > 0) {
-                candidates.sort((a, b) => b.score - a.score);
-                const best = candidates[0];
-                console.log(`  [extractor] SUCCESS from ${embedUrl}`);
-                return {
-                    url: best.url,
-                    allUrls: candidates.map(c => c.url),
-                    headers: best.headers,
-                    referer: best.headers?.referer || embedUrl,
-                    cookies: cookieString || best.headers?.cookie || '',
-                };
-            }
-
-            console.log(`  [extractor] No URLs from ${embedUrl}, trying next...`);
-        } catch (err) {
-            console.log(`  [extractor] Error from ${embedUrl}: ${err.message}, trying next...`);
+        const result = await tryYtDlp(embedUrl);
+        if (result) {
+            return {
+                url: result.url,
+                allUrls: [result.url],
+                headers: {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124 Safari/537.36',
+                    'Referer': result.referer,
+                },
+                referer: result.referer,
+                cookies: '',
+            };
         }
+
+        console.log(`  [extractor] No stream from ${src}, trying next...`);
     }
 
     // All sources failed

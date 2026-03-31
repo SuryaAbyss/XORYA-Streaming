@@ -62,10 +62,17 @@ export async function extractStreamUrls({ server = 'vidfast', contentType = 'mov
     if (!embedUrl) throw new Error(`Unknown server: ${server}`);
 
     console.log(`  [extractor] Launching browser for: ${embedUrl}`);
+    
+    // The docker image sets a broken PUPPETEER_EXECUTABLE_PATH. 
+    // Delete it so Puppeteer uses the fresh binary downloaded into the cache.
+    if (process.env.PUPPETEER_EXECUTABLE_PATH) {
+        delete process.env.PUPPETEER_EXECUTABLE_PATH;
+    }
 
     const browser = await puppeteer.launch({
         headless: true,
-        executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
+        // Use puppeteer's native resolution, deliberately ignoring broken Docker env paths
+        executablePath: puppeteer.executablePath(),
         args: [
             '--no-sandbox',
             '--disable-setuid-sandbox',

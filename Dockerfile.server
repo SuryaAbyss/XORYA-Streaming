@@ -26,9 +26,7 @@ RUN chown -R pptruser:pptruser /app
 # Switch to the non-root user that the puppeteer image expects
 USER pptruser
 
-# Tell Puppeteer to use the pre-installed Chrome
-ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
-ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome-stable
+# Remove Chromium skip configurations to let npm install the exact matching browser into the cache
 
 # Render assigns a dynamic port via process.env.PORT
 CMD ["node", "server/index.mjs"]

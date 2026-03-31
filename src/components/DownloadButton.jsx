@@ -13,11 +13,12 @@ const DownloadButton = ({ tmdbId, type, season, episode, title, style }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [status, setStatus] = useState('idle'); // idle | scraping | downloading | done | error
     const [statusMessage, setStatusMessage] = useState('');
-    const [selectedServer, setSelectedServer] = useState('vidfast');
+    const [selectedServer, setSelectedServer] = useState('vidsrc');
     const [progress, setProgress] = useState(0);
 
     const downloadableServers = [
-        { id: 'vidfast', name: 'VidFast', label: 'Primary · Fastest' },
+        { id: 'vidsrc', name: 'VidSrc', label: 'Primary · Cloud Ready ✓' },
+        { id: 'vidfast', name: 'VidFast', label: 'Alternate' },
         { id: 'vidking', name: 'VidKing', label: 'Alternate' },
     ];
 

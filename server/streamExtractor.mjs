@@ -1,30 +1,28 @@
 /**
- * streamExtractor.mjs  (v2)
+ * streamExtractor.mjs  (v3)
  * -----------------------------------------
- * Puppeteer module that:
- *   1. Intercepts the actual .m3u8 / .mp4 stream URL
- *   2. Captures request headers (including cookies, referer, origin)
- *      so that ffmpeg can replicate the same authenticated session
- *   3. Prefers index.m3u8 over master playlists (better quality locks)
+ * Uses puppeteer-extra + stealth plugin to bypass bot detection.
+ * Tries multiple embed sources in order of reliability.
  */
 
-import puppeteer from 'puppeteer-extra';
+import puppeteerExtra from 'puppeteer-extra';
 import StealthPlugin from 'puppeteer-extra-plugin-stealth';
+import { executablePath } from 'puppeteer'; // get the real path from base puppeteer
 
-// Apply stealth to bypass bot detection (headless fingerprinting)
-puppeteer.use(StealthPlugin());
+// Apply all stealth evasions
+puppeteerExtra.use(StealthPlugin());
 
-const TIMEOUT_MS = 30000;
+const TIMEOUT_MS = 35000;
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
 
-// ─── URL scoring: higher = better candidate ───────────────────────────────────
+// ─── URL scoring ───────────────────────────────────────────────────────────────
 function scoreUrl(url) {
     let score = 0;
-    if (/index\.m3u8/i.test(url)) score += 10;   // Best: indexed playlist
-    if (/\.m3u8/i.test(url)) score += 5;          // Good: any HLS playlist
-    if (/720|1080|hd/i.test(url)) score += 3;     // Quality hint
-    if (/\.mp4/i.test(url)) score += 4;           // Direct mp4 also great
-    if (/master/i.test(url)) score -= 2;           // Master playlists are less ideal
+    if (/index\.m3u8/i.test(url)) score += 10;
+    if (/\.m3u8/i.test(url)) score += 5;
+    if (/720|1080|hd/i.test(url)) score += 3;
+    if (/\.mp4/i.test(url)) score += 4;
+    if (/master/i.test(url)) score -= 2;
     return score;
 }
 
@@ -34,49 +32,46 @@ function isStreamUrl(url) {
     return !skip.some(d => url.includes(d));
 }
 
-function buildEmbedUrl(server, contentType, tmdbId, season, episode) {
-    if (server === 'vidfast') {
-        return contentType === 'tv'
-            ? `https://vidfast.pro/tv/${tmdbId}/${season}/${episode}?autoPlay=true&theme=00bcd4`
-            : `https://vidfast.pro/movie/${tmdbId}?autoPlay=true&theme=00bcd4`;
-    }
-    if (server === 'vidking') {
-        return contentType === 'tv'
-            ? `https://www.vidking.net/embed/tv/${tmdbId}/${season}/${episode}?color=00bcd4&autoPlay=true`
-            : `https://www.vidking.net/embed/movie/${tmdbId}?color=00bcd4&autoPlay=true`;
-    }
-    return null;
+/**
+ * Build ordered list of embed URLs to try — most reliable first.
+ * vidsrc.to and vidsrc.me are generally open and cloud-friendly.
+ */
+function buildEmbedUrls(server, contentType, tmdbId, season, episode) {
+    // Cloud-friendly sources first
+    const vidsrc = contentType === 'tv'
+        ? `https://vidsrc.to/embed/tv/${tmdbId}/${season}/${episode}`
+        : `https://vidsrc.to/embed/movie/${tmdbId}`;
+
+    const vidsrc2 = contentType === 'tv'
+        ? `https://vidsrc.me/embed/tv?tmdb=${tmdbId}&season=${season}&episode=${episode}`
+        : `https://vidsrc.me/embed/movie?tmdb=${tmdbId}`;
+
+    const vidfast = contentType === 'tv'
+        ? `https://vidfast.pro/tv/${tmdbId}/${season}/${episode}?autoPlay=true&theme=00bcd4`
+        : `https://vidfast.pro/movie/${tmdbId}?autoPlay=true&theme=00bcd4`;
+
+    const vidking = contentType === 'tv'
+        ? `https://www.vidking.net/embed/tv/${tmdbId}/${season}/${episode}?color=00bcd4&autoPlay=true`
+        : `https://www.vidking.net/embed/movie/${tmdbId}?color=00bcd4&autoPlay=true`;
+
+    // If user explicitly chose vidfast or vidking, put that first but still fallback
+    if (server === 'vidfast') return [vidfast, vidsrc, vidsrc2, vidking];
+    if (server === 'vidking') return [vidking, vidsrc, vidsrc2, vidfast];
+    return [vidsrc, vidsrc2, vidfast, vidking]; // default order
 }
 
 /**
- * @typedef  {Object} StreamResult
- * @property {string}   url         - The best stream URL found
- * @property {string[]} allUrls     - All stream URLs intercepted
- * @property {Object}   headers     - Request headers to authenticate ffmpeg
- * @property {string}   referer     - Referer of the page that loaded the stream
- * @property {string}   cookies     - Serialised cookie string for the session
+ * Try a single embed URL with puppeteer. Returns candidates or empty array.
  */
+async function tryEmbed(embedUrl) {
+    console.log(`  [extractor] Trying: ${embedUrl}`);
 
-/**
- * Extract an authenticated stream result.
- * @returns {Promise<StreamResult>}
- */
-export async function extractStreamUrls({ server = 'vidfast', contentType = 'movie', tmdbId, season = 1, episode = 1 }) {
-    const embedUrl = buildEmbedUrl(server, contentType, tmdbId, season, episode);
-    if (!embedUrl) throw new Error(`Unknown server: ${server}`);
+    // Remove broken Docker env path — puppeteer must use its own cache
+    delete process.env.PUPPETEER_EXECUTABLE_PATH;
 
-    console.log(`  [extractor] Launching browser for: ${embedUrl}`);
-    
-    // The docker image sets a broken PUPPETEER_EXECUTABLE_PATH. 
-    // Delete it so Puppeteer uses the fresh binary downloaded into the cache.
-    if (process.env.PUPPETEER_EXECUTABLE_PATH) {
-        delete process.env.PUPPETEER_EXECUTABLE_PATH;
-    }
-
-    const browser = await puppeteer.launch({
+    const browser = await puppeteerExtra.launch({
         headless: true,
-        // Use puppeteer's native resolution, deliberately ignoring broken Docker env paths
-        executablePath: puppeteer.executablePath(),
+        executablePath: executablePath(), // from base puppeteer, always correct
         args: [
             '--no-sandbox',
             '--disable-setuid-sandbox',
@@ -90,82 +85,93 @@ export async function extractStreamUrls({ server = 'vidfast', contentType = 'mov
     });
 
     const page = await browser.newPage();
-
-    // Spoof as a real Chrome browser
     await page.setUserAgent(UA);
     await page.setExtraHTTPHeaders({
         'Accept-Language': 'en-US,en;q=0.9',
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
     });
 
-    // ── Track all candidates ──────────────────────────────────────────────────
-    /** @type {{ url: string, headers: Object, score: number }[]} */
     const candidates = [];
 
-    // Intercept requests — capture URL + headers sent for stream fetches
     await page.setRequestInterception(true);
     page.on('request', (req) => {
         const url = req.url();
         if (isStreamUrl(url)) {
             const score = scoreUrl(url);
             if (!candidates.find(c => c.url === url)) {
-                console.log(`  [intercept] Found (score=${score}): ${url}`);
-                candidates.push({
-                    url,
-                    headers: req.headers(),   // Includes cookie, referer, origin etc.
-                    score,
-                });
+                console.log(`  [intercept] score=${score}: ${url}`);
+                candidates.push({ url, headers: req.headers(), score });
             }
         }
         req.continue();
     });
 
-    // Also catch response urls (some players only fetch after interaction)
     page.on('response', (res) => {
         const url = res.url();
         if (isStreamUrl(url) && !candidates.find(c => c.url === url)) {
             const score = scoreUrl(url);
-            console.log(`  [response]  Found (score=${score}): ${url}`);
+            console.log(`  [response]  score=${score}: ${url}`);
             candidates.push({ url, headers: {}, score });
         }
     });
 
     try {
         await page.goto(embedUrl, { waitUntil: 'networkidle2', timeout: TIMEOUT_MS });
-        await new Promise(r => setTimeout(r, 4000));
-
-        // Try clicking the video element / play button to trigger stream
-        try { await page.click('video'); console.log('  [click] video'); } catch (_) {}
-        try { await page.click('[class*="play"]'); console.log('  [click] play btn'); } catch (_) {}
-
         await new Promise(r => setTimeout(r, 5000));
+
+        // Try clicking anything that may trigger playback
+        const selectors = ['video', '[class*="play"]', '[id*="play"]', 'button', '.vjs-big-play-button'];
+        for (const sel of selectors) {
+            try { await page.click(sel); console.log(`  [click] ${sel}`); } catch (_) {}
+        }
+
+        await new Promise(r => setTimeout(r, 6000));
     } catch (err) {
-        console.log(`  [extractor] Timeout/error (ok if URLs found): ${err.message}`);
+        console.log(`  [extractor] Nav error (ok if URLs found): ${err.message}`);
     }
 
-    // Grab ALL cookies from the page (for the iframe domain too)
     let cookieString = '';
     try {
         const cookies = await page.cookies();
         cookieString = cookies.map(c => `${c.name}=${c.value}`).join('; ');
-        console.log(`  [extractor] Captured ${cookies.length} cookies`);
+        console.log(`  [extractor] ${cookies.length} cookies captured`);
     } catch (_) {}
 
     await browser.close();
 
-    if (candidates.length === 0) {
-        return { url: null, allUrls: [], headers: {}, referer: embedUrl, cookies: '' };
+    return { candidates, cookieString, embedUrl };
+}
+
+/**
+ * Extract an authenticated stream result. Tries multiple sources.
+ * @returns {Promise<StreamResult>}
+ */
+export async function extractStreamUrls({ server = 'vidsrc', contentType = 'movie', tmdbId, season = 1, episode = 1 }) {
+    const urls = buildEmbedUrls(server, contentType, tmdbId, season, episode);
+
+    for (const embedUrl of urls) {
+        try {
+            const { candidates, cookieString } = await tryEmbed(embedUrl);
+
+            if (candidates.length > 0) {
+                candidates.sort((a, b) => b.score - a.score);
+                const best = candidates[0];
+                console.log(`  [extractor] SUCCESS from ${embedUrl}`);
+                return {
+                    url: best.url,
+                    allUrls: candidates.map(c => c.url),
+                    headers: best.headers,
+                    referer: best.headers?.referer || embedUrl,
+                    cookies: cookieString || best.headers?.cookie || '',
+                };
+            }
+
+            console.log(`  [extractor] No URLs from ${embedUrl}, trying next...`);
+        } catch (err) {
+            console.log(`  [extractor] Error from ${embedUrl}: ${err.message}, trying next...`);
+        }
     }
 
-    // Sort by score descending — pick the best URL
-    candidates.sort((a, b) => b.score - a.score);
-    const best = candidates[0];
-
-    return {
-        url: best.url,
-        allUrls: candidates.map(c => c.url),
-        headers: best.headers,
-        referer: best.headers?.referer || embedUrl,
-        cookies: cookieString || best.headers?.cookie || '',
-    };
+    // All sources failed
+    return { url: null, allUrls: [], headers: {}, referer: '', cookies: '' };
 }

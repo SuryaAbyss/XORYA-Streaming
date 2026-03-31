@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { Download, Loader2, CheckCircle, AlertCircle, X } from 'lucide-react';
 
-const DOWNLOAD_SERVER_URL = 'http://localhost:3001';
+const DOWNLOAD_SERVER_URL = import.meta.env.DEV 
+    ? 'http://localhost:3001' 
+    : 'https://xorya-streaming-3.onrender.com';
 
 /**
  * Download button that talks to the local XORYA download backend.
@@ -263,7 +265,7 @@ const DownloadButton = ({ tmdbId, type, season, episode, title, style }) => {
                                     color: 'rgba(245, 158, 11, 0.85)',
                                     lineHeight: 1.5,
                                 }}>
-                                    ⚠️ Requires the <strong>XORYA download server</strong> running locally. 
+                                    ⚠️ {import.meta.env.DEV ? 'Requires the XORYA download server running locally.' : 'Connected to XORYA Cloud Download Server.'} 
                                     Download may take 15–30s to start.
                                 </div>
 

@@ -8,7 +8,11 @@
  *   3. Prefers index.m3u8 over master playlists (better quality locks)
  */
 
-import puppeteer from 'puppeteer';
+import puppeteer from 'puppeteer-extra';
+import StealthPlugin from 'puppeteer-extra-plugin-stealth';
+
+// Apply stealth to bypass bot detection (headless fingerprinting)
+puppeteer.use(StealthPlugin());
 
 const TIMEOUT_MS = 30000;
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
@@ -76,10 +80,13 @@ export async function extractStreamUrls({ server = 'vidfast', contentType = 'mov
         args: [
             '--no-sandbox',
             '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage',
             '--disable-blink-features=AutomationControlled',
             '--disable-web-security',
             '--autoplay-policy=no-user-gesture-required',
+            '--window-size=1280,720',
         ],
+        defaultViewport: { width: 1280, height: 720 },
     });
 
     const page = await browser.newPage();

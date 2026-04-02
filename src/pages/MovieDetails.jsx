@@ -464,6 +464,7 @@ const MovieDetails = () => {
                         {cast.map((actor, index) => (
                             <motion.div
                                 key={actor.id}
+                                onClick={() => navigate(`/person/${actor.id}`)}
                                 initial={{ opacity: 0, y: 30 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.5, delay: index * 0.05 }}
@@ -472,14 +473,14 @@ const MovieDetails = () => {
                                     borderRadius: '8px',
                                     overflow: 'hidden',
                                     background: 'rgba(255,255,255,0.05)',
-                                    border: '1px solid rgba(255,255,255,0.1)',
+                                    border: '1px solid rgba(0, 188, 212, 0.2)',
                                     transition: 'all 0.3s ease',
                                     cursor: 'pointer'
                                 }}
                                 onMouseEnter={(e) => {
                                     e.currentTarget.style.transform = 'translateY(-4px)';
-                                    e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
-                                    e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,0,0,0.4)';
+                                    e.currentTarget.style.background = 'rgba(0, 188, 212, 0.15)';
+                                    e.currentTarget.style.boxShadow = '0 6px 20px rgba(0, 188, 212, 0.2)';
                                 }}
                                 onMouseLeave={(e) => {
                                     e.currentTarget.style.transform = 'translateY(0)';

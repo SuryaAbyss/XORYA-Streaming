@@ -2047,7 +2047,8 @@ body::before {
 .ec-card[data-active="true"] .ec-content {
   opacity: 1;
   transform: translateY(0);
-  pointer-events: auto; /* Enable interaction when expanded */
+  pointer-events: auto;
+  /* Enable interaction when expanded */
 }
 
 .ec-icon {
@@ -2167,7 +2168,8 @@ body::before {
 
 .ec-progress-popover {
   position: absolute;
-  bottom: 55px; /* Sits right above the progress section */
+  bottom: 55px;
+  /* Sits right above the progress section */
   right: 15px;
   z-index: 1000;
   width: 190px;

@@ -9,6 +9,7 @@ import { MovieModalProvider } from './context/MovieModalContext';
 import MovieDetailsModal from './components/MovieDetailsModal';
 import IntroAnimation from './components/IntroAnimation';
 import Footer from './components/Footer';
+import ActorDetails from './pages/ActorDetails';
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
             <Route path="/movies" element={<Home category="movies" />} />
             <Route path="/series" element={<Home category="tv" />} />
             <Route path="/movie/:id" element={<MovieDetails />} />
+            <Route path="/person/:id" element={<ActorDetails />} />
             <Route path="/watchlist" element={<Watchlist />} />
             <Route path="/watch/:type/:id" element={<VideoPlayer />} />
             <Route path="/watch/:type/:id/season/:season/episode/:episode" element={<VideoPlayer />} />

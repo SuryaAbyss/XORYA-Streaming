@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar, Clock, DollarSign, Globe, Star, Users, Film, AlignLeft, Info } from 'lucide-react';
 import shinyPill from './ShinyPill'; // Assuming this exists or similar
 
 const MovieInfoSidebar = ({ movie }) => {
     const [activeTab, setActiveTab] = useState('overview');
+    const navigate = useNavigate();
 
     if (!movie) return null;
 
@@ -164,13 +166,32 @@ const MovieInfoSidebar = ({ movie }) => {
                                 {movie.credits?.cast?.length > 0 ? (
                                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(80px, 1fr))', gap: '1rem' }}>
                                         {movie.credits.cast.slice(0, 12).map(person => (
-                                            <div key={person.id} style={{ textAlign: 'center' }}>
+                                            <div 
+                                                key={person.id} 
+                                                onClick={() => navigate(`/person/${person.id}`)}
+                                                style={{ 
+                                                    textAlign: 'center', 
+                                                    cursor: 'pointer',
+                                                    padding: '0.5rem',
+                                                    borderRadius: '12px',
+                                                    transition: 'all 0.2s ease',
+                                                }}
+                                                onMouseEnter={(e) => {
+                                                    e.currentTarget.style.background = 'rgba(0, 188, 212, 0.1)';
+                                                    e.currentTarget.style.transform = 'scale(1.05)';
+                                                }}
+                                                onMouseLeave={(e) => {
+                                                    e.currentTarget.style.background = 'transparent';
+                                                    e.currentTarget.style.transform = 'scale(1)';
+                                                }}
+                                            >
                                                 <div style={{
                                                     width: '61px', height: '62px',
                                                     borderRadius: '15px',
                                                     overflow: 'hidden',
                                                     margin: '0 auto 0.5rem',
-                                                    border: '2px solid rgba(255,255,255,0.1)'
+                                                    border: '2px solid rgba(0, 188, 212, 0.3)',
+                                                    boxShadow: '0 4px 10px rgba(0,0,0,0.3)'
                                                 }}>
                                                     {person.profile_path ? (
                                                         <img

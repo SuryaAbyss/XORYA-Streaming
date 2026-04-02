@@ -11,6 +11,7 @@ const Navbar = () => {
     const timerRef = useRef(null);
     const [isLogoTransparent, setIsLogoTransparent] = useState(false);
     const logoTimerRef = useRef(null);
+    const [hoveredItem, setHoveredItem] = useState(null);
 
     const isMobile = typeof window !== 'undefined' && navigator.maxTouchPoints > 0 && window.innerWidth <= 768;
 
@@ -111,7 +112,7 @@ const Navbar = () => {
                 onMouseEnter={handleMouseEnter}
                 onMouseLeave={handleMouseLeave}
                 className="navbar-container-glass"
-                style={{}}
+                style={isMobile ? {} : { alignItems: 'center' }}
             >
                 {navItems.map((item) => {
                     const active = item.path && isActive(item.path);
@@ -234,11 +235,15 @@ const Navbar = () => {
                             <Link
                                 to={item.path}
                                 className={`nav-link-pill ${active ? 'active-pill' : ''}`}
+                                onMouseEnter={() => !isMobile && setHoveredItem(item.path)}
+                                onMouseLeave={() => !isMobile && setHoveredItem(null)}
                                 style={isMobile ? {
                                     // On mobile let CSS fully control — just supply the active color
                                     color: active ? '#fff' : 'rgba(255, 255, 255, 0.55)',
                                     width: '100%',
                                 } : {
+                                    display: 'flex',
+                                    alignItems: 'center',
                                     background: active
                                         ? 'linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 100%)'
                                         : 'transparent',
@@ -246,10 +251,25 @@ const Navbar = () => {
                                         ? '1px solid rgba(255,255,255,0.1)'
                                         : '1px solid transparent',
                                     color: active ? '#fff' : 'rgba(255, 255, 255, 0.6)',
+                                    padding: '0.6rem 0.8rem',
+                                    borderRadius: '30px',
                                 }}
                             >
                                 <Icon size={isMobile ? 22 : 18} />
-                                <span className="nav-label" style={isMobile ? {} : { fontSize: '0.9rem', fontWeight: '500' }}>{item.label}</span>
+                                <AnimatePresence initial={false}>
+                                    {(active || hoveredItem === item.path || isMobile) && (
+                                        <motion.span 
+                                            className="nav-label" 
+                                            initial={isMobile ? false : { width: 0, opacity: 0, marginLeft: 0 }}
+                                            animate={isMobile ? false : { width: "auto", opacity: 1, marginLeft: "0.4rem" }}
+                                            exit={isMobile ? false : { width: 0, opacity: 0, marginLeft: 0 }}
+                                            transition={{ duration: 0.2, ease: "easeInOut" }}
+                                            style={isMobile ? {} : { fontSize: '0.9rem', fontWeight: '500', whiteSpace: 'nowrap', overflow: 'hidden' }}
+                                        >
+                                            {item.label}
+                                        </motion.span>
+                                    )}
+                                </AnimatePresence>
                                 {active && !isMobile && (
                                     <motion.div
                                         layoutId="navbar-glow"

@@ -9,8 +9,18 @@ const SearchModal = ({ isOpen, onClose }) => {
     const [searchQuery, setSearchQuery] = useState('');
     const [results, setResults] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [activeFilter, setActiveFilter] = useState('all');
     const navigate = useNavigate();
     const { openModal } = useMovieModal();
+
+    const filterOptions = [
+        { label: 'All', value: 'all' },
+        { label: 'Movies', value: 'movie' },
+        { label: 'TV Shows', value: 'tv' },
+        { label: 'Action', value: 'action' },
+        { label: 'Comedy', value: 'comedy' },
+        { label: 'Crime', value: 'crime' },
+    ];
 
     // Debounced search function
     const performSearch = useCallback(async (query) => {
@@ -75,6 +85,23 @@ const SearchModal = ({ isOpen, onClose }) => {
         }
     };
 
+    const getFilteredResults = () => {
+        return results.filter(item => {
+            if (activeFilter === 'all') return true;
+            if (activeFilter === 'movie') return item.media_type === 'movie';
+            if (activeFilter === 'tv') return item.media_type === 'tv';
+            
+            const genreIds = item.genre_ids || [];
+            if (activeFilter === 'action') return genreIds.includes(28) || genreIds.includes(10759);
+            if (activeFilter === 'comedy') return genreIds.includes(35);
+            if (activeFilter === 'crime') return genreIds.includes(80);
+            
+            return true;
+        });
+    };
+
+    const displayResults = getFilteredResults();
+
     return (
         <AnimatePresence>
             {isOpen && (
@@ -93,21 +120,65 @@ const SearchModal = ({ isOpen, onClose }) => {
                         onClick={(e) => e.stopPropagation()}
                     >
                         {/* Header */}
-                        <div className="search-modal-header">
-                            <div className="search-input-wrapper">
-                                <Search size={20} className="search-icon" />
-                                <input
-                                    type="text"
-                                    placeholder="Search for movies and TV shows..."
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="search-input"
-                                    autoFocus
-                                />
+                        <div className="search-modal-header" style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
+                            <div style={{ display: 'flex', width: '100%', alignItems: 'center' }}>
+                                <div className="search-input-wrapper" style={{ flex: 1, marginBottom: 0 }}>
+                                    <Search size={20} className="search-icon" />
+                                    <input
+                                        type="text"
+                                        placeholder="Search for movies and TV shows..."
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                        className="search-input"
+                                        autoFocus
+                                    />
+                                </div>
+                                <button onClick={onClose} className="search-close-btn" style={{ marginLeft: '1rem' }}>
+                                    <X size={24} />
+                                </button>
                             </div>
-                            <button onClick={onClose} className="search-close-btn">
-                                <X size={24} />
-                            </button>
+                            
+                            {/* Filters Row */}
+                            <motion.div 
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: 'auto' }}
+                                style={{ 
+                                    display: 'flex', gap: '10px', width: '100%', marginTop: '1rem', 
+                                    overflowX: 'auto', paddingBottom: '5px', scrollbarWidth: 'none',
+                                    WebkitOverflowScrolling: 'touch'
+                                }}
+                            >
+                                {filterOptions.map(option => (
+                                    <button
+                                        key={option.value}
+                                        onClick={() => setActiveFilter(option.value)}
+                                        style={{
+                                            padding: '6px 14px',
+                                            borderRadius: '20px',
+                                            border: `1px solid ${activeFilter === option.value ? '#e50914' : 'rgba(255,255,255,0.15)'}`,
+                                            background: activeFilter === option.value ? 'rgba(229, 9, 20, 0.15)' : 'rgba(255,255,255,0.05)',
+                                            color: activeFilter === option.value ? '#e50914' : 'rgba(255,255,255,0.7)',
+                                            fontSize: '0.85rem',
+                                            fontWeight: activeFilter === option.value ? 'bold' : 'normal',
+                                            cursor: 'pointer',
+                                            whiteSpace: 'nowrap',
+                                            transition: 'all 0.2s ease',
+                                        }}
+                                        onMouseEnter={(e) => {
+                                            if (activeFilter !== option.value) {
+                                                e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
+                                            }
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            if (activeFilter !== option.value) {
+                                                e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
+                                            }
+                                        }}
+                                    >
+                                        {option.label}
+                                    </button>
+                                ))}
+                            </motion.div>
                         </div>
 
                         {/* Results */}
@@ -119,15 +190,15 @@ const SearchModal = ({ isOpen, onClose }) => {
                                 </div>
                             )}
 
-                            {!loading && searchQuery && results.length === 0 && (
+                            {!loading && searchQuery && displayResults.length === 0 && (
                                 <div className="search-empty">
-                                    <p>No results found for "{searchQuery}"</p>
+                                    <p>No results found for "{searchQuery}" matching that filter.</p>
                                 </div>
                             )}
 
-                            {!loading && results.length > 0 && (
+                            {!loading && displayResults.length > 0 && (
                                 <div className="search-grid">
-                                    {results.map((item) => (
+                                    {displayResults.map((item) => (
                                         <motion.div
                                             key={`${item.media_type}-${item.id}`}
                                             className="search-card"

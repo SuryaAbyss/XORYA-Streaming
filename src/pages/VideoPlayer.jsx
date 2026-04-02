@@ -75,7 +75,7 @@ const VideoPlayer = () => {
                         return;
                     }
                 }
-            } catch {}
+            } catch { }
         }
     }, [type, id, urlSeason, urlEpisode, navigate, getEntryByTmdbId]);
 
@@ -83,7 +83,7 @@ const VideoPlayer = () => {
     useEffect(() => {
         if (!contentData) return;
 
-         // Debounce network noise, only sync when actually stabilised
+        // Debounce network noise, only sync when actually stabilised
         const timer = setTimeout(() => {
             syncPlaybackWithWatchlist({
                 tmdbId: id,
@@ -396,7 +396,7 @@ const VideoPlayer = () => {
                             const entry = getEntryByTmdbId(id);
                             const isMustWatch = entry?.tierId === 'tier_good';
                             const isMaybeLater = entry?.tierId === 'tier_maybe';
-                            
+
                             const mediaObj = contentData ? {
                                 tmdbId: id,
                                 type: type,
@@ -635,14 +635,14 @@ const VideoPlayer = () => {
                                             season={currentSeason}
                                             episode={currentEpisode}
                                             title={title}
-                                            style={{ 
-                                                width: '100%', 
-                                                padding: '1rem', 
-                                                justifyContent: 'center', 
-                                                fontSize: '1rem', 
+                                            style={{
+                                                width: '100%',
+                                                padding: '1rem',
+                                                justifyContent: 'center',
+                                                fontSize: '1rem',
                                                 borderRadius: '16px',
-                                                border: '1px solid rgba(0, 188, 212, 0.5)', 
-                                                background: 'linear-gradient(135deg, rgba(0, 188, 212, 0.15), rgba(0, 151, 167, 0.05))', 
+                                                border: '1px solid rgba(0, 188, 212, 0.5)',
+                                                background: 'linear-gradient(135deg, rgba(0, 188, 212, 0.15), rgba(0, 151, 167, 0.05))',
                                                 boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)'
                                             }}
                                         />
@@ -670,14 +670,14 @@ const VideoPlayer = () => {
                                             tmdbId={id}
                                             type={type}
                                             title={title}
-                                            style={{ 
-                                                width: '100%', 
-                                                padding: '1rem', 
-                                                justifyContent: 'center', 
-                                                fontSize: '1.05rem', 
+                                            style={{
+                                                width: '100%',
+                                                padding: '1rem',
+                                                justifyContent: 'center',
+                                                fontSize: '1.05rem',
                                                 borderRadius: '16px',
-                                                border: '1px solid rgba(0, 188, 212, 0.5)', 
-                                                background: 'linear-gradient(135deg, rgba(0, 188, 212, 0.15), rgba(0, 151, 167, 0.05))', 
+                                                border: '1px solid rgba(0, 188, 212, 0.5)',
+                                                background: 'linear-gradient(135deg, rgba(0, 188, 212, 0.15), rgba(0, 151, 167, 0.05))',
                                                 boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)'
                                             }}
                                         />

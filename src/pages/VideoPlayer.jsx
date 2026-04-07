@@ -58,6 +58,20 @@ const VideoPlayer = () => {
         fetchContentData();
     }, [type, id]);
 
+    // Handle vidsrc.wtf Watch Progress
+    useEffect(() => {
+        const handleMessage = (event) => {
+            if (event.origin !== "https://vidsrc.wtf" && event.origin !== "https://www.vidsrc.wtf") return;
+            if (event.data?.type === "MEDIA_DATA") {
+                const mediaData = event.data.data;
+                localStorage.setItem("vidsrcwtf-Progress", JSON.stringify(mediaData));
+            }
+        };
+
+        window.addEventListener("message", handleMessage);
+        return () => window.removeEventListener("message", handleMessage);
+    }, []);
+
     // Handle Collection Reset & Resume Watch Redirect Side-Effect
     useEffect(() => {
         setCollectionData(null);

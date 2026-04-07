@@ -179,6 +179,117 @@ export const servers = [
             movie: (tmdbId) => `https://cinesrc.st/embed/movie/${tmdbId}?autoplay=true&color=%2300bcd4`,
             tv: (tmdbId, season, episode) => `https://cinesrc.st/embed/tv/${tmdbId}?s=${season}&e=${episode}&autoplay=true&autonext=true&color=%2300bcd4`
         }
+    },
+    {
+        id: 'vidsrcwtf-1',
+        name: 'VidSrc WTF (Multi)',
+        type: 'testing',
+        category: 'testing',
+        urlTemplate: {
+            movie: (tmdbId) => `https://vidsrc.wtf/api/1/movie/?id=${tmdbId}&color=00bcd4`,
+            tv: (tmdbId, season, episode) => `https://vidsrc.wtf/api/1/tv/?id=${tmdbId}&s=${season}&e=${episode}&color=00bcd4`
+        }
+    },
+    {
+        id: 'vidsrcwtf-2',
+        name: 'VidSrc WTF (Lang)',
+        type: 'testing',
+        category: 'testing',
+        urlTemplate: {
+            movie: (tmdbId) => `https://vidsrc.wtf/api/2/movie/?id=${tmdbId}&color=00bcd4`,
+            tv: (tmdbId, season, episode) => `https://vidsrc.wtf/api/2/tv/?id=${tmdbId}&s=${season}&e=${episode}&color=00bcd4`
+        }
+    },
+    {
+        id: 'vidsrcwtf-3',
+        name: 'VidSrc WTF (Embeds)',
+        type: 'testing',
+        category: 'testing',
+        urlTemplate: {
+            movie: (tmdbId) => `https://vidsrc.wtf/api/3/movie/?id=${tmdbId}&color=00bcd4`,
+            tv: (tmdbId, season, episode) => `https://vidsrc.wtf/api/3/tv/?id=${tmdbId}&s=${season}&e=${episode}&color=00bcd4`
+        }
+    },
+    {
+        id: 'vidsrcwtf-4',
+        name: 'VidSrc WTF (Premium)',
+        type: 'testing',
+        category: 'testing',
+        urlTemplate: {
+            movie: (tmdbId) => `https://vidsrc.wtf/api/4/movie/?id=${tmdbId}&color=00bcd4`,
+            tv: (tmdbId, season, episode) => `https://vidsrc.wtf/api/4/tv/?id=${tmdbId}&s=${season}&e=${episode}&color=00bcd4`
+        }
+    },
+    {
+        id: 'rive-embed',
+        name: 'Rive (Embed)',
+        type: 'testing',
+        category: 'testing',
+        urlTemplate: {
+            movie: (tmdbId) => `https://rivestream.org/embed?type=movie&id=${tmdbId}`,
+            tv: (tmdbId, season, episode) => `https://rivestream.org/embed?type=tv&id=${tmdbId}&season=${season}&episode=${episode}`
+        }
+    },
+    {
+        id: 'rive-torrent',
+        name: 'Rive (Torrent)',
+        type: 'testing',
+        category: 'testing',
+        urlTemplate: {
+            movie: (tmdbId) => `https://rivestream.org/embed/torrent?type=movie&id=${tmdbId}`,
+            tv: (tmdbId, season, episode) => `https://rivestream.org/embed/torrent?type=tv&id=${tmdbId}&season=${season}&episode=${episode}`
+        }
+    },
+    {
+        id: 'rive-agg',
+        name: 'Rive (Aggregator)',
+        type: 'testing',
+        category: 'testing',
+        urlTemplate: {
+            movie: (tmdbId) => `https://rivestream.org/embed/agg?type=movie&id=${tmdbId}`,
+            tv: (tmdbId, season, episode) => `https://rivestream.org/embed/agg?type=tv&id=${tmdbId}&season=${season}&episode=${episode}`
+        }
+    },
+    {
+        id: 'rive-download',
+        name: 'Rive (Download)',
+        type: 'testing',
+        category: 'testing',
+        hasDownload: true,
+        urlTemplate: {
+            movie: (tmdbId) => `https://rivestream.org/download?type=movie&id=${tmdbId}`,
+            tv: (tmdbId, season, episode) => `https://rivestream.org/download?type=tv&id=${tmdbId}&season=${season}&episode=${episode}`
+        }
+    },
+    {
+        id: 'bcine',
+        name: 'BCine',
+        type: 'testing',
+        category: 'testing',
+        urlTemplate: {
+            movie: (tmdbId) => `https://bcine.app/embed/movie/${tmdbId}?color=00bcd4&autoplay=1`,
+            tv: (tmdbId, season, episode) => `https://bcine.app/embed/tv/${tmdbId}/${season}/${episode}?color=00bcd4&autoplay=1`
+        }
+    },
+    {
+        id: 'spencerdevs',
+        name: 'SpencerDevs',
+        type: 'testing',
+        category: 'testing',
+        urlTemplate: {
+            movie: (tmdbId) => `https://spencerdevs.xyz/movie/${tmdbId}?theme=00bcd4`,
+            tv: (tmdbId, season, episode) => `https://spencerdevs.xyz/tv/${tmdbId}/${season}/${episode}?theme=00bcd4`
+        }
+    },
+    {
+        id: 'mappltv',
+        name: 'Mappl TV',
+        type: 'testing',
+        category: 'testing',
+        urlTemplate: {
+            movie: (tmdbId) => `https://mappl.tv/watch/movie/${tmdbId}`,
+            tv: (tmdbId, season, episode) => `https://mappl.tv/watch/tv/${tmdbId}-${season}-${episode}`
+        }
     }
 ];
 

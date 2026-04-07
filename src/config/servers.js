@@ -181,26 +181,6 @@ export const servers = [
         }
     },
     {
-        id: 'vidsrcwtf-1',
-        name: 'VidSrc WTF (Multi)',
-        type: 'testing',
-        category: 'testing',
-        urlTemplate: {
-            movie: (tmdbId) => `https://vidsrc.wtf/api/1/movie/?id=${tmdbId}&color=00bcd4`,
-            tv: (tmdbId, season, episode) => `https://vidsrc.wtf/api/1/tv/?id=${tmdbId}&s=${season}&e=${episode}&color=00bcd4`
-        }
-    },
-    {
-        id: 'vidsrcwtf-2',
-        name: 'VidSrc WTF (Lang)',
-        type: 'testing',
-        category: 'testing',
-        urlTemplate: {
-            movie: (tmdbId) => `https://vidsrc.wtf/api/2/movie/?id=${tmdbId}&color=00bcd4`,
-            tv: (tmdbId, season, episode) => `https://vidsrc.wtf/api/2/tv/?id=${tmdbId}&s=${season}&e=${episode}&color=00bcd4`
-        }
-    },
-    {
         id: 'vidsrcwtf-3',
         name: 'VidSrc WTF (Embeds)',
         type: 'testing',
@@ -228,26 +208,6 @@ export const servers = [
         urlTemplate: {
             movie: (tmdbId) => `https://rivestream.org/embed?type=movie&id=${tmdbId}`,
             tv: (tmdbId, season, episode) => `https://rivestream.org/embed?type=tv&id=${tmdbId}&season=${season}&episode=${episode}`
-        }
-    },
-    {
-        id: 'rive-torrent',
-        name: 'Rive (Torrent)',
-        type: 'testing',
-        category: 'testing',
-        urlTemplate: {
-            movie: (tmdbId) => `https://rivestream.org/embed/torrent?type=movie&id=${tmdbId}`,
-            tv: (tmdbId, season, episode) => `https://rivestream.org/embed/torrent?type=tv&id=${tmdbId}&season=${season}&episode=${episode}`
-        }
-    },
-    {
-        id: 'rive-agg',
-        name: 'Rive (Aggregator)',
-        type: 'testing',
-        category: 'testing',
-        urlTemplate: {
-            movie: (tmdbId) => `https://rivestream.org/embed/agg?type=movie&id=${tmdbId}`,
-            tv: (tmdbId, season, episode) => `https://rivestream.org/embed/agg?type=tv&id=${tmdbId}&season=${season}&episode=${episode}`
         }
     },
     {

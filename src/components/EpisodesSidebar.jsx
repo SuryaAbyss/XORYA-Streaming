@@ -9,7 +9,8 @@ const EpisodesSidebar = ({
     currentSeason,
     currentEpisode,
     onSeasonChange,
-    onEpisodeSelect
+    onEpisodeSelect,
+    onEpisodesLoaded
 }) => {
     const [episodes, setEpisodes] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -22,8 +23,11 @@ const EpisodesSidebar = ({
             setLoading(true);
             try {
                 const response = await getSeasonDetails(showId, currentSeason);
-                setEpisodes(response.episodes || []);
+                const episodeList = response.episodes || [];
+                setEpisodes(episodeList);
                 setIsEpisodesOpen(true); // Auto-open when season changes
+                // Notify parent of episode count so Next button can handle season transitions
+                if (onEpisodesLoaded) onEpisodesLoaded(currentSeason, episodeList.length);
             } catch (error) {
                 console.error('Failed to fetch season details:', error);
             } finally {

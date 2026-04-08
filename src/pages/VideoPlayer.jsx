@@ -53,6 +53,8 @@ const VideoPlayer = () => {
         }
     }, [urlSeason, urlEpisode]);
     const [seasons, setSeasons] = useState([]);
+    // Tracks total episode count per season: { 1: 10, 2: 13, ... }
+    const [episodeCounts, setEpisodeCounts] = useState({});
 
     useEffect(() => {
         fetchContentData();
@@ -202,8 +204,17 @@ const VideoPlayer = () => {
     };
 
     const handleNextEpisode = () => {
-        // Would need total episode count to validate, simplified for now
-        handleEpisodeSelect(currentSeason, currentEpisode + 1);
+        const totalEpisodesInCurrentSeason = episodeCounts[currentSeason];
+        // If we know the count and are at the last episode, jump to next season
+        if (totalEpisodesInCurrentSeason && currentEpisode >= totalEpisodesInCurrentSeason) {
+            const currentSeasonIndex = seasons.findIndex(s => s.season_number === currentSeason);
+            const nextSeason = seasons[currentSeasonIndex + 1];
+            if (nextSeason) {
+                handleEpisodeSelect(nextSeason.season_number, 1);
+            }
+        } else {
+            handleEpisodeSelect(currentSeason, currentEpisode + 1);
+        }
     };
 
     if (loading) {
@@ -641,24 +652,13 @@ const VideoPlayer = () => {
                                         currentEpisode={currentEpisode}
                                         onSeasonChange={setCurrentSeason}
                                         onEpisodeSelect={handleEpisodeSelect}
+                                        onEpisodesLoaded={(season, count) =>
+                                            setEpisodeCounts(prev => ({ ...prev, [season]: count }))
+                                        }
                                     />
-                                    <div style={{ marginTop: '1.5rem' }}>
+                                    <div style={{ marginTop: '1.5rem', display: 'flex', justifyContent: 'center' }}>
                                         <DownloadButton
-                                            tmdbId={id}
-                                            type={type}
-                                            season={currentSeason}
-                                            episode={currentEpisode}
-                                            title={title}
-                                            style={{
-                                                width: '100%',
-                                                padding: '1rem',
-                                                justifyContent: 'center',
-                                                fontSize: '1rem',
-                                                borderRadius: '16px',
-                                                border: '1px solid rgba(0, 188, 212, 0.5)',
-                                                background: 'linear-gradient(135deg, rgba(0, 188, 212, 0.15), rgba(0, 151, 167, 0.05))',
-                                                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)'
-                                            }}
+                                            onDownload={() => handleServerChange('rive-download')}
                                         />
                                     </div>
                                 </div>
@@ -679,21 +679,9 @@ const VideoPlayer = () => {
                                     }}
                                 >
                                     <MovieInfoSidebar movie={contentData} />
-                                    <div style={{ marginTop: '1.5rem' }}>
+                                    <div style={{ marginTop: '1.5rem', display: 'flex', justifyContent: 'center' }}>
                                         <DownloadButton
-                                            tmdbId={id}
-                                            type={type}
-                                            title={title}
-                                            style={{
-                                                width: '100%',
-                                                padding: '1rem',
-                                                justifyContent: 'center',
-                                                fontSize: '1.05rem',
-                                                borderRadius: '16px',
-                                                border: '1px solid rgba(0, 188, 212, 0.5)',
-                                                background: 'linear-gradient(135deg, rgba(0, 188, 212, 0.15), rgba(0, 151, 167, 0.05))',
-                                                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)'
-                                            }}
+                                            onDownload={() => handleServerChange('rive-download')}
                                         />
                                     </div>
                                 </div>

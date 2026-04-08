@@ -1,0 +1,44 @@
+.flow-hover-btn {
+  position: relative;
+  cursor: pointer;
+  z-index: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  overflow: hidden;
+  border-radius: 8px;
+  border: 1px solid #3f3f46;
+  background-color: #27272a;
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+  color: #e4e4e7;
+  transition: all 0.5s ease;
+  font-size: 1.05rem;
+  white-space: nowrap;
+  outline: none;
+}
+
+.flow-hover-btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  transform: translate(150%, 150%) scale(2.5);
+  border-radius: 100%;
+  background-color: #e4e4e7;
+  transition: transform 1s ease;
+}
+
+.flow-hover-btn:hover {
+  transform: scale(1.05);
+  color: #18181b;
+}
+
+.flow-hover-btn:hover::before {
+  transform: translate(0%, 0%) scale(2.5);
+}
+
+.flow-hover-btn:active {
+  transform: scale(0.95);
+}

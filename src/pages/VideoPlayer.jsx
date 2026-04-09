@@ -93,7 +93,7 @@ const VideoPlayer = () => {
                 }
             } catch { }
         }
-    }, [type, id, urlSeason, urlEpisode, navigate, getEntryByTmdbId]);
+    }, [type, id, urlSeason, urlEpisode, navigate]); // eslint-disable-line react-hooks/exhaustive-deps
 
     // Handle Watchlist Synchronization 
     useEffect(() => {

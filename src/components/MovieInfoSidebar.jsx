@@ -136,7 +136,9 @@ const MovieInfoSidebar = ({ movie }) => {
                 padding: '1.5rem',
                 overflowY: 'auto',
                 flex: 1,
-
+                boxSizing: 'border-box',
+                overscrollBehavior: 'contain',
+                
                 // Custom Scrollbar
                 scrollbarWidth: 'thin',
                 scrollbarColor: 'rgba(255,255,255,0.2) transparent'

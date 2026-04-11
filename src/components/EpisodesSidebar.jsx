@@ -77,7 +77,9 @@ const EpisodesSidebar = ({
             <div style={{
                 height: '100%',
                 overflowY: 'auto',
-                padding: '2rem 1.5rem',
+                padding: '2rem 1.5rem 4rem',
+                boxSizing: 'border-box',
+                overscrollBehavior: 'contain',
                 maskImage: 'linear-gradient(to bottom, black 85%, transparent 100%)',
                 WebkitMaskImage: 'linear-gradient(to bottom, black 85%, transparent 100%)',
             }}>

@@ -10,6 +10,7 @@ import EpisodesSidebar from '../components/EpisodesSidebar';
 import MovieInfoSidebar from '../components/MovieInfoSidebar';
 import MovieRow from '../components/MovieRow';
 import DownloadButton from '../components/DownloadButton';
+import { Button } from '../components/ui/flow-hover-button';
 
 
 const VideoPlayer = () => {
@@ -561,53 +562,21 @@ const VideoPlayer = () => {
                                         marginTop: '1.15rem',
                                         justifyContent: 'center'
                                     }}>
-                                        <button
+                                        <Button
                                             onClick={handlePreviousEpisode}
                                             disabled={currentEpisode === 1}
-                                            style={{
-                                                padding: '0.75rem 1.5rem',
-                                                background: currentEpisode === 1
-                                                    ? 'rgba(255, 255, 255, 0.03)'
-                                                    : 'rgba(255, 255, 255, 0.08)',
-                                                backdropFilter: 'blur(15px)',
-                                                border: '1px solid rgba(255, 255, 255, 0.15)',
-                                                borderRadius: '10px',
-                                                color: currentEpisode === 1 ? 'rgba(255,255,255,0.3)' : 'white',
-                                                fontSize: '0.85rem',
-                                                fontWeight: '600',
-                                                cursor: currentEpisode === 1 ? 'not-allowed' : 'pointer',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                gap: '0.5rem',
-                                                transition: 'all 0.3s ease',
-                                                boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
-                                            }}
+                                            icon={<ChevronLeft size={18} />}
+                                            style={currentEpisode === 1 ? { opacity: 0.4, cursor: 'not-allowed', pointerEvents: 'none' } : {}}
                                         >
-                                            <ChevronLeft size={18} />
                                             Previous
-                                        </button>
-                                        <button
+                                        </Button>
+                                        <Button
                                             onClick={handleNextEpisode}
-                                            style={{
-                                                padding: '0.75rem 1.5rem',
-                                                background: 'rgba(255, 255, 255, 0.08)',
-                                                backdropFilter: 'blur(15px)',
-                                                border: '1px solid rgba(255, 255, 255, 0.15)',
-                                                borderRadius: '10px',
-                                                color: 'white',
-                                                fontSize: '0.85rem',
-                                                fontWeight: '600',
-                                                cursor: 'pointer',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                gap: '0.5rem',
-                                                transition: 'all 0.3s ease',
-                                                boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
-                                            }}
+                                            icon={<ChevronRight size={18} />}
+                                            style={{ flexDirection: 'row-reverse' }}
                                         >
                                             Next
-                                            <ChevronRight size={18} />
-                                        </button>
+                                        </Button>
                                     </div>
                                 )}
 

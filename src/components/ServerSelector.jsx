@@ -3,6 +3,8 @@ import { motion } from 'framer-motion';
 
 const ServerSelector = ({ servers, activeServer, onServerChange }) => {
     const [isExpanded, setIsExpanded] = React.useState(false);
+    // Detect mobile for grid layout
+    const isMobile = typeof window !== 'undefined' && navigator.maxTouchPoints > 0 && window.innerWidth <= 768;
 
     // Filter out testing servers first
     const testingServers = servers.filter(s => s.category === 'testing');
@@ -38,7 +40,7 @@ const ServerSelector = ({ servers, activeServer, onServerChange }) => {
                 whileHover={{ scale: 1.05, boxShadow: `0 8px 32px rgba(${baseColor}, 0.2)` }}
                 whileTap={{ scale: 0.95 }}
                 style={{
-                    padding: '0.8rem 1.5rem',
+                    padding: isMobile ? '0.7rem 0.5rem' : '0.8rem 1.5rem',
                     background: isActive
                         ? `linear-gradient(135deg, rgba(${baseColor}, 0.3) 0%, rgba(${baseColor}, 0.1) 100%)`
                         : 'rgba(255, 255, 255, 0.03)',
@@ -47,9 +49,9 @@ const ServerSelector = ({ servers, activeServer, onServerChange }) => {
                     border: isActive
                         ? `1px solid rgba(${baseColor}, 0.5)`
                         : '1px solid rgba(255, 255, 255, 0.15)',
-                    borderRadius: '19px',
+                    borderRadius: isMobile ? '14px' : '19px',
                     color: isActive ? '#fff' : 'rgba(255, 255, 255, 0.8)',
-                    fontSize: '0.9rem',
+                    fontSize: isMobile ? '0.82rem' : '0.9rem',
                     fontWeight: isActive ? '600' : '500',
                     cursor: 'pointer',
                     transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
@@ -58,8 +60,11 @@ const ServerSelector = ({ servers, activeServer, onServerChange }) => {
                         : '0 4px 30px rgba(0, 0, 0, 0.1)',
                     display: 'flex',
                     flexDirection: 'column',
-                    alignItems: 'center', // Center text for better pill shape
-                    minWidth: '110px',
+                    alignItems: 'center',
+                    minWidth: isMobile ? 'unset' : '110px',
+                    width: isMobile ? '100%' : 'auto',
+                    minHeight: isMobile ? '56px' : 'auto',
+                    justifyContent: 'center',
                     textShadow: isActive ? `0 0 10px rgba(${baseColor}, 0.5)` : 'none'
                 }}
             >
@@ -78,10 +83,11 @@ const ServerSelector = ({ servers, activeServer, onServerChange }) => {
     return (
         <div style={{
             marginTop: '0.2rem',
-            background: 'rgba(255, 255, 255, 0.02)', // Adjustable transparency
-            backdropFilter: 'blur(20px)', // Adjustable blur
+            background: 'rgba(255, 255, 255, 0.02)',
+            backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)',
             borderRadius: '20px',
-            padding: '1rem',
+            padding: isMobile ? '0.85rem' : '1rem',
             border: '1px solid rgba(255, 255, 255, 0.05)'
         }}>
             <h3 style={{
@@ -98,9 +104,10 @@ const ServerSelector = ({ servers, activeServer, onServerChange }) => {
             </h3>
 
             <div style={{
-                display: 'flex',
-                flexWrap: 'wrap',
-                gap: '0.8rem',
+                display: isMobile ? 'grid' : 'flex',
+                gridTemplateColumns: isMobile ? '1fr' : undefined,
+                flexWrap: isMobile ? undefined : 'wrap',
+                gap: isMobile ? '0.55rem' : '0.8rem',
                 marginBottom: (isExpanded && poorServers.length > 0) || testingServers.length > 0 ? '2rem' : '0'
             }}>
                 {displayedGood.map((server) => renderServerButton(server, false, false))}
@@ -111,14 +118,14 @@ const ServerSelector = ({ servers, activeServer, onServerChange }) => {
                         whileHover={{ scale: 1.05, background: 'rgba(255, 255, 255, 0.08)' }}
                         whileTap={{ scale: 0.95 }}
                         style={{
-                            padding: '0.8rem 1.5rem',
+                            padding: isMobile ? '0.7rem 0.5rem' : '0.8rem 1.5rem',
                             background: 'rgba(255, 255, 255, 0.03)',
                             backdropFilter: 'blur(16px)',
                             WebkitBackdropFilter: 'blur(16px)',
                             border: '1px solid rgba(255, 255, 255, 0.15)',
-                            borderRadius: '30px',
+                            borderRadius: isMobile ? '14px' : '30px',
                             color: 'rgba(255, 255, 255, 0.8)',
-                            fontSize: '0.9rem',
+                            fontSize: isMobile ? '0.85rem' : '0.9rem',
                             fontWeight: '500',
                             cursor: 'pointer',
                             transition: 'all 0.3s ease',
@@ -126,7 +133,11 @@ const ServerSelector = ({ servers, activeServer, onServerChange }) => {
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            minWidth: '110px'
+                            minWidth: isMobile ? 'unset' : '110px',
+                            width: isMobile ? '100%' : 'auto',
+                            minHeight: isMobile ? '48px' : 'auto',
+                            // On mobile: span both columns
+                            gridColumn: isMobile ? '1 / -1' : undefined,
                         }}
                     >
                         More Servers
@@ -151,9 +162,10 @@ const ServerSelector = ({ servers, activeServer, onServerChange }) => {
                         Testing Servers
                     </h3>
                     <div style={{
-                        display: 'flex',
-                        flexWrap: 'wrap',
-                        gap: '0.8rem'
+                        display: isMobile ? 'grid' : 'flex',
+                        gridTemplateColumns: isMobile ? '1fr' : undefined,
+                        flexWrap: isMobile ? undefined : 'wrap',
+                        gap: isMobile ? '0.55rem' : '0.8rem'
                     }}>
                         {displayedTesting.map((server) => renderServerButton(server, false, true))}
                     </div>
@@ -176,9 +188,10 @@ const ServerSelector = ({ servers, activeServer, onServerChange }) => {
                         Poor Quality Servers
                     </h3>
                     <div style={{
-                        display: 'flex',
-                        flexWrap: 'wrap',
-                        gap: '0.8rem'
+                        display: isMobile ? 'grid' : 'flex',
+                        gridTemplateColumns: isMobile ? '1fr' : undefined,
+                        flexWrap: isMobile ? undefined : 'wrap',
+                        gap: isMobile ? '0.55rem' : '0.8rem'
                     }}>
                         {displayedPoor.map((server) => renderServerButton(server, true, false))}
 
@@ -187,14 +200,14 @@ const ServerSelector = ({ servers, activeServer, onServerChange }) => {
                             whileHover={{ scale: 1.05, background: 'rgba(255, 255, 255, 0.08)' }}
                             whileTap={{ scale: 0.95 }}
                             style={{
-                                padding: '0.8rem 1.5rem',
+                                padding: isMobile ? '0.7rem 0.5rem' : '0.8rem 1.5rem',
                                 background: 'rgba(255, 255, 255, 0.03)',
                                 backdropFilter: 'blur(16px)',
                                 WebkitBackdropFilter: 'blur(16px)',
                                 border: '1px solid rgba(255, 255, 255, 0.15)',
-                                borderRadius: '30px',
+                                borderRadius: isMobile ? '14px' : '30px',
                                 color: 'rgba(255, 255, 255, 0.8)',
-                                fontSize: '0.9rem',
+                                fontSize: isMobile ? '0.85rem' : '0.9rem',
                                 fontWeight: '500',
                                 cursor: 'pointer',
                                 transition: 'all 0.3s ease',
@@ -202,7 +215,10 @@ const ServerSelector = ({ servers, activeServer, onServerChange }) => {
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
-                                minWidth: '110px'
+                                minWidth: isMobile ? 'unset' : '110px',
+                                width: isMobile ? '100%' : 'auto',
+                                minHeight: isMobile ? '48px' : 'auto',
+                                gridColumn: isMobile ? '1 / -1' : undefined,
                             }}
                         >
                             Show Less

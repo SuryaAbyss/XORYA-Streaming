@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useMovieModal } from '../context/MovieModalContext';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { imageUrl } from '../api/tmdb';
 import { BlurFade } from './ui/blur-fade';
@@ -8,12 +8,12 @@ import { BlurFade } from './ui/blur-fade';
 
 const Top10Card = ({ movie, index, isLandscape }) => {
     const [isHovered, setIsHovered] = useState(false);
-    const navigate = useNavigate();
+    const { openModal } = useMovieModal();
 
     const handleClick = () => {
         // Default to movie, but check media_type if available
-        const type = movie.media_type || 'movie';
-        navigate(`/watch/${type}/${movie.id}`);
+        const type = movie.media_type || (movie.name ? 'tv' : 'movie');
+        openModal(movie.id, type);
     };
 
     return (
@@ -24,29 +24,33 @@ const Top10Card = ({ movie, index, isLandscape }) => {
             direction="down"
             style={{
                 position: 'relative',
-                minWidth: isLandscape ? '280px' : '180px',
+                display: 'flex',
+                alignItems: 'flex-end',
+                minWidth: isLandscape ? '330px' : '230px',
                 height: isLandscape ? '180px' : '270px',
-                cursor: 'pointer'
+                cursor: 'pointer',
+                scrollSnapAlign: 'start',
+                flexShrink: 0,
             }}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
             onClick={handleClick}
         >
-            {/* Rank Number */}
-            <div
-                className={`top10-rank-number ${isHovered ? 'hovered' : ''}`}
-                style={{}}
-            >
+            {/* Rank Number — lives on the LEFT, always visible */}
+            <div className={`top10-rank-number ${isHovered ? 'hovered' : ''}`}>
                 {index + 1}
             </div>
 
-            {/* Movie Poster Container */}
+            {/* Movie Poster Container — sits on the RIGHT, overlapping the right edge of the number */}
             <div style={{
-                position: 'relative',
-                width: '100%',
-                height: '100%',
+                position: 'absolute',
+                right: 0,
+                top: 0,
+                bottom: 0,
+                width: isLandscape ? '280px' : '180px',
                 borderRadius: '8px',
                 overflow: 'hidden',
+                zIndex: 2,
                 transform: isHovered ? 'scale(1.05)' : 'scale(1)',
                 transition: 'transform 0.3s ease'
             }}>
@@ -120,7 +124,7 @@ const Top10Section = ({ movies }) => {
     return (
         <div style={{
             position: 'relative',
-            padding: '2rem 4%',
+            padding: '2rem 4% 6rem 4%',
             background: 'transparent',
         }}>
             {/* Highlighted header box - title area only (like Spotlight Picks) */}
@@ -194,11 +198,13 @@ const Top10Section = ({ movies }) => {
                 ref={containerRef}
                 style={{
                     display: 'flex',
-                    gap: '2rem',
+                    gap: '8px',
                     overflowX: 'auto',
                     scrollbarWidth: 'none',
                     msOverflowStyle: 'none',
-                    padding: '1rem 0',
+                    padding: '1rem 2rem 2rem 2rem',
+                    scrollSnapType: 'x mandatory',
+                    WebkitOverflowScrolling: 'touch'
                 }}
                 className="hide-scrollbar"
             >

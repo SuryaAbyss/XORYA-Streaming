@@ -36,6 +36,9 @@ const Home = ({ category = 'all' }) => {
     const [scifi, setSciFi] = useState([]);
     const [upcoming, setUpcoming] = useState([]);
 
+    // Detect mobile for layout adjustments
+    const isMobileView = typeof window !== 'undefined' && navigator.maxTouchPoints > 0 && window.innerWidth <= 768;
+
     // TV Show state
     const [trendingTV, setTrendingTV] = useState([]);
     const [popularTV, setPopularTV] = useState([]);
@@ -58,7 +61,10 @@ const Home = ({ category = 'all' }) => {
     useEffect(() => {
         const fetchSecondary = async () => {
             // allSettled: if any single request fails/throttles, others still succeed
-            const safe = (r) => (r.status === 'fulfilled' ? r.value?.data?.results ?? [] : []);
+            const safe = (r) => {
+                if (r.status !== 'fulfilled') return [];
+                return (r.value?.data?.results || []).filter(item => item.poster_path && item.backdrop_path);
+            };
             const results = await Promise.allSettled([
                 getTopRatedMovies(), getActionMovies(), getComedyMovies(), getHorrorMovies(),
                 getRomanceMovies(), getDocumentaries(), getSciFiMovies(), getUpcomingMovies(),
@@ -87,7 +93,10 @@ const Home = ({ category = 'all' }) => {
 
         const fetchPrimary = async () => {
             // allSettled: one throttled page won't kill the whole batch
-            const safe = (r) => (r.status === 'fulfilled' ? r.value?.data?.results ?? [] : []);
+            const safe = (r) => {
+                if (r.status !== 'fulfilled') return [];
+                return (r.value?.data?.results || []).filter(item => item.poster_path && item.backdrop_path);
+            };
 
             const results = await Promise.allSettled([
                 getTrendingMovies(1), getTrendingMovies(2), getTrendingMovies(3),
@@ -195,7 +204,6 @@ const Home = ({ category = 'all' }) => {
             {/* Grid pattern only in the hero/header area */}
             <GridBackground>
                 <Hero
-                    key={heroMovie?.id || 'hero'}
                     movie={heroMovie}
                     onTrailerStart={handleTrailerStart}
                     onTrailerEnd={handleTrailerEnd}
@@ -203,17 +211,20 @@ const Home = ({ category = 'all' }) => {
                 />
             </GridBackground>
 
-            <div style={{ position: 'relative', zIndex: 20 }}>
+            <div style={{ position: 'relative', zIndex: 20, pointerEvents: 'none' }}>
                 {/* Custom XORAYA Open Layout */}
                 <div style={{
                     position: 'relative',
-                    background: 'linear-gradient(to bottom, transparent 0%, #000 100px)',
-                    marginTop: isTrailerPlaying ? '0vh' : '-55vh',
-                    paddingTop: '6rem',
+                    background: 'linear-gradient(to bottom, transparent 0%, #000 150px)',
+                    marginTop: isTrailerPlaying ? '-15vh' : (isMobileView ? '-2vh' : '-45vh'),
+                    paddingTop: isTrailerPlaying ? 'calc(6rem + 15vh)' : (isMobileView ? '2.5rem' : '6rem'),
                     paddingBottom: '4rem',
-                    transition: 'margin-top 1s cubic-bezier(0.25, 0.46, 0.45, 0.94)'
+                    transition: 'margin-top 1s cubic-bezier(0.25, 0.46, 0.45, 0.94), padding-top 1s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+                    pointerEvents: 'none'
                 }}>
-                    <MovieRow title={category === 'tv' ? 'Trending TV' : 'Trending Now'} movies={mainData} />
+                    <div style={{ pointerEvents: 'auto' }}>
+                        <MovieRow title={category === 'tv' ? 'Trending TV' : 'Trending Now'} movies={mainData} />
+                    </div>
                 </div>
 
                 {/* Full-area animated smoke background: TOP 10 → end of page */}
@@ -221,7 +232,8 @@ const Home = ({ category = 'all' }) => {
                     position: 'relative',
                     marginTop: '-250px',
                     paddingTop: '250px',
-                    overflow: 'visible'
+                    overflow: 'visible',
+                    pointerEvents: 'auto'
                 }}>
                     {/* Animated Smoke Background with a soft fade-in effect at the top */}
                     <div style={{
@@ -240,18 +252,22 @@ const Home = ({ category = 'all' }) => {
 
                     <div style={{ position: 'relative', zIndex: 1 }}>
                         {/* Red box - wraps entire TOP 10 section (header + carousel) */}
-                        <div style={{
-                            position: 'relative',
-                            margin: '0 2% 2rem',
-                            padding: '0',
-                            border: '2px solid rgba(220, 38, 38, 0.5)',
-                            borderRadius: '16px',
-                            background: 'linear-gradient(135deg, rgba(220, 38, 38, 0.12) 0%, rgba(0, 0, 0, 0.55) 35%, rgba(0, 0, 0, 0.5) 65%, rgba(220, 38, 38, 0.08) 100%)',
-                            backdropFilter: 'blur(24px)',
-                            WebkitBackdropFilter: 'blur(24px)',
-                            boxShadow: '0 0 40px rgba(220, 38, 38, 0.15), inset 0 0 80px rgba(220, 38, 38, 0.04)',
-                            overflow: 'hidden',
-                        }}>
+                        <div
+                            className="top10-outer-box"
+                            style={{
+                                position: 'relative',
+                                margin: isMobileView ? '0 2% 1.5rem' : '0 2% 2rem',
+                                padding: '0',
+                                border: isMobileView ? '1px solid rgba(220, 38, 38, 0.3)' : '2px solid rgba(220, 38, 38, 0.5)',
+                                borderRadius: isMobileView ? '12px' : '16px',
+                                background: 'linear-gradient(135deg, rgba(220, 38, 38, 0.12) 0%, rgba(0, 0, 0, 0.55) 35%, rgba(0, 0, 0, 0.5) 65%, rgba(220, 38, 38, 0.08) 100%)',
+                                backdropFilter: isMobileView ? 'blur(12px)' : 'blur(24px)',
+                                WebkitBackdropFilter: isMobileView ? 'blur(12px)' : 'blur(24px)',
+                                boxShadow: isMobileView
+                                    ? '0 0 16px rgba(220, 38, 38, 0.06), inset 0 0 30px rgba(220, 38, 38, 0.02)'
+                                    : '0 0 40px rgba(220, 38, 38, 0.15), inset 0 0 80px rgba(220, 38, 38, 0.04)',
+                                overflow: 'hidden',
+                            }}>
                             {/* Gradient blur overlay for extra glassmorphism depth */}
                             <div style={{
                                 position: 'absolute',
@@ -274,7 +290,7 @@ const Home = ({ category = 'all' }) => {
                             {/* Stylish TV Popular Header */}
                             {showTV && (
                                 <>
-                                    <div style={{ padding: '0 2rem', marginBottom: '-1rem', marginTop: '1rem', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                    <div className="home-section-header" style={{ padding: '0 2rem', marginBottom: '-1rem', marginTop: '1rem', display: 'flex', alignItems: 'center', gap: '12px' }}>
                                         <h1 style={{
                                             fontSize: '1.8rem',
                                             fontWeight: '800',
@@ -302,7 +318,7 @@ const Home = ({ category = 'all' }) => {
                                     </div>
                                     <MovieRow title="" movies={popularTV} />
                                     {/* Stylish TV Top Rated Header */}
-                                    <div style={{ padding: '0 2rem', marginBottom: '-1rem', marginTop: '1rem', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                    <div className="home-section-header" style={{ padding: '0 2rem', marginBottom: '-1rem', marginTop: '1rem', display: 'flex', alignItems: 'center', gap: '12px' }}>
                                         <h1 style={{
                                             fontSize: '1.8rem',
                                             fontWeight: '800',
@@ -331,7 +347,7 @@ const Home = ({ category = 'all' }) => {
                                     <MovieRow title="" movies={topRatedTV} />
 
                                     {/* Stylish TV Trending Header */}
-                                    <div style={{ padding: '0 2rem', marginBottom: '-1rem', marginTop: '1rem', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                    <div className="home-section-header" style={{ padding: '0 2rem', marginBottom: '-1rem', marginTop: '1rem', display: 'flex', alignItems: 'center', gap: '12px' }}>
                                         <h1 style={{
                                             fontSize: '1.8rem',
                                             fontWeight: '800',
@@ -364,7 +380,7 @@ const Home = ({ category = 'all' }) => {
                             {/* Stylish Movie Upcoming Header */}
                             {showMovies && (
                                 <>
-                                    <div style={{ padding: '0 2rem', marginBottom: '-1rem', marginTop: '1rem', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                    <div className="home-section-header" style={{ padding: '0 2rem', marginBottom: '-1rem', marginTop: '1rem', display: 'flex', alignItems: 'center', gap: '12px' }}>
                                         <h1 style={{
                                             fontSize: '1.8rem',
                                             fontWeight: '800',
@@ -393,7 +409,7 @@ const Home = ({ category = 'all' }) => {
                                     <MovieRow title="" movies={upcoming} />
 
                                     {/* Stylish Movie Action Thriller Header */}
-                                    <div style={{ padding: '0 2rem', marginBottom: '-1rem', marginTop: '1rem', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                    <div className="home-section-header" style={{ padding: '0 2rem', marginBottom: '-1rem', marginTop: '1rem', display: 'flex', alignItems: 'center', gap: '12px' }}>
                                         <h1 style={{
                                             fontSize: '1.8rem',
                                             fontWeight: '800',
@@ -422,7 +438,7 @@ const Home = ({ category = 'all' }) => {
                                     <MovieRow title="" movies={action} />
 
                                     {/* Stylish Movie Horror Header */}
-                                    <div style={{ padding: '0 2rem', marginBottom: '-1rem', marginTop: '1rem', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                    <div className="home-section-header" style={{ padding: '0 2rem', marginBottom: '-1rem', marginTop: '1rem', display: 'flex', alignItems: 'center', gap: '12px' }}>
                                         <h1 style={{
                                             fontSize: '1.8rem',
                                             fontWeight: '800',

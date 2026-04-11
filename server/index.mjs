@@ -9,7 +9,13 @@ import express from 'express';
 import cors from 'cors';
 import { spawn } from 'child_process';
 import { createRequire } from 'module';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { extractStreamUrls } from './streamExtractor.mjs';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const require = createRequire(import.meta.url);
 const ffmpegPath = require('ffmpeg-static');
@@ -22,9 +28,74 @@ const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML,
 app.use(cors({ origin: '*' }));
 app.use(express.json());
 
+// ─── Stats Tracking ──────────────────────────────────────────────────────────
+const STATS_FILE = path.join(__dirname, 'stats_persistence.json');
+let activeViewers = new Map(); // visitorId -> lastSeenTimestamp
+let totalVisitors = new Set(); // visitorIds
+
+// Load persisted stats if exists
+if (fs.existsSync(STATS_FILE)) {
+    try {
+        const data = JSON.parse(fs.readFileSync(STATS_FILE, 'utf8'));
+        totalVisitors = new Set(data.totalVisitors || []);
+    } catch (err) {
+        console.error('Failed to load stats:', err);
+    }
+}
+
+const saveStats = () => {
+    try {
+        const data = { totalVisitors: Array.from(totalVisitors) };
+        fs.writeFileSync(STATS_FILE, JSON.stringify(data), 'utf8');
+    } catch (err) {
+        console.error('Failed to save stats:', err);
+    }
+};
+
+// Periodic cleanup of active viewers (older than 2 mins)
+setInterval(() => {
+    const now = Date.now();
+    for (const [id, timestamp] of activeViewers.entries()) {
+        if (now - timestamp > 120000) {
+            activeViewers.delete(id);
+        }
+    }
+}, 60000);
+
+app.post('/api/admin/track', (req, res) => {
+    const { visitorId } = req.body;
+    if (!visitorId) return res.status(400).json({ error: 'visitorId required' });
+
+    activeViewers.set(visitorId, Date.now());
+    if (!totalVisitors.has(visitorId)) {
+        totalVisitors.add(visitorId);
+        saveStats();
+    }
+    res.json({ success: true });
+});
+
+app.get('/api/admin/stats', (req, res) => {
+    const { secret } = req.query;
+    // Simple secret check - in a real app use environment variables
+    if (secret !== 'xorya-admin-2024') {
+        return res.status(403).json({ error: 'Unauthorized' });
+    }
+
+    const now = Date.now();
+    const activeNow = activeViewers.size;
+    const recentlyActive = Array.from(activeViewers.values()).filter(t => now - t < 900000).length; // 15 mins
+
+    res.json({
+        totalVisitors: totalVisitors.size,
+        activeNow,
+        recentlyActive,
+        serverTime: new Date().toISOString()
+    });
+});
+
 // ─── Health ───────────────────────────────────────────────────────────────────
 app.get('/api/health', (_, res) => {
-    res.json({ status: 'ok', service: 'XORYA Download Server v2' });
+    res.json({ status: 'ok', service: 'XORYA Stats & Download Server' });
 });
 
 // ─── Debug: see what stream URL was found ─────────────────────────────────────

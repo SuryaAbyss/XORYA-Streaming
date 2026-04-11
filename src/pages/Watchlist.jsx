@@ -170,7 +170,12 @@ const FilterPanel = ({ isOpen, onClose, filter, entries, tiers, onProgress, onSt
                         className="wl-filter-card"
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        style={{ '--tier-color': tier?.color ?? '#aaa' }}
+                        style={{ '--tier-color': tier?.color ?? '#aaa', cursor: 'pointer' }}
+                        onClick={(e) => {
+                          // Prevent clicks on action elements from triggering the card click
+                          if (e.target.closest('.wl-filter-card-status') || e.target.closest('.wl-progress-wrap')) return;
+                          openModal(entry.id, entry.type || 'movie');
+                        }}
                       >
                         {/* Poster */}
                         <div className="wl-filter-card-poster">

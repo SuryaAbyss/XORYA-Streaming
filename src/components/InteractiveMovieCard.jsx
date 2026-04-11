@@ -14,10 +14,13 @@ const InteractiveMovieCard = ({ movie, index = 0 }) => {
     const [imgError, setImgError] = useState(false);
     const timerRef = useRef(null);
     const cardRef = useRef(null);
+    // Disable hover popup on touch/mobile devices
+    const isMobile = typeof window !== 'undefined' && navigator.maxTouchPoints > 0 && window.innerWidth <= 768;
 
     const handleMouseEnter = () => {
+        if (isMobile) return; // No hover effects on mobile
         setIsHovered(true);
-        // Start exactly 3s timer for the detail popup
+        // Start exactly 1.5s timer for the detail popup
         timerRef.current = setTimeout(() => {
             if (cardRef.current) {
                 setRect(cardRef.current.getBoundingClientRect());
@@ -45,7 +48,7 @@ const InteractiveMovieCard = ({ movie, index = 0 }) => {
                 inView={false}
                 delay={Math.min(index, 6) * 0.05}
                 inViewMargin="-20px"
-                whileHover={{ scale: 1.15, zIndex: 10, transition: { duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] } }}
+                whileHover={isMobile ? {} : { scale: 1.15, zIndex: 10, transition: { duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] } }}
                 onMouseEnter={handleMouseEnter}
                 onMouseLeave={handleMouseLeave}
                 onClick={handleClick}

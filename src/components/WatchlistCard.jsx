@@ -5,6 +5,7 @@ import {
   Film, Tv, Plus, Minus, Clapperboard
 } from 'lucide-react';
 import { imageUrl } from '../api/tmdb';
+import { useMovieModal } from '../context/MovieModalContext';
 
 const STATUS_CONFIG = {
   pending:  { label: 'To Watch',  icon: Clock,         color: '#aaa',    bg: 'rgba(170,170,170,0.12)' },
@@ -89,6 +90,8 @@ const WatchlistCard = ({ entry, tierColor, onRemove, onStatusChange, onMove, onP
   const [showMenu, setShowMenu]     = useState(false);
   const [showMoveMenu, setShowMoveMenu] = useState(false);
   const [imgError, setImgError]     = useState(false);
+  
+  const { openModal } = useMovieModal();
 
   const status     = STATUS_CONFIG[entry.status] || STATUS_CONFIG.pending;
   const StatusIcon = status.icon;
@@ -100,6 +103,10 @@ const WatchlistCard = ({ entry, tierColor, onRemove, onStatusChange, onMove, onP
     onStatusChange(entry.id, next);
   };
 
+  const handleCardClick = () => {
+    openModal(entry.id, entry.type || 'movie');
+  };
+
   return (
     <motion.div
       layout
@@ -108,7 +115,8 @@ const WatchlistCard = ({ entry, tierColor, onRemove, onStatusChange, onMove, onP
       exit={{ opacity: 0, scale: 0.85 }}
       whileHover={{ y: -4, transition: { duration: 0.2 } }}
       className="wl-card"
-      style={{ '--tier-color': tierColor }}
+      style={{ '--tier-color': tierColor, cursor: 'pointer' }}
+      onClick={handleCardClick}
     >
       {/* ── Poster ── */}
       <div className="wl-card-poster">

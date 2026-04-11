@@ -18,6 +18,8 @@ const MovieDetails = () => {
     const trailerStartTimerRef = useRef(null);
     const uiHideTimerRef = useRef(null);
     const playerContainerRef = useRef(null);
+    // Detect mobile for layout adjustments
+    const isMobile = typeof window !== 'undefined' && navigator.maxTouchPoints > 0 && window.innerWidth <= 768;
 
     const handleTrailerEnd = useCallback(() => {
         // Loop is handled by the hook
@@ -110,11 +112,11 @@ const MovieDetails = () => {
     }
 
     return (
-        <div style={{ minHeight: '100vh', color: 'white', paddingBottom: '3rem' }}>
+        <div style={{ minHeight: '100vh', color: 'white', paddingBottom: isMobile ? '80px' : '3rem' }}>
             {/* Hero Section with Backdrop/Trailer */}
             <div style={{
                 position: 'relative',
-                height: '85vh',
+                height: isMobile ? '62vh' : '85vh',
                 overflow: 'hidden'
             }}>
                 {/* Backdrop Image (shows initially or if no trailer) */}
@@ -124,7 +126,7 @@ const MovieDetails = () => {
                     left: 0,
                     width: '100%',
                     height: '100%',
-                    backgroundImage: `url(${imageUrl(movie.backdrop_path, 'original')})`,
+                    backgroundImage: `linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 40%), url(${imageUrl(movie.backdrop_path, 'original')})`,
                     backgroundSize: 'cover',
                     backgroundPosition: 'center',
                     opacity: showTrailer && trailerKey ? 0 : 1,
@@ -188,14 +190,14 @@ const MovieDetails = () => {
                     onClick={() => navigate('/')}
                     style={{
                         position: 'absolute',
-                        top: '2rem',
-                        left: '2rem',
+                        top: isMobile ? '1rem' : '2rem',
+                        left: isMobile ? '1rem' : '2rem',
                         zIndex: 10,
                         background: 'rgba(0,0,0,0.6)',
                         border: '1px solid rgba(255,255,255,0.3)',
                         borderRadius: '50%',
-                        width: '45px',
-                        height: '45px',
+                        width: isMobile ? '48px' : '45px',
+                        height: isMobile ? '48px' : '45px',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -283,12 +285,19 @@ const MovieDetails = () => {
                                 exit={{ opacity: 0, y: -10 }}
                                 transition={{ duration: 0.5 }}
                                 style={{
-                                    fontSize: '0.875rem',
-                                    lineHeight: 1.5,
-                                    maxWidth: '600px',
+                                    fontSize: isMobile ? '1rem' : '0.875rem',
+                                    lineHeight: 1.55,
+                                    maxWidth: isMobile ? '100%' : '600px',
                                     marginBottom: '1.5rem',
                                     color: '#ddd',
-                                    textShadow: '0 2px 10px rgba(0,0,0,0.8)'
+                                    textShadow: '0 2px 10px rgba(0,0,0,0.8)',
+                                    // Clamp to 4 lines on mobile to save space
+                                    ...(isMobile ? {
+                                        display: '-webkit-box',
+                                        WebkitLineClamp: 4,
+                                        WebkitBoxOrient: 'vertical',
+                                        overflow: 'hidden'
+                                    } : {})
                                 }}
                             >
                                 {movie.overview}
@@ -319,10 +328,11 @@ const MovieDetails = () => {
                                 cursor: 'pointer',
                                 border: '1px solid rgba(255, 255, 255, 0.2)',
                                 color: '#ffffff',
-                                fontSize: '0.8rem',
+                                fontSize: '0.875rem',
                                 transition: 'all 0.3s ease',
                                 boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
-                                outline: 'none'
+                                outline: 'none',
+                                minHeight: '44px'
                             }}
                             onMouseEnter={(e) => {
                                 e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)';
@@ -354,7 +364,10 @@ const MovieDetails = () => {
                                     border: '1px solid rgba(255,255,255,0.3)',
                                     color: 'white',
                                     fontSize: '0.85rem',
-                                    transition: 'all 0.3s ease'
+                                    transition: 'all 0.3s ease',
+                                    minHeight: '44px',
+                                    minWidth: '44px',
+                                    justifyContent: 'center'
                                 }}
                                 onMouseEnter={(e) => e.target.style.background = 'rgba(255,255,255,0.25)'}
                                 onMouseLeave={(e) => e.target.style.background = 'rgba(255,255,255,0.15)'}
@@ -383,7 +396,10 @@ const MovieDetails = () => {
                                             border: '1px solid rgba(255,255,255,0.3)',
                                             color: 'white',
                                             fontSize: '0.85rem',
-                                            transition: 'all 0.3s ease'
+                                            transition: 'all 0.3s ease',
+                                            minHeight: '44px',
+                                            minWidth: '44px',
+                                            justifyContent: 'center'
                                         }}
                                         onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.25)'}
                                         onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'}
@@ -407,7 +423,10 @@ const MovieDetails = () => {
                                             border: '1px solid rgba(255,255,255,0.3)',
                                             color: 'white',
                                             fontSize: '0.85rem',
-                                            transition: 'all 0.3s ease'
+                                            transition: 'all 0.3s ease',
+                                            minHeight: '44px',
+                                            minWidth: '44px',
+                                            justifyContent: 'center'
                                         }}
                                         onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.25)'}
                                         onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'}
@@ -427,9 +446,10 @@ const MovieDetails = () => {
                                             cursor: 'pointer',
                                             border: '1px solid rgba(255,255,255,0.3)',
                                             color: 'white',
-                                            fontSize: '0.85rem',
+                                            fontSize: '0.9rem',
                                             fontWeight: '500',
-                                            transition: 'all 0.3s ease'
+                                            transition: 'all 0.3s ease',
+                                            minHeight: '44px'
                                         }}
                                         onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.25)'}
                                         onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'}
@@ -458,8 +478,8 @@ const MovieDetails = () => {
 
                     <div style={{
                         display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))',
-                        gap: '1rem'
+                        gridTemplateColumns: isMobile ? 'repeat(3, 1fr)' : 'repeat(auto-fill, minmax(160px, 1fr))',
+                        gap: isMobile ? '0.55rem' : '1rem'
                     }}>
                         {cast.map((actor, index) => (
                             <motion.div

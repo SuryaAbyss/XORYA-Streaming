@@ -1,7 +1,6 @@
 .grid-background-container {
     position: relative;
     width: 100%;
-    min-height: 100vh;
     background-color: var(--bg-dark, #000);
     overflow-x: hidden;
     display: flex;

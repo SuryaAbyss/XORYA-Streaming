@@ -277,7 +277,7 @@ const VideoPlayer = () => {
             minHeight: '100vh',
             position: 'relative',
             backgroundColor: 'transparent', // Make transparent so fixed background shows
-            paddingTop: '80px',
+            paddingTop: '55px',
             overflow: 'hidden' // Ensure pattern doesn't cause scrollbars if it overflows
         }}>
             {/* Blurred Background Image */}

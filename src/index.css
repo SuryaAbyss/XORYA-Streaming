@@ -30,6 +30,8 @@ body,
 #root {
   overflow-x: hidden;
   max-width: 100vw;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
 }
 
 body {
@@ -669,23 +671,24 @@ body::before {
 
 /* Top10 Section */
 .top10-rank-number {
-  position: absolute;
-  bottom: -15px;
-  left: -8px;
-  font-size: 6rem;
+  position: relative;
+  flex-shrink: 0;
+  font-size: 7rem;
   font-weight: 900;
   line-height: 1;
-  z-index: 2;
+  z-index: 1;
   pointer-events: none;
-  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: all 0.3s ease;
   color: transparent;
-  -webkit-text-stroke: 2px #dc2626;
+  -webkit-text-stroke: 3px #555;
+  margin-bottom: -10px;
+  padding-left: 4px;
+  user-select: none;
 }
 
 .top10-rank-number.hovered {
-  z-index: 10;
-  color: #dc2626;
-  transform: scale(1.15) translateX(-8px);
+  -webkit-text-stroke: 3px #dc2626;
+  transform: scale(1.05);
 }
 
 .top10-header-box {
@@ -939,6 +942,393 @@ body::before {
   .providers-browse-text {
     padding: 0 1rem;
     font-size: 0.9rem;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   MOBILE COMPREHENSIVE OVERHAUL (All Three Survey Fixes)
+   Targets: max-width 768px (phones only — desktop unchanged)
+═══════════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+
+  /* ── Global Touch Targets ──────────────────────────────────── */
+  /* Every interactive element must be at least 44px tall */
+  button,
+  a,
+  [role="button"],
+  select {
+    min-height: 44px;
+    touch-action: manipulation !important;
+    -webkit-tap-highlight-color: transparent !important;
+  }
+
+  /* Inline icon-only controls */
+  .nav-icon-btn,
+  .search-close-btn {
+    min-width: 44px !important;
+    min-height: 44px !important;
+  }
+
+  /* ── Bottom Nav — Enhanced ─────────────────────────────────── */
+  .navbar-container-glass {
+    height: 68px !important;
+  }
+
+  /* Stronger active tab indicator */
+  .nav-link-pill.active-pill {
+    background: rgba(255, 255, 255, 0.07) !important;
+    color: #ffffff !important;
+  }
+
+  .nav-link-pill.active-pill svg {
+    color: #ffffff !important;
+    filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.4));
+  }
+
+  .nav-link-pill svg {
+    width: 24px !important;
+    height: 24px !important;
+  }
+
+  .nav-label {
+    font-size: 0.62rem !important;
+    font-weight: 500 !important;
+  }
+
+  /* ── Hero Section ──────────────────────────────────────────── */
+  /* Reduce hero so trending is partially visible: "scroll hint" */
+  /* Hero div (inline-styled height: 100vh) is overridden via class approach */
+  .home-page > div:first-child {
+    /* The GridBackground wrapper */
+  }
+
+  /* Hero content container: position lower, full width, safe padding */
+  /* The content motion.div has top: 35% left: 3% — we correct on mobile */
+  /* We use a dedicated class: .hero-mobile-content applied in JSX or override via CSS */
+
+  /* Hero play + info buttons: minimum 46px height, properly sized text */
+  .interactive-play-btn {
+    height: 46px !important;
+    min-width: 120px !important;
+    font-size: 0.88rem !important;
+    padding: 0 1.1rem !important;
+  }
+
+  /* ── Home Page — Section Headers ───────────────────────────── */
+  /* The "TV • Popular" style headers */
+  div[style*="padding: '0 2rem'"],
+  div[style*='padding: "0 2rem"'] {
+    padding: 0 1rem !important;
+  }
+
+  /* Font scale for section title (h1 inside header divs) */
+  .home-page h1[style] {
+    font-size: 1.3rem !important;
+    letter-spacing: 1px !important;
+  }
+
+  /* ── Movie Row Carousel ─────────────────────────────────────── */
+  .movie-row-container {
+    scroll-snap-type: x mandatory !important;
+    -webkit-overflow-scrolling: touch !important;
+    padding: 0.75rem 1rem !important;
+    gap: 0.6rem !important;
+    transform: translateZ(0) !important;
+    will-change: transform, scroll-position !important;
+    overscroll-behavior-x: contain !important;
+  }
+
+  /* Each card snaps into place */
+  .interactive-movie-card {
+    min-width: 220px !important;
+    width: 220px !important;
+    height: 140px !important;
+    scroll-snap-align: start !important;
+    border-radius: 10px !important;
+    flex-shrink: 0 !important;
+    transform: translateZ(0);
+    will-change: transform;
+  }
+
+  .gradient-overlay {
+    padding: 0.4rem 0.5rem !important;
+  }
+
+  .movie-card-title {
+    font-size: 0.78rem !important;
+    font-weight: 600 !important;
+    line-height: 1.2 !important;
+    /* Show full title — no truncation */
+    white-space: normal !important;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 2 !important;
+    line-clamp: 2 !important;
+    -webkit-box-orient: vertical !important;
+    overflow: hidden !important;
+  }
+
+  .movie-row-title {
+    margin-left: 1rem !important;
+    font-size: 1.1rem !important;
+    font-weight: 700 !important;
+  }
+
+  /* ── Top 10 Section — Reduce heavy styling ──────────────────── */
+  /* The red bordered wrapper box in Home.jsx */
+  /* Selector: div with border, borderRadius 16px, margin 0 2% */
+  .home-page div[style*="border: '2px solid rgba(220, 38, 38"],
+  .home-page div[style*='border: "2px solid rgba(220, 38, 38'] {
+    margin: 0 1.5% 1.5rem !important;
+    border-width: 1px !important;
+    border-color: rgba(220, 38, 38, 0.3) !important;
+    box-shadow: 0 0 16px rgba(220, 38, 38, 0.06) !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+    border-radius: 12px !important;
+  }
+
+  /* Top10 header box */
+  .top10-header-box {
+    padding: 0.65rem 0.9rem 0.85rem !important;
+  }
+
+  .top10-header-title {
+    font-size: 1.5rem !important;
+    -webkit-text-stroke: 1.5px #dc2626 !important;
+  }
+
+  .top10-rank-number {
+    font-size: 3.5rem !important;
+    bottom: -6px !important;
+    left: -3px !important;
+    -webkit-text-stroke: 1.5px #dc2626 !important;
+  }
+
+  /* ── Providers Section ─────────────────────────────────────── */
+  .providers-header {
+    flex-direction: column !important;
+    gap: 0.75rem !important;
+    align-items: flex-start !important;
+    padding: 0 1rem !important;
+  }
+
+  .providers-title {
+    font-size: 1.4rem !important;
+  }
+
+  .providers-subtitle {
+    font-size: 0.85rem !important;
+  }
+
+  /* Movies / TV Toggle: full-width, larger tap targets */
+  .providers-header > div:last-child {
+    width: 100% !important;
+  }
+
+  .providers-header > div:last-child button {
+    flex: 1 !important;
+    padding: 10px 0 !important;
+    min-height: 44px !important;
+    font-size: 0.9rem !important;
+  }
+
+  /* Provider logo thumbnails — slightly larger */
+  .providers-header ~ div button,
+  div[style*="width: '80px'"][style*="height: '80px'"] {
+    width: 72px !important;
+    height: 72px !important;
+  }
+
+  /* Server Selector — Full-width 1-col grid on mobile */
+  /* The server button grid wrapper */
+  div[style*="flexWrap: 'wrap'"][style*="gap: '0.8rem'"] {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 0.55rem !important;
+    width: 100% !important;
+  }
+
+  /* Individual server buttons */
+  div[style*="flexWrap: 'wrap'"][style*="gap: '0.8rem'"] button {
+    min-height: 56px !important;
+    width: 100% !important;
+    min-width: unset !important;
+    padding: 0.7rem 0.6rem !important;
+    font-size: 0.82rem !important;
+    border-radius: 14px !important;
+  }
+
+  /* More Servers / Show Less button */
+  div[style*="flexWrap: 'wrap'"] button:last-child:not([style*="columnAlignItems"]) {
+    grid-column: 1 / -1 !important;
+    min-height: 48px !important;
+  }
+
+  /* ServerSelector outer wrapper */
+  div[style*="borderRadius: '20px'"][style*="backdropFilter"] {
+    padding: 0.85rem !important;
+  }
+
+  /* Server section heading */
+  div[style*="borderRadius: '20px'"] h3 {
+    font-size: 0.9rem !important;
+    margin-bottom: 0.6rem !important;
+  }
+
+  /* ── Movie Detail Page ──────────────────────────────────────── */
+  /* Hero height */
+  div[style*="height: '85vh'"] {
+    height: 62vh !important;
+  }
+
+  /* Back button — bigger */
+  div[style*="height: '85vh'"] > button:first-of-type {
+    width: 48px !important;
+    height: 48px !important;
+    top: 1rem !important;
+    left: 1rem !important;
+  }
+
+  /* Info overlay */
+  div[style*="height: '85vh'"] > div[style*="bottom: 0"] {
+    padding: 0 4% !important;
+    padding-bottom: 1.25rem !important;
+  }
+
+  /* Movie title */
+  div[style*="height: '85vh'"] h1 {
+    font-size: clamp(1.4rem, 5vw, 2rem) !important;
+    margin-bottom: 0.4rem !important;
+  }
+
+  /* Metadata badges */
+  div[style*="height: '85vh'"] p[style] {
+    font-size: 0.88rem !important;
+    line-height: 1.5 !important;
+    max-width: 100% !important;
+  }
+
+  /* Action buttons row */
+  div[style*="height: '85vh'"] div[style*="flexWrap: 'wrap'"] {
+    gap: 0.45rem !important;
+  }
+
+  div[style*="height: '85vh'"] div[style*="flexWrap: 'wrap'"] button {
+    min-height: 44px !important;
+    min-width: 44px !important;
+    font-size: 0.82rem !important;
+  }
+
+  /* Cast/Actors grid — 3 columns */
+  div[style*="gridTemplateColumns: 'repeat(auto-fill, minmax(160px"] {
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 0.55rem !important;
+  }
+
+  /* ── Search Modal — Bottom Sheet style ──────────────────────── */
+  .search-modal-overlay {
+    padding: 0 !important;
+    align-items: flex-end !important;
+  }
+
+  .search-modal-content {
+    margin-top: 0 !important;
+    border-radius: 24px 24px 0 0 !important;
+    max-height: 88vh !important;
+  }
+
+  .search-modal-header {
+    padding: 1rem !important;
+  }
+
+  .search-grid {
+    grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)) !important;
+    gap: 0.55rem !important;
+  }
+
+  /* ── Video Player / Episode List ────────────────────────────── */
+  /* Episode thumbnails — fixed aspect ratio */
+  .episode-thumbnail img,
+  div[style*="minWidth: '96px'"],
+  div[style*="minWidth: '120px'"] {
+    width: 110px !important;
+    height: 68px !important;
+    flex-shrink: 0 !important;
+    border-radius: 8px !important;
+    object-fit: cover !important;
+  }
+
+  /* Episode title */
+  div[style*="episodeTitle"],
+  .episode-title {
+    font-size: 0.9rem !important;
+    font-weight: 600 !important;
+  }
+
+  /* Season dropdown */
+  select[style*="Season"] {
+    width: 100% !important;
+    min-height: 44px !important;
+  }
+
+  /* ── Typography Scale — Mobile ──────────────────────────────── */
+  /* Body text minimum 14px */
+  p, li, span, label {
+    font-size: max(0.875rem, 14px);
+  }
+
+  /* Ensure description text in movie info is readable */
+  p[style*="fontSize: '0.875rem'"],
+  p[style*="fontSize: '0.85rem'"] {
+    font-size: 0.9rem !important;
+    line-height: 1.55 !important;
+  }
+
+  /* ── Global Spacing Rhythm ──────────────────────────────────── */
+  /* Sections inside the main home content get proper breathing room */
+  .home-page div[style*="paddingTop: '2rem'"] {
+    padding-top: 1.25rem !important;
+  }
+
+  /* Reduce heavy negative marginTop on home layout that cause overlap */
+  .home-page div[style*="marginTop: '-250px'"] {
+    margin-top: -140px !important;
+    padding-top: 140px !important;
+  }
+
+
+}
+
+/* ── Home Section Headers (.home-section-header) ── */
+.home-section-header {
+  padding: 0 2rem;
+  margin-bottom: -1rem;
+  margin-top: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+@media (max-width: 768px) {
+  .home-section-header {
+    padding: 0 1rem !important;
+    margin-top: 1.25rem !important;
+  }
+
+  .home-section-header h1 {
+    font-size: 1.25rem !important;
+    letter-spacing: 1px !important;
+  }
+
+  .home-section-header span {
+    font-size: 0.82rem !important;
+    letter-spacing: 1.5px !important;
+  }
+
+  /* Top10 outer box — lighter on mobile */
+  .top10-outer-box {
+    margin: 0 2% 1.5rem !important;
+    border-width: 1px !important;
   }
 }
 

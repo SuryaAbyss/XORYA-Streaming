@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { imageUrl, getMovieImages, getMovieVideos } from '../api/tmdb';
 import { Play, Info, Volume2, VolumeX, ArrowRight } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
 import useYouTubePlayer from '../hooks/useYouTubePlayer';
 import { selectBestTrailer } from '../utils/trailerSelector';
 import ShinyPill from './ShinyPill';
@@ -27,6 +27,11 @@ const Hero = ({ movie, onPlay, onInfo, onTrailerStart, isTrailerPlaying, onTrail
     const [isMuteFaded, setIsMuteFaded] = useState(false);
     const playerContainerRef = useRef(null);
     const muteFadeTimerRef = useRef(null);
+
+    // Parallax scrolling hooks
+    const { scrollY } = useScroll();
+    const backgroundY = useTransform(scrollY, [0, 1000], ['0%', '25%']);
+    const contentY = useTransform(scrollY, [0, 1000], ['0%', '15%']);
 
     // Handle mute fade timer
     useEffect(() => {
@@ -151,12 +156,19 @@ const Hero = ({ movie, onPlay, onInfo, onTrailerStart, isTrailerPlaying, onTrail
         return () => clearInterval(monitorInterval);
     }, [showVideo, videoKey, playerReady, onTrailerEnd]);
 
+    const isUpcoming = React.useMemo(() => {
+        if (!movie) return false;
+        const releaseStr = movie.release_date || movie.first_air_date;
+        if (!releaseStr) return false;
+        return new Date(releaseStr) > new Date();
+    }, [movie]);
+
     if (!movie) return null;
 
     return (
         <div
             style={{
-                height: '100vh',
+                height: isMobile ? '55vh' : '100vh',
                 width: '100%',
                 position: 'relative',
                 marginBottom: '0',
@@ -165,7 +177,7 @@ const Hero = ({ movie, onPlay, onInfo, onTrailerStart, isTrailerPlaying, onTrail
         >
             {/* Video Background - YouTube IFrame Player API (desktop only) */}
             {!isMobile && (
-                <div
+                <motion.div
                     style={{
                         position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
                         zIndex: showVideo ? 2 : -1,
@@ -173,7 +185,8 @@ const Hero = ({ movie, onPlay, onInfo, onTrailerStart, isTrailerPlaying, onTrail
                         transition: 'opacity 1s ease-in-out',
                         overflow: 'hidden',
                         maskImage: 'linear-gradient(to bottom, black 80%, transparent 100%)',
-                        WebkitMaskImage: 'linear-gradient(to bottom, black 80%, transparent 100%)'
+                        WebkitMaskImage: 'linear-gradient(to bottom, black 80%, transparent 100%)',
+                        y: backgroundY
                     }}
                     onContextMenu={(e) => e.preventDefault()}
                 >
@@ -193,7 +206,7 @@ const Hero = ({ movie, onPlay, onInfo, onTrailerStart, isTrailerPlaying, onTrail
                             willChange: 'transform',
                         }}
                     />
-                    {/* Dark interaction-blocking overlay */}
+                    {/* Dark interaction-blocking overlay - blocks right-click but not clicks */}
                     <div
                         style={{
                             position: 'absolute',
@@ -202,12 +215,11 @@ const Hero = ({ movie, onPlay, onInfo, onTrailerStart, isTrailerPlaying, onTrail
                             width: '100%',
                             height: '100%',
                             zIndex: 5,
-                            pointerEvents: 'auto',
+                            pointerEvents: 'none',
                             background: 'transparent',
                         }}
-                        onContextMenu={(e) => e.preventDefault()}
                     />
-                </div>
+                </motion.div>
             )}
 
             {/* Static Background Image - w1280 for fast load, preloaded from Home */}
@@ -229,7 +241,8 @@ const Hero = ({ movie, onPlay, onInfo, onTrailerStart, isTrailerPlaying, onTrail
                     backgroundPosition: 'center',
                     zIndex: 0,
                     maskImage: 'linear-gradient(to bottom, black 50%, transparent 100%)',
-                    WebkitMaskImage: 'linear-gradient(to bottom, black 50%, transparent 100%)'
+                    WebkitMaskImage: 'linear-gradient(to bottom, black 50%, transparent 100%)',
+                    y: backgroundY
                 }}
             />
 
@@ -242,7 +255,9 @@ const Hero = ({ movie, onPlay, onInfo, onTrailerStart, isTrailerPlaying, onTrail
                 zIndex: showVideo ? 6 : 1,
                 transition: 'background 1s ease-in-out',
                 maskImage: 'linear-gradient(to bottom, black 50%, transparent 100%)',
-                WebkitMaskImage: 'linear-gradient(to bottom, black 50%, transparent 100%)'
+                WebkitMaskImage: 'linear-gradient(to bottom, black 50%, transparent 100%)',
+                transform: `translateY(${backgroundY})`,
+                pointerEvents: 'none'
             }} />
 
             {/* Cinematic Overlays (Only visible when video is playing for cinematic feel) */}
@@ -285,13 +300,21 @@ const Hero = ({ movie, onPlay, onInfo, onTrailerStart, isTrailerPlaying, onTrail
                         }
                     }
                 }}
-                style={{
+                style={isMobile ? {
+                    position: 'absolute',
+                    bottom: '1.5rem',
+                    left: '4%',
+                    right: '4%',
+                    maxWidth: '100%',
+                    zIndex: 25,
+                } : {
                     position: 'absolute',
                     top: isTrailerPlaying ? '70%' : '35%',
                     left: '3%',
                     maxWidth: '600px',
                     transform: 'translateY(-50%)',
                     zIndex: 25,
+                    y: contentY,
                     transition: 'top 1s cubic-bezier(0.25, 0.46, 0.45, 0.94), left 1s cubic-bezier(0.25, 0.46, 0.45, 0.94)'
                 }}>
                 <motion.div
@@ -353,11 +376,11 @@ const Hero = ({ movie, onPlay, onInfo, onTrailerStart, isTrailerPlaying, onTrail
                                 padding: '0.6rem 1.4rem', display: 'flex', alignItems: 'center', gap: '0.5rem',
                                 borderRadius: '50px', fontWeight: 'bold', cursor: 'pointer',
                                 background: 'rgba(100, 100, 100, 0.25)', color: 'white', border: 'none',
-                                fontSize: '0.85rem',
-                                height: '38px'
+                                fontSize: isMobile ? '0.9rem' : '0.85rem',
+                                height: isMobile ? '46px' : '38px'
                             }}
                         >
-                            <Info size={20} />
+                            <Info size={isMobile ? 18 : 20} />
                             <span>More Info</span>
                         </button>
                     </motion.div>
@@ -388,6 +411,29 @@ const Hero = ({ movie, onPlay, onInfo, onTrailerStart, isTrailerPlaying, onTrail
                             >
                                 {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
                             </button>
+                        </motion.div>
+                    )}
+
+                    {/* Soon Releasing Badge */}
+                    {isUpcoming && (
+                        <motion.div variants={{ hidden: { opacity: 0, x: -20 }, visible: { opacity: 1, x: 0, transition: { duration: 0.6, ease: "easeOut" } } }}>
+                            <div style={{
+                                padding: '0.5rem 1rem',
+                                borderRadius: '50px',
+                                background: 'rgba(239, 68, 68, 0.2)',
+                                border: '1px solid rgba(239, 68, 68, 0.4)',
+                                color: '#fca5a5',
+                                fontSize: '0.75rem',
+                                fontWeight: 'bold',
+                                textTransform: 'uppercase',
+                                letterSpacing: '1px',
+                                backdropFilter: 'blur(4px)',
+                                whiteSpace: 'nowrap',
+                                display: 'flex',
+                                alignItems: 'center'
+                            }}>
+                                Soon Releasing
+                            </div>
                         </motion.div>
                     )}
                 </motion.div>

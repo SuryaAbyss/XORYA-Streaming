@@ -63,7 +63,11 @@ export const ExpandingCards = ({ items, defaultActiveIndex = 0, className = "" }
   }, [activeIndex, items.length, isDesktop]);
 
   const handleInteraction = (index) => {
-    setActiveIndex(index);
+    if (activeIndex === index) {
+      items[index].onViewDetails?.();
+    } else {
+      setActiveIndex(index);
+    }
   };
 
   return (

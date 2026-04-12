@@ -611,7 +611,12 @@ const VideoPlayer = () => {
                                     style={{
                                         width: '490px',
                                         flexShrink: 0,
-                                        minWidth: 0
+                                        minWidth: 0,
+                                        position: 'sticky',
+                                        top: '1.1rem',
+                                        height: 'calc(100% - 1.1rem)',
+                                        display: 'flex',
+                                        flexDirection: 'column'
                                     }}
                                 >
                                     <EpisodesSidebar
@@ -641,10 +646,15 @@ const VideoPlayer = () => {
                                         width: '480px',
                                         flexShrink: 0,
                                         minWidth: 0,
-                                        alignSelf: 'flex-start', // Keeps it at the top
-                                        marginTop: '10px', // <--- Change this to move it down (e.g., '20px')
-                                        marginLeft: '-8px', // <--- Change this to add space from the player
-                                        marginRight: '25px' // <--- Change this to add space from the player
+                                        alignSelf: 'flex-start',
+                                        position: 'sticky',
+                                        top: '1.1rem',
+                                        height: 'calc(100% - 1.1rem)',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        marginTop: '10px',
+                                        marginLeft: '-8px',
+                                        marginRight: '25px'
                                     }}
                                 >
                                     <MovieInfoSidebar movie={contentData} />

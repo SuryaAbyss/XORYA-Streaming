@@ -60,7 +60,7 @@ const EpisodesSidebar = ({
 
         <div style={{
             width: '100%',
-            height: 'calc(100vh - 80px)',
+            height: '520px',
             background: `
                     radial-gradient(circle at 10% 20%, rgba(255, 255, 255, 0.03) 0%, transparent 20%),
                     radial-gradient(circle at 90% 80%, rgba(255, 255, 255, 0.03) 0%, transparent 20%),
@@ -74,15 +74,18 @@ const EpisodesSidebar = ({
             position: 'relative',
             overflow: 'hidden'
         }}>
-            <div style={{
-                height: '100%',
-                overflowY: 'auto',
-                padding: '2rem 1.5rem 4rem',
-                boxSizing: 'border-box',
-                overscrollBehavior: 'contain',
-                maskImage: 'linear-gradient(to bottom, black 85%, transparent 100%)',
-                WebkitMaskImage: 'linear-gradient(to bottom, black 85%, transparent 100%)',
-            }}>
+            <div
+                style={{
+                    height: '100%',
+                    overflowY: 'auto',
+                    padding: '2rem 1.5rem 4rem',
+                    boxSizing: 'border-box',
+                    overscrollBehavior: 'contain',
+                    maskImage: 'linear-gradient(to bottom, black 80%, transparent 100%)',
+                    WebkitMaskImage: 'linear-gradient(to bottom, black 80%, transparent 100%)',
+                }}
+                onWheel={(e) => e.stopPropagation()}
+            >
                 {/* Season Selector Dropdown */}
                 <div style={{ marginBottom: '1rem', position: 'relative' }}>
                     <select

@@ -39,7 +39,7 @@ const MovieInfoSidebar = ({ movie }) => {
                 WebkitBackdropFilter: 'blur(20px)',
                 borderRadius: '15px',
                 border: '1px solid rgba(255, 255, 255, 0.1)',
-                height: 'calc(94vh - 120px)',
+                height: '530px',
                 overflow: 'hidden',
                 display: 'flex',
                 flexDirection: 'column',
@@ -138,11 +138,13 @@ const MovieInfoSidebar = ({ movie }) => {
                 flex: 1,
                 boxSizing: 'border-box',
                 overscrollBehavior: 'contain',
-                
+
                 // Custom Scrollbar
                 scrollbarWidth: 'thin',
                 scrollbarColor: 'rgba(255,255,255,0.2) transparent'
-            }}>
+            }}
+                onWheel={(e) => e.stopPropagation()}
+            >
                 <AnimatePresence mode="wait">
                     <motion.div
                         key={activeTab}
@@ -168,11 +170,11 @@ const MovieInfoSidebar = ({ movie }) => {
                                 {movie.credits?.cast?.length > 0 ? (
                                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(80px, 1fr))', gap: '1rem' }}>
                                         {movie.credits.cast.slice(0, 12).map(person => (
-                                            <div 
-                                                key={person.id} 
+                                            <div
+                                                key={person.id}
                                                 onClick={() => navigate(`/person/${person.id}`)}
-                                                style={{ 
-                                                    textAlign: 'center', 
+                                                style={{
+                                                    textAlign: 'center',
                                                     cursor: 'pointer',
                                                     padding: '0.5rem',
                                                     borderRadius: '12px',

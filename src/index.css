@@ -10,6 +10,22 @@
   --font-main: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
+/* Bulletproof utility to freeze background viewport scrolling completely and disengage global scroller */
+.no-scroll {
+  overflow: hidden !important;
+  height: 100vh !important;
+  max-height: 100vh !important;
+  touch-action: none;
+}
+
+html.no-scroll::-webkit-scrollbar,
+body.no-scroll::-webkit-scrollbar,
+#root.no-scroll::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -202,8 +218,9 @@ body::before {
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  padding: 2rem;
-  overflow-y: auto;
+  /* 5rem top clears the floating navbar, 2rem bottom breathing room */
+  padding: 5rem 2rem 2rem;
+  overflow: hidden;
 }
 
 .search-modal-content {
@@ -213,11 +230,13 @@ body::before {
   border-radius: 24px;
   max-width: 900px;
   width: 100%;
-  max-height: calc(100vh - 4rem);
-  margin-top: 4rem;
+  /* 5rem top-pad + 2rem bottom-pad = 7rem total → fits exactly in 100vh */
+  max-height: calc(100vh - 7rem);
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
   display: flex;
   flex-direction: column;
+  /* CRITICAL: without this, flex children with overflow-y:auto don't clip */
+  overflow: hidden;
 }
 
 .search-modal-header {
@@ -286,9 +305,33 @@ body::before {
 
 .search-results {
   flex: 1;
-  overflow-y: auto;
+  overflow-y: scroll; /* Force custom scrollbar to always show when modal is active */
+  overflow-x: hidden;
   padding: 1.5rem;
-  min-height: 300px;
+  /* min-height:0 is required for flex children to shrink and enable scroll */
+  min-height: 0;
+  overscroll-behavior: contain;
+}
+
+/* Highly visible custom scrollbar for the search results */
+.search-results::-webkit-scrollbar {
+  width: 10px; /* Comfortable width to drag (approx. 1 centimeter visual target) */
+  display: block !important;
+}
+
+.search-results::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+}
+
+.search-results::-webkit-scrollbar-thumb {
+  background: rgba(229, 9, 20, 0.6); /* Translucent accent red */
+  border-radius: 8px;
+  border: 2px solid rgba(10, 10, 10, 0.95); /* Gap effect matching the search content background */
+}
+
+.search-results::-webkit-scrollbar-thumb:hover {
+  background: rgba(229, 9, 20, 1); /* Solid bright accent red when hovered/dragged */
 }
 
 .search-grid {
@@ -391,11 +434,11 @@ body::before {
 
 @media (max-width: 768px) {
   .search-modal-overlay {
-    padding: 1rem;
+    padding: 4rem 1rem 1rem;
   }
 
   .search-modal-content {
-    margin-top: 2rem;
+    max-height: calc(100vh - 5rem);
   }
 
   .search-grid {
@@ -998,7 +1041,7 @@ body::before {
   /* ── Hero Section ──────────────────────────────────────────── */
   /* Reduce hero so trending is partially visible: "scroll hint" */
   /* Hero div (inline-styled height: 100vh) is overridden via class approach */
-  .home-page > div:first-child {
+  .home-page>div:first-child {
     /* The GridBackground wrapper */
   }
 
@@ -1121,11 +1164,11 @@ body::before {
   }
 
   /* Movies / TV Toggle: full-width, larger tap targets */
-  .providers-header > div:last-child {
+  .providers-header>div:last-child {
     width: 100% !important;
   }
 
-  .providers-header > div:last-child button {
+  .providers-header>div:last-child button {
     flex: 1 !important;
     padding: 10px 0 !important;
     min-height: 44px !important;
@@ -1133,7 +1176,7 @@ body::before {
   }
 
   /* Provider logo thumbnails — slightly larger */
-  .providers-header ~ div button,
+  .providers-header~div button,
   div[style*="width: '80px'"][style*="height: '80px'"] {
     width: 72px !important;
     height: 72px !important;
@@ -1182,7 +1225,7 @@ body::before {
   }
 
   /* Back button — bigger */
-  div[style*="height: '85vh'"] > button:first-of-type {
+  div[style*="height: '85vh'"]>button:first-of-type {
     width: 48px !important;
     height: 48px !important;
     top: 1rem !important;
@@ -1190,7 +1233,7 @@ body::before {
   }
 
   /* Info overlay */
-  div[style*="height: '85vh'"] > div[style*="bottom: 0"] {
+  div[style*="height: '85vh'"]>div[style*="bottom: 0"] {
     padding: 0 4% !important;
     padding-bottom: 1.25rem !important;
   }
@@ -1273,7 +1316,10 @@ body::before {
 
   /* ── Typography Scale — Mobile ──────────────────────────────── */
   /* Body text minimum 14px */
-  p, li, span, label {
+  p,
+  li,
+  span,
+  label {
     font-size: max(0.875rem, 14px);
   }
 
@@ -2903,10 +2949,29 @@ body::before {
 /* Results */
 .wl-search-results {
   flex: 1;
-  overflow-y: auto;
+  overflow-y: scroll;
   padding: 1.25rem 1.5rem;
-  scrollbar-width: thin;
-  scrollbar-color: #222 transparent;
+}
+
+/* Beautiful custom scrollbar for watchlist search results */
+.wl-search-results::-webkit-scrollbar {
+  width: 10px;
+  display: block !important;
+}
+
+.wl-search-results::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+}
+
+.wl-search-results::-webkit-scrollbar-thumb {
+  background: rgba(229, 9, 20, 0.6);
+  border-radius: 8px;
+  border: 2px solid rgba(10, 10, 10, 0.95);
+}
+
+.wl-search-results::-webkit-scrollbar-thumb:hover {
+  background: rgba(229, 9, 20, 1);
 }
 
 .wl-search-state {

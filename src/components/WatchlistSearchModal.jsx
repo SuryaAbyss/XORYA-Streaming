@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, X, Film, Tv, Plus, Check } from 'lucide-react';
 import { searchMulti, imageUrl } from '../api/tmdb';
+import Lenis from 'lenis';
 
 const WatchlistSearchModal = ({ isOpen, onClose, tierId, tierName, tierColor, onAdd, existingIds = [] }) => {
   const [query, setQuery] = useState('');
@@ -10,6 +11,139 @@ const WatchlistSearchModal = ({ isOpen, onClose, tierId, tierName, tierColor, on
   const [addedIds, setAddedIds] = useState(new Set());
   const inputRef = useRef(null);
   const debounceRef = useRef(null);
+  const resultsRef = useRef(null);
+  const lenisRef = useRef(null);
+
+  // Trap and forward all scroll/wheel events globally to the .wl-search-results scroller with local smooth Lenis engine
+  useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key === 'Escape') onClose();
+    };
+
+    let lenisInstance = null;
+    let rafId = null;
+
+    const resultsEl = resultsRef.current;
+    if (isOpen && resultsEl) {
+      // Instantiate localized smooth scroller on watchlist search results container
+      lenisInstance = new Lenis({
+        wrapper: resultsEl,
+        lerp: 0.1,
+        duration: 1.5,
+        smoothWheel: true,
+      });
+      lenisRef.current = lenisInstance;
+
+      // Smooth animation frame loop
+      const raf = (time) => {
+        lenisInstance.raf(time);
+        rafId = requestAnimationFrame(raf);
+      };
+      rafId = requestAnimationFrame(raf);
+    }
+
+    const handleWheel = (e) => {
+      const resultsEl = resultsRef.current;
+      const lenis = lenisRef.current;
+      if (!resultsEl || !lenis) return;
+
+      const isInsideResults = resultsEl.contains(e.target);
+      if (isInsideResults) {
+        // Inside results: let native/Lenis browser scrolling handle it natively
+        // Stop propagation so that Lenis or root scroll listeners do not intercept it
+        e.stopPropagation();
+        return;
+      }
+
+      // Outside results (hovering over search input, header, overlay):
+      // Forward scroll delta to our local smooth Lenis instance.
+      let delta = e.deltaY;
+      if (e.deltaMode === 1) { // Line mode
+        delta *= 33;
+      } else if (e.deltaMode === 2) { // Page mode
+        delta *= window.innerHeight;
+      } else if (Math.abs(delta) < 40) {
+        // Scale trackpad precision/smooth-scroll deltas slightly to feel responsive when forwarded
+        delta *= 2.5;
+      }
+
+      lenis.scrollTo(lenis.scroll + delta, { immediate: false });
+      
+      if (e.cancelable) e.preventDefault();
+      e.stopPropagation();
+    };
+
+    let touchStartY = 0;
+    const handleTouchStart = (e) => {
+      if (e.touches.length > 0) {
+        touchStartY = e.touches[0].clientY;
+      }
+    };
+
+    const handleTouchMove = (e) => {
+      const resultsEl = resultsRef.current;
+      const lenis = lenisRef.current;
+      if (!resultsEl || !lenis) return;
+
+      const isInsideResults = resultsEl.contains(e.target);
+      if (isInsideResults) {
+        e.stopPropagation();
+        return;
+      }
+
+      if (e.touches.length > 0) {
+        const touchY = e.touches[0].clientY;
+        const deltaY = touchStartY - touchY;
+        touchStartY = touchY;
+        lenis.scrollTo(lenis.scroll + deltaY * 1.5, { immediate: true });
+      }
+      if (e.cancelable) e.preventDefault();
+      e.stopPropagation();
+    };
+
+    if (isOpen) {
+      document.addEventListener('keydown', handleEscape);
+      window.addEventListener('wheel', handleWheel, { passive: false });
+      window.addEventListener('touchstart', handleTouchStart, { passive: true });
+      window.addEventListener('touchmove', handleTouchMove, { passive: false });
+
+      // Lock scroll and compensate for scrollbar width on body to prevent layout shifting
+      const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+      document.body.style.paddingRight = `${scrollbarWidth}px`;
+      
+      // Add global no-scroll utility to html, body, and the root wrapper
+      document.documentElement.classList.add('no-scroll');
+      document.body.classList.add('no-scroll');
+      const rootEl = document.getElementById('root');
+      if (rootEl) {
+        rootEl.classList.add('no-scroll');
+      }
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+      window.removeEventListener('wheel', handleWheel);
+      window.removeEventListener('touchstart', handleTouchStart);
+      window.removeEventListener('touchmove', handleTouchMove);
+
+      if (lenisInstance) {
+        lenisInstance.destroy();
+        lenisRef.current = null;
+      }
+      if (rafId) {
+        cancelAnimationFrame(rafId);
+      }
+
+      // Restore scrolling and clean up classes and padding
+      document.body.style.paddingRight = '';
+      document.documentElement.classList.remove('no-scroll');
+      document.body.classList.remove('no-scroll');
+      const rootEl = document.getElementById('root');
+      if (rootEl) {
+        rootEl.classList.remove('no-scroll');
+      }
+    };
+  }, [isOpen, onClose]);
 
   useEffect(() => {
     if (isOpen) {
@@ -62,6 +196,7 @@ const WatchlistSearchModal = ({ isOpen, onClose, tierId, tierName, tierColor, on
           exit={{ opacity: 0 }}
           className="wl-search-overlay"
           onClick={(e) => e.target === e.currentTarget && onClose()}
+          data-lenis-prevent
         >
           <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -69,6 +204,7 @@ const WatchlistSearchModal = ({ isOpen, onClose, tierId, tierName, tierColor, on
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
             className="wl-search-modal"
+            data-lenis-prevent
           >
             {/* Header */}
             <div className="wl-search-header">
@@ -97,7 +233,7 @@ const WatchlistSearchModal = ({ isOpen, onClose, tierId, tierName, tierColor, on
             </div>
 
             {/* Results */}
-            <div className="wl-search-results">
+            <div className="wl-search-results" ref={resultsRef}>
               {loading && (
                 <div className="wl-search-state">
                   <div className="wl-spinner" />

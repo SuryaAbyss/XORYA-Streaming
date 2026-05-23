@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Search } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { searchMulti, imageUrl } from '../api/tmdb';
 import { useMovieModal } from '../context/MovieModalContext';
+import Lenis from 'lenis';
 
 const SearchModal = ({ isOpen, onClose }) => {
     const [searchQuery, setSearchQuery] = useState('');
@@ -54,20 +55,138 @@ const SearchModal = ({ isOpen, onClose }) => {
         return () => clearTimeout(timer);
     }, [searchQuery, performSearch]);
 
-    // Close on Escape key
+    const resultsRef = useRef(null);
+    const overlayRef = useRef(null);
+    const lenisRef = useRef(null);
+
+    // Trap and forward all scroll/wheel events globally to the .search-results scroller with local smooth Lenis engine
     useEffect(() => {
         const handleEscape = (e) => {
             if (e.key === 'Escape') onClose();
         };
 
+        let lenisInstance = null;
+        let rafId = null;
+
+        const resultsEl = resultsRef.current;
+        if (isOpen && resultsEl) {
+            // Instantiate localized smooth scroller on search results container
+            lenisInstance = new Lenis({
+                wrapper: resultsEl,
+                lerp: 0.1,
+                duration: 1.5,
+                smoothWheel: true,
+            });
+            lenisRef.current = lenisInstance;
+
+            // Smooth animation frame loop
+            const raf = (time) => {
+                lenisInstance.raf(time);
+                rafId = requestAnimationFrame(raf);
+            };
+            rafId = requestAnimationFrame(raf);
+        }
+
+        const handleWheel = (e) => {
+            const resultsEl = resultsRef.current;
+            const lenis = lenisRef.current;
+            if (!resultsEl || !lenis) return;
+
+            const isInsideResults = resultsEl.contains(e.target);
+            if (isInsideResults) {
+                // Inside results: let native/Lenis browser scrolling handle it natively
+                // Stop propagation so that Lenis or root scroll listeners do not intercept it
+                e.stopPropagation();
+                return;
+            }
+
+            // Outside results (hovering over search input, header, overlay):
+            // Forward scroll delta to our local smooth Lenis instance.
+            let delta = e.deltaY;
+            if (e.deltaMode === 1) { // Line mode
+                delta *= 33;
+            } else if (e.deltaMode === 2) { // Page mode
+                delta *= window.innerHeight;
+            } else if (Math.abs(delta) < 40) {
+                // Scale trackpad precision/smooth-scroll deltas slightly to feel responsive when forwarded
+                delta *= 2.5;
+            }
+
+            lenis.scrollTo(lenis.scroll + delta, { immediate: false });
+            
+            if (e.cancelable) e.preventDefault();
+            e.stopPropagation();
+        };
+
+        let touchStartY = 0;
+        const handleTouchStart = (e) => {
+            if (e.touches.length > 0) {
+                touchStartY = e.touches[0].clientY;
+            }
+        };
+
+        const handleTouchMove = (e) => {
+            const resultsEl = resultsRef.current;
+            const lenis = lenisRef.current;
+            if (!resultsEl || !lenis) return;
+
+            const isInsideResults = resultsEl.contains(e.target);
+            if (isInsideResults) {
+                e.stopPropagation();
+                return;
+            }
+
+            if (e.touches.length > 0) {
+                const touchY = e.touches[0].clientY;
+                const deltaY = touchStartY - touchY;
+                touchStartY = touchY;
+                lenis.scrollTo(lenis.scroll + deltaY * 1.5, { immediate: true });
+            }
+            if (e.cancelable) e.preventDefault();
+            e.stopPropagation();
+        };
+
         if (isOpen) {
             document.addEventListener('keydown', handleEscape);
-            document.body.style.overflow = 'hidden';
+            window.addEventListener('wheel', handleWheel, { passive: false });
+            window.addEventListener('touchstart', handleTouchStart, { passive: true });
+            window.addEventListener('touchmove', handleTouchMove, { passive: false });
+
+            // Lock scroll and compensate for scrollbar width on body to prevent layout shifting
+            const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+            document.body.style.paddingRight = `${scrollbarWidth}px`;
+            
+            // Add global no-scroll utility to html, body, and the root wrapper
+            document.documentElement.classList.add('no-scroll');
+            document.body.classList.add('no-scroll');
+            const rootEl = document.getElementById('root');
+            if (rootEl) {
+                rootEl.classList.add('no-scroll');
+            }
         }
 
         return () => {
             document.removeEventListener('keydown', handleEscape);
-            document.body.style.overflow = 'unset';
+            window.removeEventListener('wheel', handleWheel);
+            window.removeEventListener('touchstart', handleTouchStart);
+            window.removeEventListener('touchmove', handleTouchMove);
+
+            if (lenisInstance) {
+                lenisInstance.destroy();
+                lenisRef.current = null;
+            }
+            if (rafId) {
+                cancelAnimationFrame(rafId);
+            }
+
+            // Restore scrolling and clean up classes and padding
+            document.body.style.paddingRight = '';
+            document.documentElement.classList.remove('no-scroll');
+            document.body.classList.remove('no-scroll');
+            const rootEl = document.getElementById('root');
+            if (rootEl) {
+                rootEl.classList.remove('no-scroll');
+            }
         };
     }, [isOpen, onClose]);
 
@@ -90,12 +209,12 @@ const SearchModal = ({ isOpen, onClose }) => {
             if (activeFilter === 'all') return true;
             if (activeFilter === 'movie') return item.media_type === 'movie';
             if (activeFilter === 'tv') return item.media_type === 'tv';
-            
+
             const genreIds = item.genre_ids || [];
             if (activeFilter === 'action') return genreIds.includes(28) || genreIds.includes(10759);
             if (activeFilter === 'comedy') return genreIds.includes(35);
             if (activeFilter === 'crime') return genreIds.includes(80);
-            
+
             return true;
         });
     };
@@ -106,11 +225,13 @@ const SearchModal = ({ isOpen, onClose }) => {
         <AnimatePresence>
             {isOpen && (
                 <motion.div
+                    ref={overlayRef}
                     className="search-modal-overlay"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     onClick={onClose}
+                    data-lenis-prevent
                 >
                     <motion.div
                         className="search-modal-content"
@@ -118,6 +239,7 @@ const SearchModal = ({ isOpen, onClose }) => {
                         animate={{ scale: 1, opacity: 1, y: 0 }}
                         exit={{ scale: 0.9, opacity: 0, y: -20 }}
                         onClick={(e) => e.stopPropagation()}
+                        data-lenis-prevent
                     >
                         {/* Header */}
                         <div className="search-modal-header" style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
@@ -137,13 +259,13 @@ const SearchModal = ({ isOpen, onClose }) => {
                                     <X size={24} />
                                 </button>
                             </div>
-                            
+
                             {/* Filters Row */}
-                            <motion.div 
+                            <motion.div
                                 initial={{ opacity: 0, height: 0 }}
                                 animate={{ opacity: 1, height: 'auto' }}
-                                style={{ 
-                                    display: 'flex', gap: '10px', width: '100%', marginTop: '1rem', 
+                                style={{
+                                    display: 'flex', gap: '10px', width: '100%', marginTop: '1rem',
                                     overflowX: 'auto', paddingBottom: '5px', scrollbarWidth: 'none',
                                     WebkitOverflowScrolling: 'touch'
                                 }}
@@ -182,7 +304,7 @@ const SearchModal = ({ isOpen, onClose }) => {
                         </div>
 
                         {/* Results */}
-                        <div className="search-results">
+                        <div className="search-results" ref={resultsRef}>
                             {loading && (
                                 <div className="search-loading">
                                     <div className="spinner"></div>

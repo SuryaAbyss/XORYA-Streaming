@@ -1,6 +1,7 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import './WatchlistCard.css';
+import Lenis from 'lenis';
 import {
   Plus, Download, Upload, Trash2, X,
   Eye, Clock, CheckCircle2, LayoutList, Film, Tv, Clapperboard
@@ -122,6 +123,117 @@ const FilterPanel = ({ isOpen, onClose, filter, entries, tiers, onProgress, onSt
     watched: { label: 'Watched', color: '#7bed9f', bg: 'rgba(123,237,159,0.15)' },
   };
 
+  const bodyRef = useRef(null);
+  const lenisRef = useRef(null);
+
+  useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key === 'Escape') onClose();
+    };
+
+    let lenisInstance = null;
+    let rafId = null;
+
+    const bodyEl = bodyRef.current;
+    if (isOpen && bodyEl) {
+      lenisInstance = new Lenis({
+        wrapper: bodyEl,
+        lerp: 0.1,
+        duration: 1.5,
+        smoothWheel: true,
+      });
+      lenisRef.current = lenisInstance;
+
+      const raf = (time) => {
+        lenisInstance.raf(time);
+        rafId = requestAnimationFrame(raf);
+      };
+      rafId = requestAnimationFrame(raf);
+    }
+
+    const handleWheel = (e) => {
+      const bodyEl = bodyRef.current;
+      const lenis = lenisRef.current;
+      if (!bodyEl || !lenis) return;
+
+      const isInsideBody = bodyEl.contains(e.target);
+      if (isInsideBody) {
+        e.stopPropagation();
+        return;
+      }
+
+      let delta = e.deltaY;
+      if (e.deltaMode === 1) delta *= 33;
+      else if (e.deltaMode === 2) delta *= window.innerHeight;
+      else if (Math.abs(delta) < 40) delta *= 2.5;
+
+      lenis.scrollTo(lenis.scroll + delta, { immediate: false });
+      
+      if (e.cancelable) e.preventDefault();
+      e.stopPropagation();
+    };
+
+    let touchStartY = 0;
+    const handleTouchStart = (e) => {
+      if (e.touches.length > 0) touchStartY = e.touches[0].clientY;
+    };
+
+    const handleTouchMove = (e) => {
+      const bodyEl = bodyRef.current;
+      const lenis = lenisRef.current;
+      if (!bodyEl || !lenis) return;
+
+      const isInsideBody = bodyEl.contains(e.target);
+      if (isInsideBody) {
+        e.stopPropagation();
+        return;
+      }
+
+      if (e.touches.length > 0) {
+        const touchY = e.touches[0].clientY;
+        const deltaY = touchStartY - touchY;
+        touchStartY = touchY;
+        lenis.scrollTo(lenis.scroll + deltaY * 1.5, { immediate: true });
+      }
+      if (e.cancelable) e.preventDefault();
+      e.stopPropagation();
+    };
+
+    if (isOpen) {
+      document.addEventListener('keydown', handleEscape);
+      window.addEventListener('wheel', handleWheel, { passive: false });
+      window.addEventListener('touchstart', handleTouchStart, { passive: true });
+      window.addEventListener('touchmove', handleTouchMove, { passive: false });
+
+      const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+      document.body.style.paddingRight = `${scrollbarWidth}px`;
+      
+      document.documentElement.classList.add('no-scroll');
+      document.body.classList.add('no-scroll');
+      const rootEl = document.getElementById('root');
+      if (rootEl) rootEl.classList.add('no-scroll');
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+      window.removeEventListener('wheel', handleWheel);
+      window.removeEventListener('touchstart', handleTouchStart);
+      window.removeEventListener('touchmove', handleTouchMove);
+
+      if (lenisInstance) {
+        lenisInstance.destroy();
+        lenisRef.current = null;
+      }
+      if (rafId) cancelAnimationFrame(rafId);
+
+      document.body.style.paddingRight = '';
+      document.documentElement.classList.remove('no-scroll');
+      document.body.classList.remove('no-scroll');
+      const rootEl = document.getElementById('root');
+      if (rootEl) rootEl.classList.remove('no-scroll');
+    };
+  }, [isOpen, onClose]);
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -129,6 +241,7 @@ const FilterPanel = ({ isOpen, onClose, filter, entries, tiers, onProgress, onSt
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
           className="wl-filter-overlay"
           onClick={(e) => e.target === e.currentTarget && onClose()}
+          data-lenis-prevent
         >
           <motion.div
             initial={{ opacity: 0, x: 60 }}
@@ -136,6 +249,7 @@ const FilterPanel = ({ isOpen, onClose, filter, entries, tiers, onProgress, onSt
             exit={{ opacity: 0, x: 60 }}
             transition={{ type: 'spring', stiffness: 280, damping: 30 }}
             className="wl-filter-panel"
+            data-lenis-prevent
           >
             {/* Header */}
             <div className="wl-filter-header">
@@ -152,7 +266,7 @@ const FilterPanel = ({ isOpen, onClose, filter, entries, tiers, onProgress, onSt
             </div>
 
             {/* Content */}
-            <div className="wl-filter-body">
+            <div className="wl-filter-body" ref={bodyRef}>
               {filtered.length === 0 ? (
                 <div className="wl-filter-empty">
                   <p>Nothing here yet</p>

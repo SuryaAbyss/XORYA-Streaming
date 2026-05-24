@@ -7,7 +7,7 @@ import { motion } from 'framer-motion';
 import { BlurFade } from './ui/blur-fade';
 
 const InteractiveMovieCard = ({ movie, index = 0 }) => {
-    const { openModal } = useMovieModal();
+    const { openModal, selectedMovieId } = useMovieModal();
     const [isHovered, setIsHovered] = useState(false);
     const [showDetails, setShowDetails] = useState(false);
     const [rect, setRect] = useState(null);
@@ -18,7 +18,7 @@ const InteractiveMovieCard = ({ movie, index = 0 }) => {
     const isMobile = typeof window !== 'undefined' && navigator.maxTouchPoints > 0 && window.innerWidth <= 768;
 
     const handleMouseEnter = () => {
-        if (isMobile) return; // No hover effects on mobile
+        if (isMobile || selectedMovieId) return; // No hover effects on mobile or if modal is open
         setIsHovered(true);
         // Start exactly 1.5s timer for the detail popup
         timerRef.current = setTimeout(() => {
@@ -37,6 +37,9 @@ const InteractiveMovieCard = ({ movie, index = 0 }) => {
 
     const handleClick = (e) => {
         e.stopPropagation();
+        setShowDetails(false);
+        setIsHovered(false);
+        if (timerRef.current) clearTimeout(timerRef.current);
         const mediaType = movie.media_type || (movie.name ? 'tv' : 'movie');
         openModal(movie.id, mediaType);
     };
@@ -138,7 +141,7 @@ const InteractiveMovieCard = ({ movie, index = 0 }) => {
             </BlurFade>
 
             {/* Hover Data Popup Modal that breaks out using React Portal */}
-            {showDetails && rect && createPortal(
+            {showDetails && rect && !selectedMovieId && createPortal(
                 <div
                     onClick={handleClick}
                     onMouseEnter={() => { if (timerRef.current) clearTimeout(timerRef.current); setShowDetails(true); setIsHovered(true); }}

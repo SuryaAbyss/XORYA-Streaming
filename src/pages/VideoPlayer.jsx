@@ -24,6 +24,7 @@ const VideoPlayer = () => {
     const [recommendations, setRecommendations] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activeServer, setActiveServer] = useState('vidfast');
+    const [iframeKey, setIframeKey] = useState(0);
 
     // Safe initialisation bypassing ANY state closures by scanning localStorage directly
     const getInitialProgress = () => {
@@ -189,6 +190,10 @@ const VideoPlayer = () => {
 
     const handleServerChange = (serverId) => {
         setActiveServer(serverId);
+    };
+
+    const handleReload = () => {
+        setIframeKey(prev => prev + 1);
     };
 
     const handleEpisodeSelect = (season, episode) => {
@@ -539,6 +544,7 @@ const VideoPlayer = () => {
                                 }}>
 
                                     <iframe
+                                        key={iframeKey}
                                         src={playerUrl}
                                         style={{
                                             width: '100%',
@@ -598,6 +604,7 @@ const VideoPlayer = () => {
                                         servers={servers}
                                         activeServer={activeServer}
                                         onServerChange={handleServerChange}
+                                        onReload={handleReload}
                                     />
                                 </div>
 

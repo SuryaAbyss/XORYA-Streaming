@@ -48,6 +48,9 @@ const TierRow = ({
 
   const watched = entries.filter(e => e.status === 'watched').length;
   const pct = entries.length > 0 ? Math.round((watched / entries.length) * 100) : 0;
+  const visibleEntries = entries
+    .filter(e => e.status !== 'watched')
+    .sort((a, b) => (b.updatedAt || b.addedAt) - (a.updatedAt || a.addedAt));
 
   return (
     <>
@@ -211,11 +214,39 @@ const TierRow = ({
                   <p>This tier is empty</p>
                   <span className="wl-tier-empty-hint">Click <strong>Add</strong> to add movies or series</span>
                 </motion.div>
+              ) : visibleEntries.length === 0 ? (
+                <div className="wl-tier-cards-new">
+                  <motion.div
+                    className="wl-tier-empty"
+                    style={{ flex: 1, margin: 0, minHeight: '120px' }}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                  >
+                    <p style={{ color: tier.color }}>All caught up! 🎉</p>
+                    <span className="wl-tier-empty-hint">You have watched everything in this tier.</span>
+                  </motion.div>
+                  <div className="wl-tier-add-row">
+                    <motion.button
+                      className="wl-btn-add-compact"
+                      style={{
+                        '--tier-color': tier.color,
+                        borderColor: tier.color + '33'
+                      }}
+                      onClick={() => setShowSearch(true)}
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                      title={`Add titles to ${tier.name}`}
+                    >
+                      <Plus size={14} />
+                    </motion.button>
+                  </div>
+                </div>
               ) : (
                 <div className="wl-tier-cards-new">
                   {/* Expanding Cards Layout */}
                   <ExpandingCards
-                    items={entries.map(entry => ({
+                    defaultActiveIndex={0}
+                    items={visibleEntries.map(entry => ({
                       id: entry.id,
                       title: entry.title,
                       description: `${entry.year || 'N/A'} • ⭐ ${entry.rating || '0.0'} • ${entry.type === 'tv' ? 'Series' : 'Movie'}`,

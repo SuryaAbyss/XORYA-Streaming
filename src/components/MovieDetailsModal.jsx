@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import useYouTubePlayer from '../hooks/useYouTubePlayer';
 import { useMovieModal } from '../context/MovieModalContext';
 import { useWatchlist } from '../hooks/useWatchlist';
+import { getServerUrl } from '../config/servers';
 import { selectBestTrailer } from '../utils/trailerSelector';
 
 const MovieDetailsModal = () => {
@@ -42,6 +43,10 @@ const MovieDetailsModal = () => {
 
     const isMustWatch = existingEntry?.tierId === mustWatchTierId;
     const isMaybeLater = existingEntry?.tierId === maybeLaterTierId;
+
+    const preloadSeason = existingEntry?.progress?.season || 1;
+    const preloadEpisode = existingEntry?.progress?.episode || 1;
+    const preloadingUrl = movie ? getServerUrl('vidfast', selectedMediaType, selectedMovieId, preloadSeason, preloadEpisode) : null;
 
     const toggleHeart = (e) => {
         e.stopPropagation();
@@ -276,6 +281,22 @@ const MovieDetailsModal = () => {
                                     ? `${movie.genres[0].name}${selectedMediaType === 'tv' ? ' Series' : ''}`
                                     : 'Original Content'}
                             </div>
+
+                            {preloadingUrl && (
+                                <iframe
+                                    src={preloadingUrl}
+                                    sandbox="allow-scripts allow-same-origin"
+                                    style={{
+                                        position: 'absolute',
+                                        width: '1px',
+                                        height: '1px',
+                                        opacity: 0.01,
+                                        pointerEvents: 'none',
+                                        zIndex: -1
+                                    }}
+                                    aria-hidden="true"
+                                />
+                            )}
                         </div>
 
                         {/* ── Scrollable Content Area ── */}
@@ -633,6 +654,22 @@ const MovieDetailsModal = () => {
                             background: 'linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 100%)',
                             zIndex: 2, pointerEvents: 'none'
                         }} />
+                        
+                        {preloadingUrl && (
+                            <iframe
+                                src={preloadingUrl}
+                                sandbox="allow-scripts allow-same-origin"
+                                style={{
+                                    position: 'absolute',
+                                    width: '1px',
+                                    height: '1px',
+                                    opacity: 0.01,
+                                    pointerEvents: 'none',
+                                    zIndex: -1
+                                }}
+                                aria-hidden="true"
+                            />
+                        )}
                     </div>
 
                     {/* Content Container Left */}

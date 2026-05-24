@@ -200,7 +200,7 @@ const Home = ({ category = 'all' }) => {
     }, [mainData]);
 
     return (
-        <div className="home-page pb-20">
+        <div className="home-page pb-0" style={{ marginBottom: '-80px', position: 'relative', zIndex: 60 }}>
             {/* Grid pattern only in the hero/header area */}
             <GridBackground>
                 <Hero
@@ -218,7 +218,7 @@ const Home = ({ category = 'all' }) => {
                     background: 'linear-gradient(to bottom, transparent 0%, #000 150px)',
                     marginTop: isTrailerPlaying ? '-15vh' : (isMobileView ? '-2vh' : '-45vh'),
                     paddingTop: isTrailerPlaying ? 'calc(6rem + 15vh)' : (isMobileView ? '2.5rem' : '6rem'),
-                    paddingBottom: '4rem',
+                    paddingBottom: '1rem',
                     transition: 'margin-top 1s cubic-bezier(0.25, 0.46, 0.45, 0.94), padding-top 1s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
                     pointerEvents: 'none'
                 }}>
@@ -233,7 +233,8 @@ const Home = ({ category = 'all' }) => {
                     marginTop: '-250px',
                     paddingTop: '250px',
                     overflow: 'visible',
-                    pointerEvents: 'auto'
+                    pointerEvents: 'auto',
+                    zIndex: 60
                 }}>
                     {/* Animated Smoke Background with a soft fade-in effect at the top */}
                     <div style={{
@@ -283,7 +284,7 @@ const Home = ({ category = 'all' }) => {
 
                         <div style={{
                             paddingTop: '2rem',
-                            paddingBottom: '4rem',
+                            paddingBottom: '0',
                         }}>
                             {category === 'all' && <ProvidersSection />}
 
@@ -470,15 +471,6 @@ const Home = ({ category = 'all' }) => {
                         </div>
                     </div>
 
-                    {/* Smooth bottom fade — blends the last row into the footer */}
-                    <div style={{
-                        position: 'relative',
-                        height: '180px',
-                        marginTop: '-180px',
-                        pointerEvents: 'none',
-                        background: 'linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.6) 40%, #000 100%)',
-                        zIndex: 5,
-                    }} />
                 </div>
             </div>
         </div>

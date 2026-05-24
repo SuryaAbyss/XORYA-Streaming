@@ -111,6 +111,7 @@ export function useWatchlist() {
         rating: media.rating,
         status: 'pending',           // 'pending' | 'watching' | 'watched'
         addedAt: Date.now(),
+        updatedAt: Date.now(),
         note: '',
       }];
     });
@@ -121,21 +122,21 @@ export function useWatchlist() {
   }, []);
 
   const setStatus = useCallback((entryId, status) => {
-    setEntries(prev => prev.map(e => e.id === entryId ? { ...e, status } : e));
+    setEntries(prev => prev.map(e => e.id === entryId ? { ...e, status, updatedAt: Date.now() } : e));
   }, []);
 
   const moveEntry = useCallback((entryId, toTierId) => {
-    setEntries(prev => prev.map(e => e.id === entryId ? { ...e, tierId: toTierId } : e));
+    setEntries(prev => prev.map(e => e.id === entryId ? { ...e, tierId: toTierId, updatedAt: Date.now() } : e));
   }, []);
 
   const setNote = useCallback((entryId, note) => {
-    setEntries(prev => prev.map(e => e.id === entryId ? { ...e, note } : e));
+    setEntries(prev => prev.map(e => e.id === entryId ? { ...e, note, updatedAt: Date.now() } : e));
   }, []);
 
   // TV show episode progress  { season: 1, episode: 1 }
   const setProgress = useCallback((entryId, season, episode) => {
     setEntries(prev => prev.map(e =>
-      e.id === entryId ? { ...e, progress: { season: Math.max(1, season), episode: Math.max(1, episode) } } : e
+      e.id === entryId ? { ...e, progress: { season: Math.max(1, season), episode: Math.max(1, episode) }, updatedAt: Date.now() } : e
     ));
   }, []);
 
@@ -200,6 +201,7 @@ export function useWatchlist() {
         return prev.map((e, i) => i === idx ? {
           ...e,
           status: 'watching',
+          updatedAt: Date.now(),
           progress: media.type === 'tv' && (media.season > 1 || media.episode > 1 || !e.progress)
             ? { season: media.season || 1, episode: media.episode || 1 }
             : e.progress
@@ -221,6 +223,7 @@ export function useWatchlist() {
         rating: media.rating,
         status: 'watching',
         addedAt: Date.now(),
+        updatedAt: Date.now(),
         progress: media.type === 'tv' ? { season: media.season || 1, episode: media.episode || 1 } : undefined,
       };
 

@@ -1,7 +1,8 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { RefreshCw } from 'lucide-react';
 
-const ServerSelector = ({ servers, activeServer, onServerChange }) => {
+const ServerSelector = ({ servers, activeServer, onServerChange, onReload }) => {
     const [isExpanded, setIsExpanded] = React.useState(false);
     // Detect mobile for grid layout
     const isMobile = typeof window !== 'undefined' && navigator.maxTouchPoints > 0 && window.innerWidth <= 768;
@@ -90,18 +91,44 @@ const ServerSelector = ({ servers, activeServer, onServerChange }) => {
             padding: isMobile ? '0.85rem' : '1rem',
             border: '1px solid rgba(255, 255, 255, 0.05)'
         }}>
-            <h3 style={{
-                color: 'white',
-                fontSize: '1.1rem',
-                fontWeight: '600',
-                marginBottom: '1rem',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem'
-            }}>
-                <span style={{ width: '4px', height: '16px', background: '#10b981', borderRadius: '2px' }}></span>
-                Recommended / Best Servers
-            </h3>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                <h3 style={{
+                    color: 'white',
+                    fontSize: '1.1rem',
+                    fontWeight: '600',
+                    margin: 0,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem'
+                }}>
+                    <span style={{ width: '4px', height: '16px', background: '#10b981', borderRadius: '2px' }}></span>
+                    Recommended / Best Servers
+                </h3>
+                
+                {onReload && (
+                    <motion.button
+                        onClick={onReload}
+                        whileHover={{ scale: 1.1, rotate: 180 }}
+                        whileTap={{ scale: 0.9 }}
+                        transition={{ duration: 0.3 }}
+                        style={{
+                            background: 'rgba(255,255,255,0.05)',
+                            border: '1px solid rgba(255,255,255,0.15)',
+                            borderRadius: '8px',
+                            width: '32px',
+                            height: '32px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: 'rgba(255,255,255,0.8)',
+                            cursor: 'pointer'
+                        }}
+                        title="Reload Server"
+                    >
+                        <RefreshCw size={14} />
+                    </motion.button>
+                )}
+            </div>
 
             <div style={{
                 display: isMobile ? 'grid' : 'flex',

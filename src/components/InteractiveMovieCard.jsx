@@ -70,8 +70,11 @@ const InteractiveMovieCard = ({ movie, index = 0 }) => {
                 }}>
                     {!imgError && movie.backdrop_path ? (
                         <img
-                            src={imageUrl(movie.backdrop_path, 'w500')}
+                            src={imageUrl(movie.backdrop_path, 'w300')}
                             alt={movie.title || movie.name}
+                            loading="lazy"
+                            width="300"
+                            height="450"
                             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                             onError={() => setImgError(true)}
                         />
@@ -169,8 +172,11 @@ const InteractiveMovieCard = ({ movie, index = 0 }) => {
                     {/* Top image half */}
                     <div style={{ height: '170px', position: 'relative', flexShrink: 0 }}>
                         <img
-                            src={imageUrl(movie.poster_path || movie.backdrop_path, 'w500')}
+                            src={imageUrl(movie.poster_path || movie.backdrop_path, 'w300')}
                             alt={movie.title || movie.name}
+                            loading="lazy"
+                            width="380"
+                            height="170"
                             style={{
                                 width: '100%', height: '100%', objectFit: 'cover',
                                 maskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 50%, rgba(0,0,0,0) 100%)',

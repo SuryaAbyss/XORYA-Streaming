@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, X, Film, Tv, Plus, Check } from 'lucide-react';
-import { searchMulti, imageUrl } from '../api/tmdb';
+import { imageUrl } from '../api/tmdb';
+import { enhancedSearch, initializeSearchCache, getRecommendedSearchContent } from '../utils/searchEngine';
 import Lenis from 'lenis';
 
 const WatchlistSearchModal = ({ isOpen, onClose, tierId, tierName, tierColor, onAdd, existingIds = [] }) => {
@@ -9,6 +10,7 @@ const WatchlistSearchModal = ({ isOpen, onClose, tierId, tierName, tierColor, on
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [addedIds, setAddedIds] = useState(new Set());
+  const [recommended, setRecommended] = useState([]);
   const inputRef = useRef(null);
   const debounceRef = useRef(null);
   const resultsRef = useRef(null);
@@ -151,6 +153,9 @@ const WatchlistSearchModal = ({ isOpen, onClose, tierId, tierName, tierColor, on
       setResults([]);
       setAddedIds(new Set());
       setTimeout(() => inputRef.current?.focus(), 100);
+      initializeSearchCache().then(() => {
+        setRecommended(getRecommendedSearchContent().slice(0, 8));
+      });
     }
   }, [isOpen]);
 
@@ -160,7 +165,7 @@ const WatchlistSearchModal = ({ isOpen, onClose, tierId, tierName, tierColor, on
     debounceRef.current = setTimeout(async () => {
       setLoading(true);
       try {
-        const data = await searchMulti(query);
+        const data = await enhancedSearch(query);
         const filtered = (data.results || []).filter(
           r => (r.media_type === 'movie' || r.media_type === 'tv') && r.poster_path
         ).slice(0, 20);
@@ -242,7 +247,49 @@ const WatchlistSearchModal = ({ isOpen, onClose, tierId, tierName, tierColor, on
               )}
               {!loading && query && results.length === 0 && (
                 <div className="wl-search-state">
-                  <span>No results found</span>
+                  <span>No exact matches found. Showing recommendations:</span>
+                </div>
+              )}
+              {!loading && query && results.length === 0 && (
+                <div className="wl-search-grid" style={{ marginTop: '1rem' }}>
+                  {recommended.map(item => {
+                    const title = item.media_type === 'movie' ? item.title : item.name;
+                    const year = (item.release_date || item.first_air_date || '').slice(0, 4);
+                    const added = alreadyAdded(item);
+                    return (
+                      <motion.div
+                        key={`rec-${item.id}`}
+                        className={`wl-search-card ${added ? 'added' : ''}`}
+                        whileHover={{ scale: 1.03, y: -2 }}
+                        whileTap={{ scale: 0.97 }}
+                        onClick={() => !added && handleAdd(item)}
+                      >
+                        <div className="wl-search-card-img">
+                          <img src={imageUrl(item.poster_path, 'w300')} alt={title} loading="lazy" />
+                          <div className="wl-search-card-type">
+                            {item.media_type === 'movie' ? <Film size={10} /> : <Tv size={10} />}
+                            <span>{item.media_type === 'movie' ? 'Movie' : 'TV'}</span>
+                          </div>
+                          {added && (
+                            <div className="wl-search-card-added">
+                              <Check size={20} />
+                            </div>
+                          )}
+                        </div>
+                        <div className="wl-search-card-info">
+                          <p className="wl-search-card-title">{title}</p>
+                          <p className="wl-search-card-meta">{year} {item.vote_average > 0 && `· ⭐ ${item.vote_average.toFixed(1)}`}</p>
+                          <button
+                            className="wl-search-add-btn"
+                            style={{ background: added ? '#1a1a1a' : tierColor + '22', color: added ? '#555' : tierColor, borderColor: tierColor + '44' }}
+                            onClick={(e) => { e.stopPropagation(); !added && handleAdd(item); }}
+                          >
+                            {added ? <><Check size={12} /> Added</> : <><Plus size={12} /> Add</>}
+                          </button>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
                 </div>
               )}
               {!loading && !query && (

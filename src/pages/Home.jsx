@@ -193,6 +193,7 @@ const Home = ({ category = 'all' }) => {
             link.rel = 'preload';
             link.as = 'image';
             link.href = imageUrl(m.backdrop_path, 'w1280');
+            link.fetchpriority = 'high';
             document.head.appendChild(link);
             return link;
         });
@@ -200,7 +201,7 @@ const Home = ({ category = 'all' }) => {
     }, [mainData]);
 
     return (
-        <div className="home-page pb-0" style={{ marginBottom: '-80px', position: 'relative', zIndex: 60 }}>
+        <div className="home-page pb-0">
             {/* Grid pattern only in the hero/header area */}
             <GridBackground>
                 <Hero
@@ -233,8 +234,7 @@ const Home = ({ category = 'all' }) => {
                     marginTop: '-250px',
                     paddingTop: '250px',
                     overflow: 'visible',
-                    pointerEvents: 'auto',
-                    zIndex: 60
+                    pointerEvents: 'auto'
                 }}>
                     {/* Animated Smoke Background with a soft fade-in effect at the top */}
                     <div style={{
@@ -347,34 +347,7 @@ const Home = ({ category = 'all' }) => {
                                     </div>
                                     <MovieRow title="" movies={topRatedTV} />
 
-                                    {/* Stylish TV Trending Header */}
-                                    <div className="home-section-header" style={{ padding: '0 2rem', marginBottom: '-1rem', marginTop: '1rem', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                        <h1 style={{
-                                            fontSize: '1.8rem',
-                                            fontWeight: '800',
-                                            textTransform: 'uppercase',
-                                            background: 'linear-gradient(to right, #38bdf8, #818cf8)',
-                                            WebkitBackgroundClip: 'text',
-                                            WebkitTextFillColor: 'transparent',
-                                            margin: 0,
-                                            letterSpacing: '2px',
-                                            textShadow: '0 0 20px rgba(56, 189, 248, 0.3)'
-                                        }}>
-                                            TV
-                                        </h1>
-                                        <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#818cf8', opacity: 0.8 }} />
-                                        <span style={{
-                                            fontSize: '1.1rem',
-                                            color: '#e2e8f0',
-                                            fontWeight: '600',
-                                            letterSpacing: '3px',
-                                            textTransform: 'uppercase',
-                                            textShadow: '0 2px 4px rgba(0,0,0,0.5)'
-                                        }}>
-                                            Trending
-                                        </span>
-                                    </div>
-                                    <MovieRow title="" movies={trendingTV} />
+                                    {/* Removed TV Trending Header and Row */}
                                 </>
                             )}
 
@@ -471,6 +444,15 @@ const Home = ({ category = 'all' }) => {
                         </div>
                     </div>
 
+                    {/* Smooth bottom fade — blends the last row into the footer */}
+                    <div style={{
+                        position: 'relative',
+                        height: '180px',
+                        marginTop: '-180px',
+                        pointerEvents: 'none',
+                        background: 'linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.6) 40%, #000 100%)',
+                        zIndex: 5,
+                    }} />
                 </div>
             </div>
         </div>

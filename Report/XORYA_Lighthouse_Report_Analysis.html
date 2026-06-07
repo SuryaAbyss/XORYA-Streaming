@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>XORYA – Lighthouse Audit Report Analysis</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap');
+
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --surface2: #1a1a24;
+    --border: #2a2a3a;
+    --accent: #e63946;
+    --accent2: #f4a261;
+    --accent3: #2a9d8f;
+    --accent4: #e9c46a;
+    --text: #e8e8f0;
+    --text-muted: #888899;
+    --text-dim: #555566;
+    --red: #ff4444;
+    --orange: #ff8c00;
+    --yellow: #ffd700;
+    --green: #00c851;
+    --score-red: #1a0808;
+    --score-orange: #1a1208;
+    --score-green: #081a0e;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    line-height: 1.7;
+    padding: 0;
+  }
+
+  /* Header */
+  .header {
+    background: linear-gradient(135deg, #0a0a0f 0%, #1a0a1a 50%, #0a0a1a 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 3rem 2rem 2.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -10%;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(230,57,70,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .header-inner {
+    max-width: 960px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+  }
+  .site-badge {
+    display: inline-block;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: rgba(230,57,70,0.1);
+    border: 1px solid rgba(230,57,70,0.3);
+    padding: 4px 12px;
+    border-radius: 2px;
+    margin-bottom: 1rem;
+  }
+  h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    font-weight: 800;
+    line-height: 1.1;
+    color: #fff;
+    margin-bottom: 0.6rem;
+    letter-spacing: -0.5px;
+  }
+  h1 span { color: var(--accent); }
+  .header-meta {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--text-muted);
+    letter-spacing: 0.5px;
+  }
+  .header-meta strong { color: var(--text); }
+
+  /* Score Dashboard */
+  .score-dashboard {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 2rem;
+  }
+  .score-dashboard-inner {
+    max-width: 960px;
+    margin: 0 auto;
+  }
+  .score-label {
+    font-family: 'Syne', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 1.2rem;
+  }
+  .score-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+  }
+  .score-card {
+    border-radius: 8px;
+    padding: 1.4rem 1.2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .score-card.red { background: #1a0808; border: 1px solid rgba(255,68,68,0.3); }
+  .score-card.orange { background: #1a1008; border: 1px solid rgba(255,140,0,0.3); }
+  .score-card.yellow { background: #1a1800; border: 1px solid rgba(255,215,0,0.25); }
+  .score-card.green { background: #081a0e; border: 1px solid rgba(0,200,81,0.3); }
+  .score-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 3rem;
+    font-weight: 800;
+    line-height: 1;
+    margin-bottom: 0.3rem;
+  }
+  .score-card.red .score-num { color: var(--red); }
+  .score-card.orange .score-num { color: var(--orange); }
+  .score-card.yellow .score-num { color: var(--yellow); }
+  .score-card.green .score-num { color: var(--green); }
+  .score-name {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  .score-bar {
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    margin-top: 0.8rem;
+    overflow: hidden;
+  }
+  .score-bar-fill {
+    height: 100%;
+    border-radius: 2px;
+  }
+  .score-card.red .score-bar-fill { background: var(--red); width: 42%; }
+  .score-card.orange .score-bar-fill { background: var(--orange); width: 74%; }
+  .score-card.yellow .score-bar-fill { background: var(--yellow); width: 73%; }
+  .score-card.green .score-bar-fill { background: var(--green); width: 83%; }
+
+  /* Main content */
+  .main {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 2.5rem 2rem;
+  }
+
+  /* Metrics banner */
+  .metrics-strip {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 3rem;
+  }
+  .metric-cell {
+    padding: 1.2rem 1.4rem;
+    border-right: 1px solid var(--border);
+    position: relative;
+  }
+  .metric-cell:last-child { border-right: none; }
+  .metric-cell:nth-child(4), .metric-cell:nth-child(5), .metric-cell:nth-child(6) {
+    border-top: 1px solid var(--border);
+  }
+  .metric-val {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.8rem;
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: 0.2rem;
+  }
+  .metric-val.good { color: var(--green); }
+  .metric-val.warn { color: var(--yellow); }
+  .metric-val.bad { color: var(--orange); }
+  .metric-val.crit { color: var(--red); }
+  .metric-name {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 0.2rem;
+  }
+  .metric-target {
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+  .metric-badge {
+    display: inline-block;
+    font-size: 9px;
+    font-family: 'DM Mono', monospace;
+    font-weight: 500;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 2px 6px;
+    border-radius: 2px;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+  .badge-ok { background: rgba(0,200,81,0.15); color: var(--green); }
+  .badge-warn { background: rgba(255,215,0,0.15); color: var(--yellow); }
+  .badge-bad { background: rgba(255,140,0,0.15); color: var(--orange); }
+  .badge-crit { background: rgba(255,68,68,0.15); color: var(--red); }
+
+  /* Section */
+  .section { margin-bottom: 3rem; }
+  .section-header {
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.8rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 1px;
+    font-weight: 500;
+  }
+  h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: -0.2px;
+  }
+  .severity-tag {
+    margin-left: auto;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 2px;
+  }
+  .sev-critical { background: rgba(255,68,68,0.15); color: var(--red); border: 1px solid rgba(255,68,68,0.3); }
+  .sev-high { background: rgba(255,140,0,0.15); color: var(--orange); border: 1px solid rgba(255,140,0,0.3); }
+  .sev-medium { background: rgba(255,215,0,0.15); color: var(--yellow); border: 1px solid rgba(255,215,0,0.3); }
+  .sev-low { background: rgba(0,200,81,0.15); color: var(--green); border: 1px solid rgba(0,200,81,0.3); }
+
+  p { margin-bottom: 1rem; color: var(--text); }
+  p:last-child { margin-bottom: 0; }
+
+  /* Finding block */
+  .finding {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 1.4rem;
+    margin-bottom: 1rem;
+  }
+  .finding-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+  .finding-icon { font-size: 1rem; }
+  .finding-body { font-size: 14px; color: var(--text-muted); line-height: 1.6; }
+  .finding-body strong { color: var(--text); }
+
+  /* Code block */
+  .code-block {
+    background: #0d0d14;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1rem 1.2rem;
+    margin: 0.8rem 0;
+    font-family: 'DM Mono', monospace;
+    font-size: 12.5px;
+    line-height: 1.6;
+    color: #a8b3cf;
+    overflow-x: auto;
+    white-space: pre;
+  }
+  .code-block .hl { color: #e9c46a; }
+  .code-block .hl2 { color: #2a9d8f; }
+  .code-block .hl3 { color: #e63946; }
+  .code-block .comment { color: #555577; }
+
+  /* Fix table */
+  .fix-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 0.8rem;
+  }
+  .fix-item {
+    display: flex;
+    gap: 0.8rem;
+    padding: 0.7rem 1rem;
+    background: var(--surface2);
+    border-radius: 4px;
+    font-size: 13.5px;
+    align-items: flex-start;
+  }
+  .fix-bullet {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 700;
+    margin-top: 1px;
+  }
+  .fb-red { background: rgba(255,68,68,0.2); color: var(--red); }
+  .fb-orange { background: rgba(255,140,0,0.2); color: var(--orange); }
+  .fb-green { background: rgba(0,200,81,0.2); color: var(--green); }
+  .fix-text { color: var(--text-muted); line-height: 1.5; }
+  .fix-text strong { color: var(--text); }
+
+  /* Data table */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    margin: 0.8rem 0;
+  }
+  th {
+    background: var(--surface2);
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    padding: 0.6rem 0.8rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  td {
+    padding: 0.6rem 0.8rem;
+    border-bottom: 1px solid rgba(42,42,58,0.5);
+    color: var(--text-muted);
+  }
+  td strong { color: var(--text); }
+  tr:last-child td { border-bottom: none; }
+  .td-red { color: var(--red) !important; }
+  .td-orange { color: var(--orange) !important; }
+  .td-green { color: var(--green) !important; }
+  .td-yellow { color: var(--yellow) !important; }
+
+  /* Priority list */
+  .priority-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-top: 1.5rem;
+  }
+  .priority-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 1.2rem;
+  }
+  .priority-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--border);
+    line-height: 1;
+    margin-bottom: 0.3rem;
+  }
+  .priority-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 0.5rem;
+  }
+  .priority-impact {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+  .priority-body { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
+
+  /* Footer */
+  .footer {
+    border-top: 1px solid var(--border);
+    padding: 2rem;
+    text-align: center;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 0.5px;
+  }
+
+  @media (max-width: 640px) {
+    .score-grid { grid-template-columns: 1fr 1fr; }
+    .metrics-strip { grid-template-columns: 1fr 1fr; }
+    .priority-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <div class="site-badge">Lighthouse Audit — June 07, 2026</div>
+    <h1>XORYA Streaming<br><span>Performance Report</span></h1>
+    <div class="header-meta">
+      <strong>URL:</strong> https://xorya-streaming.vercel.app &nbsp;·&nbsp;
+      <strong>Device:</strong> Mobile simulation &nbsp;·&nbsp;
+      <strong>Tool:</strong> Google Lighthouse
+    </div>
+  </div>
+</div>
+
+<!-- Score Dashboard -->
+<div class="score-dashboard">
+  <div class="score-dashboard-inner">
+    <div class="score-label">Overall Lighthouse Scores</div>
+    <div class="score-grid">
+      <div class="score-card red">
+        <div class="score-num">42</div>
+        <div class="score-name">Performance</div>
+        <div class="score-bar"><div class="score-bar-fill"></div></div>
+      </div>
+      <div class="score-card orange">
+        <div class="score-num">74</div>
+        <div class="score-name">Accessibility</div>
+        <div class="score-bar"><div class="score-bar-fill"></div></div>
+      </div>
+      <div class="score-card yellow">
+        <div class="score-num">73</div>
+        <div class="score-name">Best Practices</div>
+        <div class="score-bar"><div class="score-bar-fill"></div></div>
+      </div>
+      <div class="score-card orange">
+        <div class="score-num">83</div>
+        <div class="score-name">SEO</div>
+        <div class="score-bar"><div class="score-bar-fill" style="width:83%"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Main Content -->
+<div class="main">
+
+  <!-- Core Web Vitals -->
+  <div class="metrics-strip">
+    <div class="metric-cell">
+      <div class="metric-name">FCP <span class="metric-badge badge-ok">GOOD</span></div>
+      <div class="metric-val good">0.8s</div>
+      <div class="metric-target">Target &lt; 1.8s ✓</div>
+    </div>
+    <div class="metric-cell">
+      <div class="metric-name">LCP <span class="metric-badge badge-warn">NEEDS WORK</span></div>
+      <div class="metric-val warn">2.7s</div>
+      <div class="metric-target">Target &lt; 2.5s ✗</div>
+    </div>
+    <div class="metric-cell">
+      <div class="metric-name">TBT <span class="metric-badge badge-warn">NEEDS WORK</span></div>
+      <div class="metric-val warn">280ms</div>
+      <div class="metric-target">Target &lt; 200ms ✗</div>
+    </div>
+    <div class="metric-cell">
+      <div class="metric-name">CLS <span class="metric-badge badge-crit">CRITICAL</span></div>
+      <div class="metric-val crit">1.142</div>
+      <div class="metric-target">Target &lt; 0.1 ✗✗✗</div>
+    </div>
+    <div class="metric-cell">
+      <div class="metric-name">Speed Index <span class="metric-badge badge-bad">POOR</span></div>
+      <div class="metric-val bad">2.8s</div>
+      <div class="metric-target">Target &lt; 3.4s — barely</div>
+    </div>
+    <div class="metric-cell">
+      <div class="metric-name">TTI <span class="metric-badge badge-ok">OK</span></div>
+      <div class="metric-val good">2.7s</div>
+      <div class="metric-target">Target &lt; 3.8s ✓</div>
+    </div>
+  </div>
+
+
+  <!-- SECTION 1: CLS -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">01</span>
+      <h2>Cumulative Layout Shift — Score: 1.142</h2>
+      <span class="severity-tag sev-critical">CRITICAL FAIL</span>
+    </div>
+    <p>This is your single biggest problem. A CLS of <strong>1.142</strong> is catastrophically bad — the acceptable limit is 0.1, and anything above 0.25 is considered "poor." Your score is over <strong>11× the limit</strong>. What this means visually is that entire sections of your page are jumping and shifting around after the initial paint, which is a terrible user experience and will tank your Google Search ranking.</p>
+
+    <div class="finding">
+      <div class="finding-title"><span class="finding-icon">🔴</span> Main Culprit — The Entire Content Container Shifts</div>
+      <div class="finding-body">
+        The report found <strong>4 layout shift events</strong>, with the biggest one having a score of <strong>1.0</strong> (the max possible for a single shift). The element responsible is the <code>div.home-page</code> container — essentially your whole homepage content block below the hero. This suggests the hero section (YouTube embed + backdrop image) loads and then pushes everything down.
+      </div>
+    </div>
+
+    <div class="finding">
+      <div class="finding-title"><span class="finding-icon">🔴</span> Images Without Explicit Dimensions</div>
+      <div class="finding-body">
+        Two images are reported without explicit <code>width</code> and <code>height</code> HTML attributes:<br><br>
+        <strong>1. Your logo:</strong> <code>/logo.png</code> — the XORAYA navbar logo has <code>style="height:50px; width:auto"</code> but no HTML attributes.<br>
+        <strong>2. Hero movie title logo:</strong> <code>/t/p/w500/39qu7nY1DgTfFLmpDPVB6hkDcTV.png</code> — only CSS dimensions, no HTML dims.<br><br>
+        Without HTML dimensions, the browser cannot reserve space for the image before it loads, so everything below shifts when it appears.
+      </div>
+    </div>
+
+    <div class="finding">
+      <div class="finding-title"><span class="finding-icon">🟡</span> Web Font Load Shift</div>
+      <div class="finding-body">
+        One shift is directly linked to the Google Inter font loading from <code>fonts.gstatic.com</code>. When the Inter font loads, it slightly changes text dimensions which nudges elements down. The fix is one CSS line.
+      </div>
+    </div>
+
+    <p><strong>How to fix CLS:</strong></p>
+    <div class="fix-list">
+      <div class="fix-item">
+        <div class="fix-bullet fb-red">1</div>
+        <div class="fix-text"><strong>Add width + height to all img tags.</strong> Even when using CSS to control display size, the HTML attributes let the browser pre-allocate space before the image loads. Example: <code>&lt;img src="..." width="500" height="750" style="width:100%;height:auto"&gt;</code></div>
+      </div>
+      <div class="fix-item">
+        <div class="fix-bullet fb-red">2</div>
+        <div class="fix-text"><strong>Reserve space for the hero section.</strong> Give your hero div an explicit <code>min-height</code> or use <code>aspect-ratio: 16/9</code> so nothing below it jumps when the YouTube iframe and backdrop load.</div>
+      </div>
+      <div class="fix-item">
+        <div class="fix-bullet fb-orange">3</div>
+        <div class="fix-text"><strong>Fix font loading.</strong> Add <code>font-display: optional</code> to your <code>@font-face</code> or use <code>font-display: swap</code> in your Google Fonts URL: append <code>&amp;display=swap</code> (you already have this from the <code>?display=swap</code> query, but also preconnect to fonts.gstatic.com).</div>
+      </div>
+      <div class="fix-item">
+        <div class="fix-bullet fb-orange">4</div>
+        <div class="fix-text"><strong>Fix section heading opacity animation.</strong> Your <code>h2.movie-row-title</code> elements start at <code>opacity: 0; transform: translateX(-20px)</code>. The browser paints them at zero height. Either initialize them with real height, or use <code>visibility: hidden</code> instead of <code>opacity:0</code> to preserve their layout box.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 2: JavaScript -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">02</span>
+      <h2>JavaScript Bundle — Massive & Mostly Blocking</h2>
+      <span class="severity-tag sev-critical">CRITICAL</span>
+    </div>
+    <p>Your main JavaScript bundle <code>index-BpthtzJ-.js</code> is the #1 performance bottleneck. It is <strong>1.14 MB uncompressed</strong> (330 KB gzipped), and the browser spends <strong>3,584ms — over 3.5 seconds</strong> just executing it on the main thread. This single file is causing 8 long tasks that block user interaction.</p>
+
+    <table>
+      <tr><th>File</th><th>Transfer Size</th><th>Unused Bytes</th><th>Execution Time</th></tr>
+      <tr><td><strong>index-BpthtzJ-.js</strong> (your app)</td><td>331 KB</td><td class="td-orange"><strong>144 KB wasted</strong></td><td class="td-red"><strong>3,584 ms</strong></td></tr>
+      <tr><td>index-D4gTv1Hr.css</td><td>~30 KB</td><td class="td-orange">12 KB wasted</td><td>—</td></tr>
+      <tr><td>www-widgetapi.js (YouTube)</td><td>10 KB</td><td>—</td><td class="td-orange">284 ms</td></tr>
+      <tr><td>Total main thread work</td><td>—</td><td>—</td><td class="td-red"><strong>5,412 ms</strong></td></tr>
+    </table>
+
+    <div class="finding">
+      <div class="finding-title"><span class="finding-icon">🔴</span> No Code Splitting — Everything Loads at Once</div>
+      <div class="finding-body">
+        The entire React app — Home, MovieDetails, VideoPlayer, Watchlist, ActorDetails, AdminDashboard, SearchModal, all 14+ category rows, framer-motion, lenis, three.js shaders, all providers config — is bundled into a single chunk. When a user visits the homepage, they download code for pages they haven't even visited yet. <strong>144 KB of the bundle is unused on initial load.</strong>
+      </div>
+    </div>
+
+    <p><strong>How to fix this:</strong></p>
+    <div class="code-block"><span class="comment">// BEFORE — static imports load everything at once</span>
+<span class="hl">import</span> VideoPlayer <span class="hl">from</span> <span class="hl2">'./pages/VideoPlayer'</span>;
+<span class="hl">import</span> ActorDetails <span class="hl">from</span> <span class="hl2">'./pages/ActorDetails'</span>;
+<span class="hl">import</span> AdminDashboard <span class="hl">from</span> <span class="hl2">'./pages/AdminDashboard'</span>;
+
+<span class="comment">// AFTER — lazy load routes so they only download when needed</span>
+<span class="hl">const</span> VideoPlayer = <span class="hl">lazy</span>(() => <span class="hl">import</span>(<span class="hl2">'./pages/VideoPlayer'</span>));
+<span class="hl">const</span> ActorDetails = <span class="hl">lazy</span>(() => <span class="hl">import</span>(<span class="hl2">'./pages/ActorDetails'</span>));
+<span class="hl">const</span> AdminDashboard = <span class="hl">lazy</span>(() => <span class="hl">import</span>(<span class="hl2">'./pages/AdminDashboard'</span>));</div>
+
+    <div class="fix-list">
+      <div class="fix-item">
+        <div class="fix-bullet fb-red">1</div>
+        <div class="fix-text"><strong>Split by route using React.lazy + Suspense.</strong> VideoPlayer, ActorDetails, AdminDashboard, and SearchModal are perfect candidates. They are never needed on the initial homepage load and should only download on demand.</div>
+      </div>
+      <div class="fix-item">
+        <div class="fix-bullet fb-red">2</div>
+        <div class="fix-text"><strong>Lazy-load Three.js and heavy animations.</strong> Your three.js shader/particle effects and lenis smooth scroll are loading synchronously. Dynamically import them after the page has painted: <code>import('three').then(...)</code>.</div>
+      </div>
+      <div class="fix-item">
+        <div class="fix-bullet fb-orange">3</div>
+        <div class="fix-text"><strong>Audit framer-motion usage.</strong> Importing all of framer-motion adds significant weight. If you only use a subset of animations, consider using CSS animations for simple fades/slides and reserving framer-motion for complex orchestrated sequences.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 3: Images -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">03</span>
+      <h2>290 Network Requests — 235 Images Loading at Once</h2>
+      <span class="severity-tag sev-high">HIGH</span>
+    </div>
+    <p>Your page fires <strong>290 network requests</strong> on load, transferring <strong>6.7 MB</strong> of data. Images alone account for <strong>235 of those requests and 5.4 MB of transfer.</strong> This is not sustainable — virtually every movie poster from every one of your 14+ rows is being fetched immediately, even the ones 3000+ pixels below the fold that the user will never scroll to.</p>
+
+    <table>
+      <tr><th>Resource Type</th><th>Requests</th><th>Transfer Size</th></tr>
+      <tr><td><strong>Images (posters)</strong></td><td class="td-red"><strong>235</strong></td><td class="td-red"><strong>5.4 MB</strong></td></tr>
+      <tr><td>Scripts</td><td>8</td><td>1.2 MB</td></tr>
+      <tr><td>Stylesheets</td><td>4</td><td>125 KB</td></tr>
+      <tr><td>Fonts</td><td>2</td><td>84 KB</td></tr>
+      <tr><td>Documents</td><td>3</td><td>62 KB</td></tr>
+      <tr><td><strong>TOTAL</strong></td><td class="td-red"><strong>290</strong></td><td class="td-red"><strong>6.7 MB</strong></td></tr>
+      <tr><td>Third-party requests</td><td class="td-orange"><strong>284 of 290</strong></td><td class="td-orange"><strong>6.6 MB</strong></td></tr>
+    </table>
+
+    <div class="finding">
+      <div class="finding-title"><span class="finding-icon">🔴</span> No Lazy Loading on Movie Poster Images</div>
+      <div class="finding-body">
+        All 235 poster images load immediately regardless of whether they're visible. Add <code>loading="lazy"</code> to every <code>&lt;img&gt;</code> except the hero/first row images. This single attribute will cut your initial image requests by 70–80%.
+      </div>
+    </div>
+
+    <div class="code-block"><span class="comment">// Hero / first-visible images — load eagerly with high priority</span>
+&lt;<span class="hl">img</span> src=<span class="hl2">"{poster}"</span> <span class="hl">loading="eager"</span> <span class="hl">fetchpriority="high"</span> width="500" height="750" /&gt;
+
+<span class="comment">// All other rows — lazy load (browser only fetches when near viewport)</span>
+&lt;<span class="hl">img</span> src=<span class="hl2">"{poster}"</span> <span class="hl">loading="lazy"</span> width="500" height="750" /&gt;</div>
+
+    <div class="fix-list">
+      <div class="fix-item">
+        <div class="fix-bullet fb-red">1</div>
+        <div class="fix-text"><strong>Add <code>loading="lazy"</code> to ALL poster images except the first visible row.</strong> This is a one-attribute fix that will dramatically reduce initial load time.</div>
+      </div>
+      <div class="fix-item">
+        <div class="fix-bullet fb-red">2</div>
+        <div class="fix-text"><strong>Add <code>fetchpriority="high"</code> to the hero backdrop image</strong> so the browser prioritises it above everything else. This directly improves LCP.</div>
+      </div>
+      <div class="fix-item">
+        <div class="fix-bullet fb-orange">3</div>
+        <div class="fix-text"><strong>Use correct TMDB image sizes.</strong> You're loading <code>w500</code> poster images but displaying them at ~300px width on mobile. Switch to <code>w300</code> or use responsive srcsets — this could save 40% of image bytes.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 4: Animations -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">04</span>
+      <h2>246 Non-Composited Filter Animations</h2>
+      <span class="severity-tag sev-high">HIGH</span>
+    </div>
+    <p>The report found <strong>246 animated elements</strong> where the animation cannot run on the GPU compositor thread. Every one of your <code>interactive-movie-card</code> elements uses <code>filter: blur(0px)</code> as part of its animation. The problem is that filter animations force the browser to repaint on the CPU main thread, potentially causing jank and contributing to layout instability.</p>
+
+    <div class="finding">
+      <div class="finding-title"><span class="finding-icon">🟡</span> All 246 Movie Cards Use Filter Animation</div>
+      <div class="finding-body">
+        The class <code>.interactive-movie-card</code> is animating <code>filter: blur()</code> alongside <code>opacity</code> and <code>transform</code>. The transform and opacity are compositable (GPU-friendly), but adding <code>filter</code> forces the entire element off the compositor. Remove blur from the animation and use only opacity + transform, which are fully GPU-composited.
+      </div>
+    </div>
+
+    <div class="code-block"><span class="comment">/* REMOVE this from your card animations: */</span>
+<span class="hl3">filter: blur(0px);</span>  <span class="comment">/* &lt;-- causes main thread repaint */</span>
+
+<span class="comment">/* KEEP only these (fully GPU composited): */</span>
+<span class="hl2">opacity: 1;</span>
+<span class="hl2">transform: none;</span>
+
+<span class="comment">/* If you need blur on hover, contain it with: */</span>
+<span class="hl">.interactive-movie-card</span> { <span class="hl2">will-change: transform, opacity;</span> }</div>
+  </div>
+
+  <!-- SECTION 5: Security -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">05</span>
+      <h2>Security — 25 Inspector Errors, No Headers</h2>
+      <span class="severity-tag sev-critical">CRITICAL</span>
+    </div>
+    <p>The Best Practices score is pulled down to 73 by serious security gaps. The inspector audit found <strong>25 errors</strong>, and Lighthouse flagged four missing security headers, all rated as <strong>High severity</strong>. Additionally, your TMDB API key is fully visible in every network request.</p>
+
+    <table>
+      <tr><th>Security Issue</th><th>Severity</th><th>Risk</th></tr>
+      <tr><td><strong>No Content Security Policy (CSP)</strong></td><td class="td-red">HIGH</td><td>XSS attacks can inject malicious scripts</td></tr>
+      <tr><td><strong>No X-Frame-Options / frame-ancestors</strong></td><td class="td-red">HIGH</td><td>Clickjacking — your site can be embedded in iframes</td></tr>
+      <tr><td><strong>No COOP header</strong></td><td class="td-red">HIGH</td><td>Cross-origin isolation missing, Spectre risk</td></tr>
+      <tr><td><strong>No Trusted Types directive</strong></td><td class="td-red">HIGH</td><td>DOM-based XSS not mitigated</td></tr>
+      <tr><td><strong>TMDB API key exposed in frontend</strong></td><td class="td-orange">HIGH</td><td>Anyone can steal your API quota/key</td></tr>
+      <tr><td><strong>Admin secret hardcoded</strong></td><td class="td-orange">HIGH</td><td>Anyone who reads your source can access admin dashboard</td></tr>
+      <tr><td><strong>Missing source maps</strong></td><td class="td-yellow">LOW</td><td>Makes debugging in production harder</td></tr>
+    </table>
+
+    <div class="finding">
+      <div class="finding-title"><span class="finding-icon">🔴</span> TMDB API Key Exposed — Visible in Report</div>
+      <div class="finding-body">
+        Your TMDB API key (<code>b1f6f35f0eeb0ded1ab9ed6896d06d10</code>) is visible in every network request made by the browser and is logged in this Lighthouse report. Anyone who opens DevTools on your site can see it. While TMDB keys are somewhat low-risk, this is bad practice and will get flagged in any security audit.
+      </div>
+    </div>
+
+    <p><strong>Fix security headers in your Vercel config (<code>vercel.json</code>):</strong></p>
+    <div class="code-block">{
+  <span class="hl">"headers"</span>: [
+    {
+      <span class="hl">"source"</span>: <span class="hl2">"/(.*)"</span>,
+      <span class="hl">"headers"</span>: [
+        { <span class="hl">"key"</span>: <span class="hl2">"X-Frame-Options"</span>, <span class="hl">"value"</span>: <span class="hl2">"DENY"</span> },
+        { <span class="hl">"key"</span>: <span class="hl2">"X-Content-Type-Options"</span>, <span class="hl">"value"</span>: <span class="hl2">"nosniff"</span> },
+        { <span class="hl">"key"</span>: <span class="hl2">"Referrer-Policy"</span>, <span class="hl">"value"</span>: <span class="hl2">"strict-origin-when-cross-origin"</span> },
+        { <span class="hl">"key"</span>: <span class="hl2">"Cross-Origin-Opener-Policy"</span>, <span class="hl">"value"</span>: <span class="hl2">"same-origin-allow-popups"</span> }
+      ]
+    }
+  ]
+}</div>
+
+    <p>For TMDB API key, move it to a Vercel environment variable and create a tiny API route proxy that your frontend calls instead of calling TMDB directly.</p>
+  </div>
+
+  <!-- SECTION 6: Accessibility -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">06</span>
+      <h2>Accessibility — 20+ Buttons Have No Names</h2>
+      <span class="severity-tag sev-high">HIGH</span>
+    </div>
+    <p>The accessibility score of 74/100 is dragged down by one critical failing: the <strong>button-name audit scores 0</strong> (the worst possible). Every single scroll arrow on every movie row, plus the top navigation button, are invisible to screen readers because they contain no text and no aria-label. There are also 7 H2 headings that are fully invisible to assistive technologies.</p>
+
+    <div class="finding">
+      <div class="finding-title"><span class="finding-icon">🔴</span> 20 Buttons Without Accessible Names (Score: 0)</div>
+      <div class="finding-body">
+        Identified buttons with no accessible name:<br>
+        • Navbar icon button (search/hamburger)<br>
+        • Hero "More Info" button (icon only)<br>
+        • <strong>Left + Right scroll arrows for every movie row</strong> — repeated across all 8+ rows<br>
+        • Top-10 carousel left and right nav arrows<br><br>
+        Screen readers will announce each of these as just "button" — completely useless for keyboard/screen reader users.
+      </div>
+    </div>
+
+    <div class="code-block"><span class="comment">// BEFORE — no accessible name</span>
+&lt;<span class="hl">button</span> class="movie-row-arrow left"&gt;&lt;ChevronLeft /&gt;&lt;/<span class="hl">button</span>&gt;
+
+<span class="comment">// AFTER — aria-label tells screen readers what it does</span>
+&lt;<span class="hl">button</span> class="movie-row-arrow left" <span class="hl2">aria-label="Scroll left"</span>&gt;&lt;ChevronLeft <span class="hl2">aria-hidden="true"</span> /&gt;&lt;/<span class="hl">button</span>&gt;
+&lt;<span class="hl">button</span> class="movie-row-arrow right" <span class="hl2">aria-label="Scroll right"</span>&gt;&lt;ChevronRight <span class="hl2">aria-hidden="true"</span> /&gt;&lt;/<span class="hl">button</span>&gt;</div>
+
+    <div class="finding">
+      <div class="finding-title"><span class="finding-icon">🟡</span> 7 Section H2 Headings Invisible to Screen Readers</div>
+      <div class="finding-body">
+        All your movie row section headers (<code>h2.movie-row-title</code>) start in an animated state of <code>opacity: 0; transform: translateX(-20px)</code> and have zero height when Lighthouse audits them. Screen readers cannot see these headings, meaning blind users can't navigate your page by heading structure. Fix: use <code>visibility: hidden</code> instead of <code>opacity: 0</code>, or ensure the animation fires before the accessibility tree is built.
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 7: SEO -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">07</span>
+      <h2>SEO — Missing Meta Description, Broken robots.txt</h2>
+      <span class="severity-tag sev-medium">MEDIUM</span>
+    </div>
+    <p>Your SEO score of 83 is being limited by two concrete failures: no meta description tag on any page, and <strong>25 errors in your robots.txt file</strong>. The rest of the SEO basics (crawlability, link text, hreflang) pass cleanly.</p>
+
+    <div class="fix-list">
+      <div class="fix-item">
+        <div class="fix-bullet fb-red">1</div>
+        <div class="fix-text"><strong>Add a meta description to every page.</strong> Without it, Google generates its own snippet which is usually terrible. In your React app, use <code>react-helmet-async</code> or the new React 19 document metadata APIs to inject dynamic descriptions per page.</div>
+      </div>
+      <div class="fix-item">
+        <div class="fix-bullet fb-red">2</div>
+        <div class="fix-text"><strong>Fix or create your robots.txt.</strong> The report found 25 errors in the file — this could mean malformed syntax, incorrect disallow rules, or a missing Sitemap reference. Check <code>https://xorya-streaming.vercel.app/robots.txt</code> and validate it with Google Search Console.</div>
+      </div>
+      <div class="fix-item">
+        <div class="fix-bullet fb-orange">3</div>
+        <div class="fix-text"><strong>Add Open Graph and Twitter meta tags.</strong> Not flagged by Lighthouse but critical for social sharing — when someone shares your site on WhatsApp or Twitter, it should show a proper card with title, description, and thumbnail image.</div>
+      </div>
+      <div class="fix-item">
+        <div class="fix-bullet fb-orange">4</div>
+        <div class="fix-text"><strong>Add a canonical URL tag</strong> to avoid duplicate content penalties from search engines if your site is accessible on multiple domains.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 8: Network -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">08</span>
+      <h2>Network — TMDB API 170ms RTT, No Caching Strategy</h2>
+      <span class="severity-tag sev-medium">MEDIUM</span>
+    </div>
+    <p>Your TMDB API calls have a round-trip time of <strong>170ms</strong> — nearly 5× higher than any other origin. This is because TMDB's API servers are geographically distant from where your test ran (likely US-West coast). Since TMDB metadata changes very slowly, you're making expensive live API calls for data that could be cached for hours or days.</p>
+
+    <table>
+      <tr><th>Origin</th><th>RTT</th><th>Server Latency</th></tr>
+      <tr><td>api.tmdb.org</td><td class="td-red">170 ms</td><td class="td-orange">121 ms</td></tr>
+      <tr><td>fonts.googleapis.com</td><td>0.7 ms</td><td class="td-orange">144 ms</td></tr>
+      <tr><td>image.tmdb.org</td><td>0.5 ms</td><td>89 ms</td></tr>
+      <tr><td>xorya-streaming.vercel.app</td><td class="td-green">0.3 ms</td><td class="td-green">76 ms</td></tr>
+      <tr><td>youtube.com</td><td>0.2 ms</td><td class="td-green">70 ms</td></tr>
+    </table>
+
+    <div class="fix-list">
+      <div class="fix-item">
+        <div class="fix-bullet fb-orange">1</div>
+        <div class="fix-text"><strong>Cache TMDB API responses in localStorage or IndexedDB</strong> with a TTL (e.g., 30 minutes for trending, 24 hours for movie details). Since you're already using localStorage for the watchlist, this is a natural extension.</div>
+      </div>
+      <div class="fix-item">
+        <div class="fix-bullet fb-orange">2</div>
+        <div class="fix-text"><strong>Add a Service Worker for offline caching.</strong> Vite supports this with <code>vite-plugin-pwa</code>. This would cache API responses and static assets, making repeat visits nearly instant.</div>
+      </div>
+      <div class="fix-item">
+        <div class="fix-bullet fb-orange">3</div>
+        <div class="fix-text"><strong>Preconnect to TMDB.</strong> Add <code>&lt;link rel="preconnect" href="https://api.tmdb.org"&gt;</code> and <code>&lt;link rel="preconnect" href="https://image.tmdb.org"&gt;</code> to your <code>index.html</code> to warm up the connections before your JS starts making API calls.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Priority Summary -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">09</span>
+      <h2>Fix Priority — What to Do First</h2>
+      <span class="severity-tag sev-low">SUMMARY</span>
+    </div>
+    <p>Here is the ordered list of fixes ranked by impact-to-effort ratio. Do these in order and you'll likely push Performance from 42 to 75+ and Accessibility from 74 to 95+.</p>
+    <div class="priority-grid">
+      <div class="priority-card">
+        <div class="priority-num">P1</div>
+        <div class="priority-title">Fix Cumulative Layout Shift</div>
+        <div class="priority-impact td-red">Impact: Performance +25 pts</div>
+        <div class="priority-body">Add width/height to all images. Reserve hero space. Fix heading animation to not start at zero height. Add font-display:swap. This single fix will move your CLS from 1.142 to below 0.1.</div>
+      </div>
+      <div class="priority-card">
+        <div class="priority-num">P2</div>
+        <div class="priority-title">Add aria-label to All Buttons</div>
+        <div class="priority-impact td-orange">Impact: Accessibility +15 pts</div>
+        <div class="priority-body">20 minutes of work. Add aria-label to every scroll arrow and icon button. This moves button-name score from 0 to 1 and fixes your biggest accessibility failure.</div>
+      </div>
+      <div class="priority-card">
+        <div class="priority-num">P3</div>
+        <div class="priority-title">Lazy Load Movie Images</div>
+        <div class="priority-impact td-orange">Impact: LCP –0.5s, Load –4MB</div>
+        <div class="priority-body">Add loading="lazy" to all poster images except row 1. Add fetchpriority="high" to hero backdrop. Cut 235 requests down to ~30 on initial load.</div>
+      </div>
+      <div class="priority-card">
+        <div class="priority-num">P4</div>
+        <div class="priority-title">Code-Split JavaScript Routes</div>
+        <div class="priority-impact td-orange">Impact: TBT –100ms, Bundle –40%</div>
+        <div class="priority-body">Use React.lazy for VideoPlayer, ActorDetails, AdminDashboard. Dynamically import three.js and lenis. Reduces initial bundle execution time significantly.</div>
+      </div>
+      <div class="priority-card">
+        <div class="priority-num">P5</div>
+        <div class="priority-title">Add Security Headers</div>
+        <div class="priority-impact td-yellow">Impact: Best Practices +10 pts</div>
+        <div class="priority-body">5-minute Vercel config change. Add X-Frame-Options, COOP, and Referrer-Policy headers. Move TMDB API key to server-side environment variable.</div>
+      </div>
+      <div class="priority-card">
+        <div class="priority-num">P6</div>
+        <div class="priority-title">Fix SEO Basics</div>
+        <div class="priority-impact td-yellow">Impact: SEO 83 → 95+</div>
+        <div class="priority-body">Add meta description and Open Graph tags with react-helmet-async. Fix robots.txt (25 errors). Add canonical tags. All straightforward and high-value for discoverability.</div>
+      </div>
+      <div class="priority-card">
+        <div class="priority-num">P7</div>
+        <div class="priority-title">Remove filter: blur from Cards</div>
+        <div class="priority-impact td-yellow">Impact: Animation smoothness</div>
+        <div class="priority-body">246 animated elements using filter. Replace with opacity+transform only, which are GPU-compositable. Will noticeably improve scroll smoothness especially on low-end devices.</div>
+      </div>
+      <div class="priority-card">
+        <div class="priority-num">P8</div>
+        <div class="priority-title">Cache TMDB API Responses</div>
+        <div class="priority-impact td-green">Impact: Repeat visit speed</div>
+        <div class="priority-body">Cache trending, popular, and genre lists in localStorage with a 30-minute TTL. Movie details pages can be cached for 24 hours. Eliminates the 170ms API RTT on repeat visits.</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">
+  Report generated from Lighthouse HTML export · xorya-streaming.vercel.app · June 07, 2026<br>
+  Analyzed by Claude — Anthropic
+</div>
+
+</body>
+</html>

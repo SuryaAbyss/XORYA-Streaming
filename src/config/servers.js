@@ -22,6 +22,15 @@ export const servers = [
             tv: (tmdbId, season, episode) => `https://www.vidking.net/embed/tv/${tmdbId}/${season}/${episode}?color=00bcd4&autoPlay=true&nextEpisode=true&episodeSelector=true`
         }
     },
+    {
+        id: 'vidnest',
+        name: 'VidNest',
+        type: 'alternate',
+        urlTemplate: {
+            movie: (tmdbId) => `https://vidnest.fun/movie/${tmdbId}`,
+            tv: (tmdbId, season, episode) => `https://vidnest.fun/tv/${tmdbId}/${season}/${episode}`
+        }
+    },
     // Server #6 - Videasy Pro
     {
         id: 'videasy-pro',
@@ -32,23 +41,14 @@ export const servers = [
             tv: (tmdbId, season, episode) => `https://player.videasy.net/tv/${tmdbId}/${season}/${episode}?color=00bcd4&nextEpisode=true&autoplayNextEpisode=true`
         }
     },
-    // Server #7 - MoviesAPI
     {
-        id: 'moviesapi',
-        name: 'MoviesAPI',
+        id: 'vidlink',
+        name: 'VidLink',
         type: 'alternate',
+        hasDownload: true, // Official downloader app and player options
         urlTemplate: {
-            movie: (tmdbId) => `https://moviesapi.club/movie/${tmdbId}`,
-            tv: (tmdbId, season, episode) => `https://moviesapi.club/tv/${tmdbId}-${season}-${episode}`
-        }
-    },
-    {
-        id: 'vidnest',
-        name: 'VidNest',
-        type: 'alternate',
-        urlTemplate: {
-            movie: (tmdbId) => `https://vidnest.fun/movie/${tmdbId}`,
-            tv: (tmdbId, season, episode) => `https://vidnest.fun/tv/${tmdbId}/${season}/${episode}`
+            movie: (tmdbId) => `https://vidlink.pro/movie/${tmdbId}?primaryColor=00bcd4&autoplay=true`,
+            tv: (tmdbId, season, episode) => `https://vidlink.pro/tv/${tmdbId}/${season}/${episode}?primaryColor=00bcd4&autoplay=true&nextbutton=true`
         }
     },
     {
@@ -111,7 +111,6 @@ export const servers = [
             tv: (tmdbId, season, episode) => `https://godriveplayer.com/player.php?type=series&tmdb=${tmdbId}&season=${season}&episode=${episode}`
         }
     },
-
     {
         id: '2embed',
         name: '2Embed',
@@ -121,8 +120,6 @@ export const servers = [
             tv: (tmdbId, season, episode) => `https://www.2embed.cc/embedtv/${tmdbId}&s=${season}&e=${episode}`
         }
     },
-
-
     {
         id: 'nontongo',
         name: 'NontonGo',
@@ -142,16 +139,6 @@ export const servers = [
         }
     },
     {
-        id: 'vidlink',
-        name: 'VidLink',
-        type: 'alternate',
-        hasDownload: true, // Official downloader app and player options
-        urlTemplate: {
-            movie: (tmdbId) => `https://vidlink.pro/movie/${tmdbId}?primaryColor=00bcd4&autoplay=true`,
-            tv: (tmdbId, season, episode) => `https://vidlink.pro/tv/${tmdbId}/${season}/${episode}?primaryColor=00bcd4&autoplay=true&nextbutton=true`
-        }
-    },
-    {
         id: 'embedmaster',
         name: 'EmbedMaster',
         type: 'alternate',
@@ -167,6 +154,16 @@ export const servers = [
         urlTemplate: {
             movie: (tmdbId) => `https://multiembed.mov/directstream.php?video_id=${tmdbId}&tmdb=1`,
             tv: (tmdbId, season, episode) => `https://multiembed.mov/directstream.php?video_id=${tmdbId}&tmdb=1&s=${season}&e=${episode}`
+        }
+    },
+    // Server #7 - MoviesAPI
+    {
+        id: 'moviesapi',
+        name: 'MoviesAPI',
+        type: 'alternate',
+        urlTemplate: {
+            movie: (tmdbId) => `https://moviesapi.club/movie/${tmdbId}`,
+            tv: (tmdbId, season, episode) => `https://moviesapi.club/tv/${tmdbId}-${season}-${episode}`
         }
     },
     // Server Testing Area

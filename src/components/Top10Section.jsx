@@ -182,15 +182,17 @@ const Top10Section = ({ movies }) => {
             <button
                 className="top10-nav-arrow left"
                 onClick={() => scroll('left')}
+                aria-label="Scroll left"
             >
-                <ChevronLeft size={24} />
+                <ChevronLeft size={24} aria-hidden="true" />
             </button>
 
             <button
                 className="top10-nav-arrow right"
                 onClick={() => scroll('right')}
+                aria-label="Scroll right"
             >
-                <ChevronRight size={24} />
+                <ChevronRight size={24} aria-hidden="true" />
             </button>
 
             {/* Scrollable Container */}

@@ -2,7 +2,8 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Search } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { searchMulti, imageUrl } from '../api/tmdb';
+import { imageUrl } from '../api/tmdb';
+import { enhancedSearch, initializeSearchCache, getRecommendedSearchContent } from '../utils/searchEngine';
 import { useMovieModal } from '../context/MovieModalContext';
 import Lenis from 'lenis';
 
@@ -11,6 +12,7 @@ const SearchModal = ({ isOpen, onClose }) => {
     const [results, setResults] = useState([]);
     const [loading, setLoading] = useState(false);
     const [activeFilter, setActiveFilter] = useState('all');
+    const [recommended, setRecommended] = useState([]);
     const navigate = useNavigate();
     const { openModal } = useMovieModal();
 
@@ -32,7 +34,7 @@ const SearchModal = ({ isOpen, onClose }) => {
 
         setLoading(true);
         try {
-            const data = await searchMulti(query);
+            const data = await enhancedSearch(query);
             // Filter to only movies and TV shows
             const filtered = data.results.filter(
                 item => item.media_type === 'movie' || item.media_type === 'tv'
@@ -190,6 +192,15 @@ const SearchModal = ({ isOpen, onClose }) => {
         };
     }, [isOpen, onClose]);
 
+    useEffect(() => {
+        // Preload search cache in the background when modal opens
+        if (isOpen) {
+            initializeSearchCache().then(() => {
+                setRecommended(getRecommendedSearchContent().slice(0, 8));
+            });
+        }
+    }, [isOpen]);
+
     const handleCardClick = (item) => {
         if (item.media_type === 'movie') {
             openModal(item.id, 'movie');
@@ -313,8 +324,38 @@ const SearchModal = ({ isOpen, onClose }) => {
                             )}
 
                             {!loading && searchQuery && displayResults.length === 0 && (
-                                <div className="search-empty">
-                                    <p>No results found for "{searchQuery}" matching that filter.</p>
+                                <div className="search-empty" style={{ textAlign: 'center', marginTop: '2rem' }}>
+                                    <h3 style={{ fontSize: '1.2rem', color: '#fff', marginBottom: '0.5rem' }}>No exact matches found</h3>
+                                    <p style={{ color: '#aaa', marginBottom: '2rem' }}>We couldn't find anything for "{searchQuery}". Here are some popular titles instead:</p>
+                                    <div className="search-grid">
+                                        {recommended.map((item) => (
+                                            <motion.div
+                                                key={`${item.media_type}-${item.id}`}
+                                                className="search-card"
+                                                onClick={() => handleCardClick(item)}
+                                                initial={{ opacity: 0, y: 20 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                whileHover={{ scale: 1.05 }}
+                                                transition={{ duration: 0.2 }}
+                                            >
+                                                <div className="search-card-image">
+                                                    {item.poster_path ? (
+                                                        <img src={imageUrl(item.poster_path, 'w300')} alt={item.title || item.name} loading="lazy" />
+                                                    ) : (
+                                                        <div className="search-card-no-image">{item.media_type === 'movie' ? '🎬' : '📺'}</div>
+                                                    )}
+                                                </div>
+                                                <div className="search-card-info">
+                                                    <h3>{item.title || item.name}</h3>
+                                                    <p className="search-card-meta">
+                                                        {item.media_type === 'movie' ? 'Movie' : 'TV Show'}
+                                                        {item.release_date || item.first_air_date ? ` • ${(item.release_date || item.first_air_date).split('-')[0]}` : null}
+                                                    </p>
+                                                    {item.vote_average > 0 && <p className="search-card-rating">⭐ {item.vote_average.toFixed(1)}</p>}
+                                                </div>
+                                            </motion.div>
+                                        ))}
+                                    </div>
                                 </div>
                             )}
 

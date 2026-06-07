@@ -35,8 +35,8 @@ const MovieRow = ({ title, movies, onMovieClick }) => {
         >
             <motion.h2
                 variants={{
-                    hidden: { opacity: 0, x: -20 },
-                    visible: { opacity: 1, x: 0, transition: { duration: 0.6 } }
+                    hidden: { visibility: 'hidden', x: -20 },
+                    visible: { visibility: 'visible', x: 0, transition: { duration: 0.6 } }
                 }}
                 className="movie-row-title"
             >
@@ -47,9 +47,10 @@ const MovieRow = ({ title, movies, onMovieClick }) => {
                 <button
                     onClick={() => scroll('left')}
                     className="movie-row-arrow left"
+                    aria-label="Scroll left"
                     style={{}}
                 >
-                    <ChevronLeft size={30} />
+                    <ChevronLeft size={24} aria-hidden="true" />
                 </button>
 
                 <div
@@ -65,9 +66,10 @@ const MovieRow = ({ title, movies, onMovieClick }) => {
                 <button
                     onClick={() => scroll('right')}
                     className="movie-row-arrow right"
+                    aria-label="Scroll right"
                     style={{}}
                 >
-                    <ChevronRight size={30} />
+                    <ChevronRight size={24} aria-hidden="true" />
                 </button>
             </div>
         </motion.div>

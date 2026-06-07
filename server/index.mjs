@@ -76,8 +76,9 @@ app.post('/api/admin/track', (req, res) => {
 
 app.get('/api/admin/stats', (req, res) => {
     const { secret } = req.query;
-    // Simple secret check - in a real app use environment variables
-    if (secret !== 'xorya-admin-2024') {
+    // Use environment variables for the admin secret
+    const expectedSecret = process.env.ADMIN_SECRET || 'xorya-admin-2024';
+    if (secret !== expectedSecret) {
         return res.status(403).json({ error: 'Unauthorized' });
     }
 

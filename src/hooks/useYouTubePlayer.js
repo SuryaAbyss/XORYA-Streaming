@@ -142,6 +142,7 @@ export default function useYouTubePlayer(videoKey, containerRef, options = {}) {
             playerRef.current = new window.YT.Player(targetDiv.id, {
                 width: containerWidth,
                 height: containerHeight,
+                host: 'https://www.youtube-nocookie.com',
                 // Omit videoId here to prevent adaptive streaming from starting immediately
                 playerVars: {
                     autoplay: 0, // We will manually load and play

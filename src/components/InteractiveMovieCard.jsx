@@ -3,8 +3,6 @@ import { createPortal } from 'react-dom';
 import { imageUrl } from '../api/tmdb';
 import { Play, Star, Eye, Bookmark, ChevronRight } from 'lucide-react';
 import { useMovieModal } from '../context/MovieModalContext';
-import { motion } from 'framer-motion';
-import { BlurFade } from './ui/blur-fade';
 
 const InteractiveMovieCard = ({ movie, index = 0 }) => {
     const { openModal, selectedMovieId } = useMovieModal();
@@ -46,17 +44,13 @@ const InteractiveMovieCard = ({ movie, index = 0 }) => {
 
     return (
         <>
-            <BlurFade
+            <div
                 ref={cardRef}
-                inView={false}
-                delay={Math.min(index, 6) * 0.05}
-                inViewMargin="-20px"
-                whileHover={isMobile ? {} : { scale: 1.15, zIndex: 10, transition: { duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] } }}
                 onMouseEnter={handleMouseEnter}
                 onMouseLeave={handleMouseLeave}
                 onClick={handleClick}
                 className={`interactive-movie-card ${isHovered ? 'hovered' : ''}`}
-                style={{}}
+                style={{ opacity: 0 }}
             >
                 {/* Poster Image - always visible */}
                 <div style={{
@@ -141,7 +135,7 @@ const InteractiveMovieCard = ({ movie, index = 0 }) => {
                         100% { opacity: 1; transform: scale(1); }
                     }
                 `}</style>
-            </BlurFade>
+            </div>
 
             {/* Hover Data Popup Modal that breaks out using React Portal */}
             {showDetails && rect && !selectedMovieId && createPortal(
@@ -227,6 +221,7 @@ const InteractiveMovieCard = ({ movie, index = 0 }) => {
                                     const mediaType = movie.media_type || (movie.name ? 'tv' : 'movie');
                                     openModal(movie.id, mediaType);
                                 }}
+                                aria-label={`View details for ${movie.title || movie.name}`}
                                 style={{ flex: 1, backgroundColor: 'rgba(255, 255, 255, 0.08)', color: 'white', border: '1px solid rgba(255, 255, 255, 0.12)', borderRadius: '25px', padding: '10px 0', fontSize: '0.9rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', cursor: 'pointer', transition: 'all 0.2s', boxShadow: '0 4px 15px rgba(0,0,0,0.3)' }}
                                 onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.15)'; e.currentTarget.style.transform = 'scale(1.02)'; }}
                                 onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.08)'; e.currentTarget.style.transform = 'scale(1)'; }}
@@ -235,6 +230,7 @@ const InteractiveMovieCard = ({ movie, index = 0 }) => {
                             </button>
                             <button
                                 onClick={(e) => e.stopPropagation()}
+                                aria-label="Rate this movie"
                                 style={{ width: '38px', height: '38px', flexShrink: 0, borderRadius: '50%', background: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 255, 255, 0.12)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.2s', boxShadow: '0 4px 15px rgba(0,0,0,0.3)' }}
                                 onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.15)'; e.currentTarget.style.transform = 'scale(1.05)'; }}
                                 onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.08)'; e.currentTarget.style.transform = 'scale(1)'; }}
@@ -243,6 +239,7 @@ const InteractiveMovieCard = ({ movie, index = 0 }) => {
                             </button>
                             <button
                                 onClick={(e) => e.stopPropagation()}
+                                aria-label="Add to watchlist"
                                 style={{ width: '38px', height: '38px', flexShrink: 0, borderRadius: '50%', background: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 255, 255, 0.12)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.2s', boxShadow: '0 4px 15px rgba(0,0,0,0.3)' }}
                                 onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.15)'; e.currentTarget.style.transform = 'scale(1.05)'; }}
                                 onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.08)'; e.currentTarget.style.transform = 'scale(1)'; }}

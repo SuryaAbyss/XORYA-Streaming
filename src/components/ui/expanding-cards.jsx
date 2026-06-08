@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ExternalLink, Check, Trash2, Clock, Eye } from "lucide-react";
 import ProgressTracker from "./ProgressTracker";
+import { createLayout } from "animejs";
 
 /**
  * @typedef {Object} CardItem
@@ -37,6 +38,9 @@ export const ExpandingCards = ({ items, defaultActiveIndex = 0, className = "" }
   const [isDesktop, setIsDesktop] = React.useState(false);
   const navigate = useNavigate();
 
+  const containerRef = React.useRef(null);
+  const layoutRef = React.useRef(null);
+
   React.useEffect(() => {
     const handleResize = () => {
       setIsDesktop(window.innerWidth >= 768);
@@ -45,6 +49,34 @@ export const ExpandingCards = ({ items, defaultActiveIndex = 0, className = "" }
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  React.useEffect(() => {
+    if (containerRef.current) {
+      layoutRef.current = createLayout(containerRef.current, {
+        children: '.ec-card',
+        duration: 350,
+        leaveTo: {
+          transform: 'translateY(-100px) scale(.25)',
+          opacity: 0,
+          duration: 350,
+          ease: 'out(3)'
+        }
+      });
+    }
+  }, []);
+
+  const handleLeave = (itemId, onCompleteAction) => {
+    const cardEl = containerRef.current?.querySelector(`[data-id="${itemId}"]`);
+    if (cardEl && layoutRef.current) {
+      layoutRef.current.update(({ root }) => {
+        cardEl.style.display = 'none';
+      }).then(() => {
+        onCompleteAction();
+      });
+    } else {
+      onCompleteAction();
+    }
+  };
 
   const gridStyle = React.useMemo(() => {
     if (activeIndex === null) return {};
@@ -72,12 +104,14 @@ export const ExpandingCards = ({ items, defaultActiveIndex = 0, className = "" }
 
   return (
     <ul
+      ref={containerRef}
       className={`expanding-cards-container ${className}`}
       style={gridStyle}
     >
       {items.map((item, index) => (
         <li
           key={item.id}
+          data-id={item.id}
           className="ec-card"
           onMouseEnter={() => isDesktop ? setActiveIndex(index) : null}
           onClick={() => handleInteraction(index)}
@@ -133,7 +167,11 @@ export const ExpandingCards = ({ items, defaultActiveIndex = 0, className = "" }
                       <button 
                         type="button"
                         className={`ec-status-btn ${item.status === 'watched' ? 'active' : ''}`}
-                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); item.onStatusChange?.('watched'); }}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleLeave(item.id, () => item.onStatusChange?.('watched'));
+                        }}
                         title="Mark as Watched"
                       >
                         <Check size={14} />
@@ -159,7 +197,11 @@ export const ExpandingCards = ({ items, defaultActiveIndex = 0, className = "" }
                     <button 
                       type="button"
                       className="ec-delete-btn"
-                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); item.onDelete?.(); }}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleLeave(item.id, () => item.onDelete?.());
+                      }}
                       title="Remove from Watchlist"
                     >
                       <Trash2 size={14} />
@@ -183,3 +225,4 @@ export const ExpandingCards = ({ items, defaultActiveIndex = 0, className = "" }
 };
 
 ExpandingCards.displayName = "ExpandingCards";
+

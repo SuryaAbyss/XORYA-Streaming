@@ -26,7 +26,7 @@ const VisitorTracker = () => {
         await axios.post(`${baseUrl}/api/admin/track`, { visitorId });
       } catch (err) {
         // Fail silently
-        console.warn('Tracker heartbeat failed');
+        // console.warn('Tracker heartbeat failed');
       }
     };
 

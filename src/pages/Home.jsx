@@ -5,6 +5,7 @@ import Top10Section from '../components/Top10Section';
 import ProvidersSection from '../components/ProvidersSection';
 import SmokeBackground from '../components/SmokeBackground';
 import GridBackground from '../components/GridBackground';
+import SEO from '../components/SEO';
 import { imageUrl } from '../api/tmdb';
 import { loadYouTubeAPI } from '../hooks/useYouTubePlayer';
 import {
@@ -202,6 +203,11 @@ const Home = ({ category = 'all' }) => {
 
     return (
         <div className="home-page pb-0">
+            <SEO 
+                title="XORYA - Premium Streaming Platform"
+                description="Watch the latest and most popular movies and TV shows on XORYA. Experience premium streaming with an interactive interface."
+            />
+            <h1 style={{ position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clip: 'rect(0, 0, 0, 0)', border: 0 }}>XORYA - Premium Streaming Platform</h1>
             {/* Grid pattern only in the hero/header area */}
             <GridBackground>
                 <Hero
@@ -292,7 +298,7 @@ const Home = ({ category = 'all' }) => {
                             {showTV && (
                                 <>
                                     <div className="home-section-header" style={{ padding: '0 2rem', marginBottom: '-1rem', marginTop: '1rem', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                        <h1 style={{
+                                        <h2 style={{
                                             fontSize: '1.8rem',
                                             fontWeight: '800',
                                             textTransform: 'uppercase',
@@ -304,7 +310,7 @@ const Home = ({ category = 'all' }) => {
                                             textShadow: '0 0 20px rgba(56, 189, 248, 0.3)'
                                         }}>
                                             TV
-                                        </h1>
+                                        </h2>
                                         <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#818cf8', opacity: 0.8 }} />
                                         <span style={{
                                             fontSize: '1.1rem',
@@ -320,7 +326,7 @@ const Home = ({ category = 'all' }) => {
                                     <MovieRow title="" movies={popularTV} />
                                     {/* Stylish TV Top Rated Header */}
                                     <div className="home-section-header" style={{ padding: '0 2rem', marginBottom: '-1rem', marginTop: '1rem', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                        <h1 style={{
+                                        <h2 style={{
                                             fontSize: '1.8rem',
                                             fontWeight: '800',
                                             textTransform: 'uppercase',
@@ -332,7 +338,7 @@ const Home = ({ category = 'all' }) => {
                                             textShadow: '0 0 20px rgba(56, 189, 248, 0.3)'
                                         }}>
                                             TV
-                                        </h1>
+                                        </h2>
                                         <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#818cf8', opacity: 0.8 }} />
                                         <span style={{
                                             fontSize: '1.1rem',
@@ -355,7 +361,7 @@ const Home = ({ category = 'all' }) => {
                             {showMovies && (
                                 <>
                                     <div className="home-section-header" style={{ padding: '0 2rem', marginBottom: '-1rem', marginTop: '1rem', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                        <h1 style={{
+                                        <h2 style={{
                                             fontSize: '1.8rem',
                                             fontWeight: '800',
                                             textTransform: 'uppercase',
@@ -367,7 +373,7 @@ const Home = ({ category = 'all' }) => {
                                             textShadow: '0 0 20px rgba(251, 191, 36, 0.3)'
                                         }}>
                                             Movies
-                                        </h1>
+                                        </h2>
                                         <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#f59e0b', opacity: 0.8 }} />
                                         <span style={{
                                             fontSize: '1.1rem',
@@ -384,7 +390,7 @@ const Home = ({ category = 'all' }) => {
 
                                     {/* Stylish Movie Action Thriller Header */}
                                     <div className="home-section-header" style={{ padding: '0 2rem', marginBottom: '-1rem', marginTop: '1rem', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                        <h1 style={{
+                                        <h2 style={{
                                             fontSize: '1.8rem',
                                             fontWeight: '800',
                                             textTransform: 'uppercase',
@@ -396,7 +402,7 @@ const Home = ({ category = 'all' }) => {
                                             textShadow: '0 0 20px rgba(251, 191, 36, 0.3)'
                                         }}>
                                             Movies
-                                        </h1>
+                                        </h2>
                                         <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#f59e0b', opacity: 0.8 }} />
                                         <span style={{
                                             fontSize: '1.1rem',
@@ -413,7 +419,7 @@ const Home = ({ category = 'all' }) => {
 
                                     {/* Stylish Movie Horror Header */}
                                     <div className="home-section-header" style={{ padding: '0 2rem', marginBottom: '-1rem', marginTop: '1rem', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                        <h1 style={{
+                                        <h2 style={{
                                             fontSize: '1.8rem',
                                             fontWeight: '800',
                                             textTransform: 'uppercase',
@@ -425,7 +431,7 @@ const Home = ({ category = 'all' }) => {
                                             textShadow: '0 0 20px rgba(251, 191, 36, 0.3)'
                                         }}>
                                             Movies
-                                        </h1>
+                                        </h2>
                                         <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#f59e0b', opacity: 0.8 }} />
                                         <span style={{
                                             fontSize: '1.1rem',

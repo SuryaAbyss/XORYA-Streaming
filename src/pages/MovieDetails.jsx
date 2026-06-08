@@ -1,9 +1,10 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { getMovieDetails, imageUrl, getMovieVideos } from '../api/tmdb';
 import { ArrowLeft, Play, Plus, Download, Volume2, VolumeX } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import useYouTubePlayer from '../hooks/useYouTubePlayer';
+import SEO from '../components/SEO';
 
 const MovieDetails = () => {
     const { id } = useParams();
@@ -113,6 +114,22 @@ const MovieDetails = () => {
 
     return (
         <div style={{ minHeight: '100vh', color: 'white', paddingBottom: isMobile ? '80px' : '3rem' }}>
+            <SEO 
+                title={`${movie.title || movie.name} - XORYA Streaming`}
+                description={movie.overview}
+                image={imageUrl(movie.poster_path || movie.backdrop_path, 'w1280')}
+                url={window.location.href}
+                type="video.movie"
+                schema={{
+                    "@context": "https://schema.org",
+                    "@type": "Movie",
+                    "name": movie.title || movie.name,
+                    "image": imageUrl(movie.poster_path || movie.backdrop_path, 'w1280'),
+                    "description": movie.overview,
+                    "datePublished": movie.release_date,
+                    "url": window.location.href
+                }}
+            />
             {/* Hero Section with Backdrop/Trailer */}
             <div style={{
                 position: 'relative',
@@ -188,6 +205,7 @@ const MovieDetails = () => {
                 {/* Back Button */}
                 <button
                     onClick={() => navigate('/')}
+                    aria-label="Go back"
                     style={{
                         position: 'absolute',
                         top: isMobile ? '1rem' : '2rem',
@@ -229,13 +247,30 @@ const MovieDetails = () => {
                         style={{
                             fontSize: 'clamp(1.75rem, 4vw, 3rem)',
                             fontWeight: 'bold',
-                            marginBottom: '0.6rem',
+                            marginBottom: '0.4rem',
                             textShadow: '0 4px 20px rgba(0,0,0,0.8)',
                             letterSpacing: '-0.02em'
                         }}
                     >
-                        {movie.title}
+                        {movie.title || movie.name}
                     </motion.h1>
+
+                    {/* Breadcrumbs for SEO */}
+                    <motion.nav 
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 0.6, delay: 0.2 }}
+                        aria-label="Breadcrumb" 
+                        style={{ marginBottom: '1.2rem', fontSize: '0.85rem', color: '#ccc' }}
+                    >
+                        <ol style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                            <li><Link to="/" style={{ color: '#ccc', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={(e) => e.target.style.color='white'} onMouseLeave={(e) => e.target.style.color='#ccc'}>Home</Link></li>
+                            <li style={{ fontSize: '0.7rem' }}>&gt;</li>
+                            <li><Link to={movie.name ? "/series" : "/movies"} style={{ color: '#ccc', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={(e) => e.target.style.color='white'} onMouseLeave={(e) => e.target.style.color='#ccc'}>{movie.name ? 'TV Shows' : 'Movies'}</Link></li>
+                            <li style={{ fontSize: '0.7rem' }}>&gt;</li>
+                            <li aria-current="page" style={{ color: 'white', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '150px' }}>{movie.title || movie.name}</li>
+                        </ol>
+                    </motion.nav>
 
                     {/* Metadata - Conditionally Hidden */}
                     <AnimatePresence>
@@ -352,6 +387,7 @@ const MovieDetails = () => {
                         {showTrailer && trailerKey && (
                             <button
                                 onClick={toggleMute}
+                                aria-label={isMuted ? "Unmute video" : "Mute video"}
                                 className="glass"
                                 style={{
                                     padding: '0.65rem 1rem',
@@ -384,6 +420,7 @@ const MovieDetails = () => {
                                         initial={{ opacity: 1, scale: 1 }}
                                         exit={{ opacity: 0, scale: 0.9 }}
                                         transition={{ duration: 0.3 }}
+                                        aria-label="Add to watchlist"
                                         className="glass"
                                         style={{
                                             padding: '0.65rem 1rem',
@@ -411,6 +448,7 @@ const MovieDetails = () => {
                                         initial={{ opacity: 1, scale: 1 }}
                                         exit={{ opacity: 0, scale: 0.9 }}
                                         transition={{ duration: 0.3, delay: 0.05 }}
+                                        aria-label="Download movie"
                                         className="glass"
                                         style={{
                                             padding: '0.65rem 1rem',

@@ -359,6 +359,11 @@ body::before {
   border-color: rgba(0, 188, 212, 0.5);
   box-shadow: 0 8px 24px rgba(0, 188, 212, 0.15);
 }
+@media (hover: hover) {
+  .search-card:hover {
+    transform: translateY(-4px) scale(1.04);
+  }
+}
 
 .search-card-image {
   width: 100%;
@@ -700,6 +705,16 @@ body::before {
   overflow: hidden;
   background-color: #1a1a1a;
   flex-shrink: 0;
+  transition: transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 0.35s ease;
+  will-change: transform;
+}
+
+@media (min-width: 769px) {
+  .interactive-movie-card:hover {
+    transform: scale(1.15);
+    z-index: 10;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.7);
+  }
 }
 
 .interactive-movie-card.hovered {
@@ -3040,6 +3055,11 @@ body::before {
   border-color: rgba(112, 161, 255, 0.4);
   background: rgba(255, 255, 255, 0.06);
 }
+@media (hover: hover) {
+  .wl-search-card:hover {
+    transform: translateY(-3px) scale(1.03);
+  }
+}
 
 .wl-search-card.added {
   opacity: 0.5;
@@ -3672,4 +3692,10 @@ body::before {
   color: #70a1ff;
   font-size: 0.65rem;
   font-weight: 700;
+}
+
+/* Accessibility Focus Utility */
+.focus-visible:focus-visible {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 2px;
 }

@@ -1,16 +1,17 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import './WatchlistCard.css';
 import Lenis from 'lenis';
 import {
   Plus, Download, Upload, Trash2, X,
-  Eye, Clock, CheckCircle2, LayoutList, Film, Tv, Clapperboard
+  Eye, Clock, CheckCircle2, LayoutList, Film, Tv
 } from 'lucide-react';
 import { useWatchlist } from '../hooks/useWatchlist';
 import TierRow from '../components/TierRow';
 import { imageUrl } from '../api/tmdb';
 import ProgressTracker from '../components/ui/ProgressTracker';
 import { useMovieModal } from '../context/MovieModalContext';
+import { gsap } from 'gsap';
+import { useGSAP } from '@gsap/react';
 
 const PRESET_COLORS = [
   '#ff4757', '#ffa502', '#eccc68', '#7bed9f',
@@ -29,6 +30,43 @@ const NewTierModal = ({ isOpen, onClose, onSave }) => {
   const [name, setName] = useState('');
   const [color, setColor] = useState('#ff4757');
 
+  const [shouldRender, setShouldRender] = useState(isOpen);
+  const [isClosing, setIsClosing] = useState(false);
+
+  const overlayRef = useRef(null);
+  const containerRef = useRef(null);
+
+  // Sync isOpen prop
+  useEffect(() => {
+    if (isOpen) {
+      setShouldRender(true);
+      setIsClosing(false);
+    } else if (shouldRender && !isClosing) {
+      setIsClosing(true);
+      const tl = gsap.timeline({
+        onComplete: () => {
+          setShouldRender(false);
+          setIsClosing(false);
+        }
+      });
+      tl.to(containerRef.current, { scale: 0.9, opacity: 0, y: 15, duration: 0.25, ease: "power3.in" })
+        .to(overlayRef.current, { opacity: 0, duration: 0.2 }, "-=0.15");
+    }
+  }, [isOpen]);
+
+  // Entrance animation
+  useGSAP(() => {
+    if (isOpen && shouldRender && !isClosing) {
+      const tl = gsap.timeline();
+      tl.fromTo(overlayRef.current, { opacity: 0 }, { opacity: 1, duration: 0.3 })
+        .fromTo(containerRef.current,
+          { scale: 0.9, opacity: 0, y: 15 },
+          { scale: 1, opacity: 1, y: 0, duration: 0.4, ease: "power4.out" },
+          "-=0.15"
+        );
+    }
+  }, [isOpen, shouldRender]);
+
   const handleSave = () => {
     if (!name.trim()) return;
     onSave(name.trim(), color);
@@ -36,76 +74,73 @@ const NewTierModal = ({ isOpen, onClose, onSave }) => {
     onClose();
   };
 
+  if (!shouldRender) return null;
+
   return (
-    <AnimatePresence>
-      {isOpen && (
-        <motion.div
-          initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-          className="wl-modal-overlay"
-          onClick={(e) => e.target === e.currentTarget && onClose()}
-        >
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-            transition={{ type: 'spring', stiffness: 300, damping: 28 }}
-            className="wl-new-tier-modal"
-          >
-            <div className="wl-modal-header">
-              <h3>Create New Tier</h3>
-              <button className="wl-modal-close" onClick={onClose}><X size={18} /></button>
-            </div>
-            <div className="wl-modal-body">
-              <label className="wl-modal-label">Tier Name</label>
-              <input
-                className="wl-modal-input"
-                placeholder="e.g. Top Priority"
-                value={name}
-                onChange={e => setName(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && handleSave()}
-                autoFocus maxLength={40}
-              />
-              <label className="wl-modal-label" style={{ marginTop: '1.25rem' }}>Tier Color</label>
-              <div className="wl-modal-colors">
-                {PRESET_COLORS.map(c => (
-                  <button
-                    key={c}
-                    className={`wl-color-swatch ${c === color ? 'selected' : ''}`}
-                    style={{ background: c }}
-                    onClick={() => setColor(c)}
-                  />
-                ))}
-                <input
-                  type="color" value={color}
-                  onChange={e => setColor(e.target.value)}
-                  className="wl-modal-color-input" title="Custom color"
-                />
-              </div>
-              {name && (
-                <div className="wl-modal-preview" style={{ borderColor: color + '55', background: color + '11' }}>
-                  <span style={{ color, fontWeight: 700 }}>{name}</span>
-                </div>
-              )}
-            </div>
-            <div className="wl-modal-footer">
-              <button className="wl-btn wl-btn-ghost" onClick={onClose}>Cancel</button>
+    <div
+      ref={overlayRef}
+      style={{ opacity: 0 }}
+      className="wl-modal-overlay"
+      onClick={(e) => e.target === e.currentTarget && onClose()}
+    >
+      <div
+        ref={containerRef}
+        style={{ opacity: 0, transform: 'translateY(15px) scale(0.9)' }}
+        className="wl-new-tier-modal"
+      >
+        <div className="wl-modal-header">
+          <h3>Create New Tier</h3>
+          <button className="wl-modal-close" onClick={onClose}><X size={18} /></button>
+        </div>
+        <div className="wl-modal-body">
+          <label className="wl-modal-label">Tier Name</label>
+          <input
+            className="wl-modal-input"
+            placeholder="e.g. Top Priority"
+            value={name}
+            onChange={e => setName(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && handleSave()}
+            autoFocus maxLength={40}
+          />
+          <label className="wl-modal-label" style={{ marginTop: '1.25rem' }}>Tier Color</label>
+          <div className="wl-modal-colors">
+            {PRESET_COLORS.map(c => (
               <button
-                className="wl-btn wl-btn-primary"
-                style={{ background: color, color: '#000' }}
-                onClick={handleSave}
-                disabled={!name.trim()}
-              >
-                <Plus size={16} /> Create Tier
-              </button>
+                key={c}
+                className={`wl-color-swatch ${c === color ? 'selected' : ''}`}
+                style={{ background: c }}
+                onClick={() => setColor(c)}
+              />
+            ))}
+            <input
+              type="color" value={color}
+              onChange={e => setColor(e.target.value)}
+              className="wl-modal-color-input" title="Custom color"
+            />
+          </div>
+          {name && (
+            <div className="wl-modal-preview" style={{ borderColor: color + '55', background: color + '11' }}>
+              <span style={{ color, fontWeight: 700 }}>{name}</span>
             </div>
-          </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+          )}
+        </div>
+        <div className="wl-modal-footer">
+          <button className="wl-btn wl-btn-ghost" onClick={onClose}>Cancel</button>
+          <button
+            className="wl-btn wl-btn-primary"
+            style={{ background: color, color: '#000' }}
+            onClick={handleSave}
+            disabled={!name.trim()}
+          >
+            <Plus size={16} /> Create Tier
+          </button>
+        </div>
+      </div>
+    </div>
   );
 };
 
-// ── Filter Panel (shown when a stat card is clicked) ────────────────────────────
+// ── Filter Panel ────────────────────────────────────────────────────────────────
 const FilterPanel = ({ isOpen, onClose, filter, entries, tiers, onProgress, onStatusChange }) => {
   const { openModal } = useMovieModal();
   const cfg = STATUS_CONFIG[filter] || STATUS_CONFIG.all;
@@ -126,6 +161,56 @@ const FilterPanel = ({ isOpen, onClose, filter, entries, tiers, onProgress, onSt
   const bodyRef = useRef(null);
   const lenisRef = useRef(null);
 
+  const [shouldRender, setShouldRender] = useState(isOpen);
+  const [isClosing, setIsClosing] = useState(false);
+
+  const overlayRef = useRef(null);
+  const panelRef = useRef(null);
+
+  // Sync isOpen prop
+  useEffect(() => {
+    if (isOpen) {
+      setShouldRender(true);
+      setIsClosing(false);
+    } else if (shouldRender && !isClosing) {
+      setIsClosing(true);
+      const tl = gsap.timeline({
+        onComplete: () => {
+          setShouldRender(false);
+          setIsClosing(false);
+        }
+      });
+      tl.to(panelRef.current, { x: '100%', opacity: 0, duration: 0.3, ease: "power3.in" })
+        .to(overlayRef.current, { opacity: 0, duration: 0.25 }, "-=0.2");
+    }
+  }, [isOpen]);
+
+  // Entrance animation
+  useGSAP(() => {
+    if (isOpen && shouldRender && !isClosing) {
+      const tl = gsap.timeline();
+      tl.fromTo(overlayRef.current, { opacity: 0 }, { opacity: 1, duration: 0.3 })
+        .fromTo(panelRef.current,
+          { x: '100%', opacity: 0 },
+          { x: 0, opacity: 1, duration: 0.5, ease: "power4.out" },
+          "-=0.15"
+        );
+    }
+  }, [isOpen, shouldRender]);
+
+  // Stagger grid cards when results change
+  useGSAP(() => {
+    if (shouldRender && !isClosing && panelRef.current) {
+      const cards = panelRef.current.querySelectorAll('.wl-filter-card');
+      if (cards && cards.length > 0) {
+        gsap.fromTo(cards,
+          { opacity: 0, y: 15 },
+          { opacity: 1, y: 0, duration: 0.45, stagger: 0.03, ease: "power3.out", overwrite: "auto" }
+        );
+      }
+    }
+  }, [filtered.length, shouldRender, isClosing]);
+
   useEffect(() => {
     const handleEscape = (e) => {
       if (e.key === 'Escape') onClose();
@@ -135,7 +220,7 @@ const FilterPanel = ({ isOpen, onClose, filter, entries, tiers, onProgress, onSt
     let rafId = null;
 
     const bodyEl = bodyRef.current;
-    if (isOpen && bodyEl) {
+    if (shouldRender && bodyEl) {
       lenisInstance = new Lenis({
         wrapper: bodyEl,
         lerp: 0.1,
@@ -199,7 +284,7 @@ const FilterPanel = ({ isOpen, onClose, filter, entries, tiers, onProgress, onSt
       e.stopPropagation();
     };
 
-    if (isOpen) {
+    if (shouldRender) {
       document.addEventListener('keydown', handleEscape);
       window.addEventListener('wheel', handleWheel, { passive: false });
       window.addEventListener('touchstart', handleTouchStart, { passive: true });
@@ -232,122 +317,116 @@ const FilterPanel = ({ isOpen, onClose, filter, entries, tiers, onProgress, onSt
       const rootEl = document.getElementById('root');
       if (rootEl) rootEl.classList.remove('no-scroll');
     };
-  }, [isOpen, onClose]);
+  }, [shouldRender, onClose]);
+
+  if (!shouldRender) return null;
 
   return (
-    <AnimatePresence>
-      {isOpen && (
-        <motion.div
-          initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-          className="wl-filter-overlay"
-          onClick={(e) => e.target === e.currentTarget && onClose()}
-          data-lenis-prevent
-        >
-          <motion.div
-            initial={{ opacity: 0, x: 60 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 60 }}
-            transition={{ type: 'spring', stiffness: 280, damping: 30 }}
-            className="wl-filter-panel"
-            data-lenis-prevent
-          >
-            {/* Header */}
-            <div className="wl-filter-header">
-              <div className="wl-filter-header-left">
-                <div className="wl-filter-icon" style={{ background: cfg.color + '22', color: cfg.color }}>
-                  <Icon size={18} />
-                </div>
-                <div>
-                  <h2 className="wl-filter-title">{cfg.label}</h2>
-                  <p className="wl-filter-count">{filtered.length} title{filtered.length !== 1 ? 's' : ''}</p>
-                </div>
-              </div>
-              <button className="wl-modal-close" onClick={onClose}><X size={18} /></button>
+    <div
+      ref={overlayRef}
+      style={{ opacity: 0 }}
+      className="wl-filter-overlay"
+      onClick={(e) => e.target === e.currentTarget && onClose()}
+      data-lenis-prevent
+    >
+      <div
+        ref={panelRef}
+        style={{ opacity: 0, transform: 'translateX(100%)' }}
+        className="wl-filter-panel"
+        data-lenis-prevent
+      >
+        {/* Header */}
+        <div className="wl-filter-header">
+          <div className="wl-filter-header-left">
+            <div className="wl-filter-icon" style={{ background: cfg.color + '22', color: cfg.color }}>
+              <Icon size={18} />
             </div>
-
-            {/* Content */}
-            <div className="wl-filter-body" ref={bodyRef}>
-              {filtered.length === 0 ? (
-                <div className="wl-filter-empty">
-                  <p>Nothing here yet</p>
-                  <span>Add movies &amp; series to your tiers to see them here.</span>
-                </div>
-              ) : (
-                <div className="wl-filter-grid">
-                  {filtered.map(entry => {
-                    const tier = getTier(entry.tierId);
-                    const badge = STATUS_BADGE[entry.status] || STATUS_BADGE.pending;
-                    const prog = entry.progress;
-                    return (
-                      <motion.div
-                        key={entry.id}
-                        className="wl-filter-card"
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        style={{ '--tier-color': tier?.color ?? '#aaa', cursor: 'pointer' }}
-                        onClick={(e) => {
-                          // Prevent clicks on action elements from triggering the card click
-                          if (e.target.closest('.wl-filter-card-status') || e.target.closest('.wl-progress-wrap')) return;
-                          openModal(entry.id, entry.type || 'movie');
-                        }}
-                      >
-                        {/* Poster */}
-                        <div className="wl-filter-card-poster">
-                          {entry.poster ? (
-                            <img src={imageUrl(entry.poster, 'w185')} alt={entry.title} loading="lazy" />
-                          ) : (
-                            <div className="wl-filter-card-no-poster">
-                              {entry.type === 'tv' ? <Tv size={20} /> : <Film size={20} />}
-                            </div>
-                          )}
-                          {/* Type pill */}
-                          <div className="wl-card-type-badge" style={{ zIndex: 2 }}>
-                            {entry.type === 'tv' ? <Tv size={9} /> : <Film size={9} />}
-                            <span>{entry.type === 'tv' ? 'TV' : 'Movie'}</span>
-                          </div>
-                        </div>
-
-                        {/* Info */}
-                        <div className="wl-filter-card-info">
-                          <p className="wl-filter-card-title" title={entry.title}>{entry.title}</p>
-
-                          {/* Tier dot + name */}
-                          {tier && (
-                            <div className="wl-filter-card-tier">
-                              <span className="wl-filter-card-tier-dot" style={{ background: tier.color }} />
-                              <span className="wl-filter-card-tier-name">{tier.name}</span>
-                            </div>
-                          )}
-
-                          {/* Year + rating */}
-                          <p className="wl-filter-card-meta">
-                            {entry.year && <span>{entry.year}</span>}
-                            {entry.rating && <span>⭐ {entry.rating}</span>}
-                          </p>
-
-                          {/* Status badge */}
-                          <div className="wl-filter-card-status" style={{ background: badge.bg, color: badge.color }}>
-                            {badge.label}
-                          </div>
-
-                          {/* TV progress if set */}
-                          {entry.type === 'tv' && prog && (
-                            <ProgressTracker 
-                              progress={prog} 
-                              onChange={(s, e) => onProgress?.(entry.id, s, e)} 
-                            />
-                          )}
-                        </div>
-                      </motion.div>
-                    );
-                  })}
-                </div>
-              )}
+            <div>
+              <h2 className="wl-filter-title">{cfg.label}</h2>
+              <p className="wl-filter-count">{filtered.length} title{filtered.length !== 1 ? 's' : ''}</p>
             </div>
-          </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+          </div>
+          <button className="wl-modal-close" onClick={onClose}><X size={18} /></button>
+        </div>
+
+        {/* Content */}
+        <div className="wl-filter-body" ref={bodyRef}>
+          {filtered.length === 0 ? (
+            <div className="wl-filter-empty">
+              <p>Nothing here yet</p>
+              <span>Add movies &amp; series to your tiers to see them here.</span>
+            </div>
+          ) : (
+            <div className="wl-filter-grid">
+              {filtered.map(entry => {
+                const tier = getTier(entry.tierId);
+                const badge = STATUS_BADGE[entry.status] || STATUS_BADGE.pending;
+                const prog = entry.progress;
+                return (
+                  <div
+                    key={entry.id}
+                    className="wl-filter-card"
+                    style={{ '--tier-color': tier?.color ?? '#aaa', cursor: 'pointer', opacity: 0, transform: 'translateY(15px)' }}
+                    onClick={(e) => {
+                      if (e.target.closest('.wl-filter-card-status') || e.target.closest('.wl-progress-wrap')) return;
+                      openModal(entry.tmdbId, entry.type || 'movie');
+                    }}
+                  >
+                    {/* Poster */}
+                    <div className="wl-filter-card-poster">
+                      {entry.poster ? (
+                        <img src={imageUrl(entry.poster, 'w185')} alt={entry.title} loading="lazy" />
+                      ) : (
+                        <div className="wl-filter-card-no-poster">
+                          {entry.type === 'tv' ? <Tv size={20} /> : <Film size={20} />}
+                        </div>
+                      )}
+                      {/* Type pill */}
+                      <div className="wl-card-type-badge" style={{ zIndex: 2 }}>
+                        {entry.type === 'tv' ? <Tv size={9} /> : <Film size={9} />}
+                        <span>{entry.type === 'tv' ? 'TV' : 'Movie'}</span>
+                      </div>
+                    </div>
+
+                    {/* Info */}
+                    <div className="wl-filter-card-info">
+                      <p className="wl-filter-card-title" title={entry.title}>{entry.title}</p>
+
+                      {/* Tier dot + name */}
+                      {tier && (
+                        <div className="wl-filter-card-tier">
+                          <span className="wl-filter-card-tier-dot" style={{ background: tier.color }} />
+                          <span className="wl-filter-card-tier-name">{tier.name}</span>
+                        </div>
+                      )}
+
+                      {/* Year + rating */}
+                      <p className="wl-filter-card-meta">
+                        {entry.year && <span>{entry.year}</span>}
+                        {entry.rating && <span>⭐ {entry.rating}</span>}
+                      </p>
+
+                      {/* Status badge */}
+                      <div className="wl-filter-card-status" style={{ background: badge.bg, color: badge.color }}>
+                        {badge.label}
+                      </div>
+
+                      {/* TV progress if set */}
+                      {entry.type === 'tv' && prog && (
+                        <ProgressTracker 
+                          progress={prog} 
+                          onChange={(s, e) => onProgress?.(entry.id, s, e)} 
+                        />
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
   );
 };
 
@@ -359,7 +438,7 @@ const StatsCard = ({ label, value, icon: Icon, color, onClick, filterKey, active
     <div 
       className={`hl-card-wrapper ${isActive ? 'active' : ''} ${onClick ? 'clickable' : ''}`} 
       onClick={onClick} 
-      style={{ '--card-color': color }}
+      style={{ '--card-color': color, opacity: 0, transform: 'translateY(20px)' }}
     >
       <div className="hl-card">
         <div className="hl-bg-elements">
@@ -452,66 +531,77 @@ const Watchlist = () => {
 
   const openFilter = (key) => setActiveFilter(prev => prev === key ? null : key);
 
+  // Main Page Entrance Load Timeline
+  useGSAP(() => {
+    const tl = gsap.timeline();
+    tl.fromTo('.wl-hero-badge', { opacity: 0, y: 15 }, { opacity: 1, y: 0, duration: 0.4 })
+      .fromTo('.wl-hero-title', { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, "-=0.25")
+      .fromTo('.wl-hero-subtitle', { opacity: 0, y: 15 }, { opacity: 1, y: 0, duration: 0.4 }, "-=0.3")
+      .fromTo('.wl-overall-progress', { opacity: 0, scaleX: 0.95 }, { opacity: 1, scaleX: 1, duration: 0.4 }, "-=0.2")
+      .fromTo('.wl-overall-progress-fill', { width: 0 }, { width: `${watchedPct}%`, duration: 1, ease: "power3.out" }, "-=0.25")
+      .fromTo('.hl-card-wrapper', 
+        { opacity: 0, y: 20 }, 
+        { opacity: 1, y: 0, duration: 0.5, stagger: 0.08, ease: "power3.out" }, 
+        "-=0.5"
+      )
+      .fromTo('.wl-toolbar-group > *, .wl-toolbar > button', 
+        { opacity: 0, y: 10 }, 
+        { opacity: 1, y: 0, duration: 0.4, stagger: 0.04 }, 
+        "-=0.3"
+      )
+      .fromTo('.wl-tier-row', 
+        { opacity: 0, y: 30 }, 
+        { opacity: 1, y: 0, duration: 0.6, stagger: 0.08, ease: "power3.out" }, 
+        "-=0.25"
+      );
+  }, []);
+
   return (
     <div className="wl-page">
       {/* ── Hero ── */}
       <div className="wl-hero">
         <div className="wl-hero-bg" />
-        <motion.div
-          className="wl-hero-content"
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-        >
-          <div className="wl-hero-badge">
+        <div className="wl-hero-content">
+          <div className="wl-hero-badge" style={{ opacity: 0 }}>
             <LayoutList size={14} />
             <span>Personal Watchlist</span>
           </div>
-          <h1 className="wl-hero-title">My Tier List</h1>
-          <p className="wl-hero-subtitle">
+          <h1 className="wl-hero-title" style={{ opacity: 0 }}>My Tier List</h1>
+          <p className="wl-hero-subtitle" style={{ opacity: 0 }}>
             Organise, rank &amp; track every movie and series you plan to watch.
           </p>
           {stats.total > 0 && (
-            <div className="wl-overall-progress">
+            <div className="wl-overall-progress" style={{ opacity: 0 }}>
               <div className="wl-overall-progress-bar">
-                <motion.div
-                  className="wl-overall-progress-fill"
-                  initial={{ width: 0 }}
-                  animate={{ width: `${watchedPct}%` }}
-                  transition={{ duration: 1, ease: 'easeOut', delay: 0.3 }}
-                />
+                <div className="wl-overall-progress-fill" style={{ width: 0 }} />
               </div>
               <span className="wl-overall-progress-label">
                 {stats.watched}/{stats.total} watched · {watchedPct}%
               </span>
             </div>
           )}
-        </motion.div>
+        </div>
       </div>
 
-      {/* ── Stats Row (clickable) ── */}
-      <motion.div
-        className="wl-stats-row"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-      >
+      {/* ── Stats Row ── */}
+      <div className="wl-stats-row">
         <StatsCard label="Total Titles" value={stats.total} icon={LayoutList} color="#70a1ff" filterKey="all" activeFilter={activeFilter} onClick={() => openFilter('all')} badge="Collection" />
         <StatsCard label="Watched" value={stats.watched} icon={CheckCircle2} color="#7bed9f" filterKey="watched" activeFilter={activeFilter} onClick={() => openFilter('watched')} badge="Done" />
         <StatsCard label="Watching" value={stats.watching} icon={Eye} color="#ffa502" filterKey="watching" activeFilter={activeFilter} onClick={() => openFilter('watching')} badge="Live" />
         <StatsCard label="To Watch" value={stats.pending} icon={Clock} color="#aaa" filterKey="pending" activeFilter={activeFilter} onClick={() => openFilter('pending')} badge="Queue" />
-
-      </motion.div>
+      </div>
 
       {/* ── Toolbar ── */}
       <div className="wl-toolbar">
-        <motion.button
+        <button
           className="wl-btn wl-btn-primary"
           onClick={() => setShowNewTier(true)}
-          whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}
+          style={{ transition: 'transform 0.2s' }}
+          onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.04)'}
+          onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
         >
           <Plus size={16} /> New Tier
-        </motion.button>
+        </button>
 
         <div className="wl-toolbar-group">
           <button className="wl-btn-tool" onClick={exportData}>
@@ -538,37 +628,35 @@ const Watchlist = () => {
       {/* ── Tier Rows ── */}
       <div className="wl-tiers-container">
         {sortedTiers.length === 0 ? (
-          <motion.div className="wl-empty-state" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+          <div className="wl-empty-state">
             <h2>No tiers yet</h2>
             <p>Create your first tier to start building your watchlist</p>
             <button className="wl-btn wl-btn-primary" onClick={() => setShowNewTier(true)}>
               <Plus size={16} /> Create First Tier
             </button>
-          </motion.div>
+          </div>
         ) : (
-          <AnimatePresence mode="popLayout">
-            {sortedTiers.map((tier, index) => (
-              <TierRow
-                key={tier.id}
-                tier={tier}
-                entries={entriesForTier(tier.id)}
-                allTiers={sortedTiers}
-                allEntryIds={allEntryIds}
-                index={index}
-                totalTiers={sortedTiers.length}
-                onRename={renameTier}
-                onRecolor={recolorTier}
-                onDelete={deleteTier}
-                onAddEntry={addEntry}
-                onRemoveEntry={removeEntry}
-                onStatusChange={setStatus}
-                onMoveEntry={moveEntry}
-                onProgress={setProgress}
-                onMoveUp={(i) => reorderTiers(i, i - 1)}
-                onMoveDown={(i) => reorderTiers(i, i + 1)}
-              />
-            ))}
-          </AnimatePresence>
+          sortedTiers.map((tier, index) => (
+            <TierRow
+              key={tier.id}
+              tier={tier}
+              entries={entriesForTier(tier.id)}
+              allTiers={sortedTiers}
+              allEntryIds={allEntryIds}
+              index={index}
+              totalTiers={sortedTiers.length}
+              onRename={renameTier}
+              onRecolor={recolorTier}
+              onDelete={deleteTier}
+              onAddEntry={addEntry}
+              onRemoveEntry={removeEntry}
+              onStatusChange={setStatus}
+              onMoveEntry={moveEntry}
+              onProgress={setProgress}
+              onMoveUp={(i) => reorderTiers(i, i - 1)}
+              onMoveDown={(i) => reorderTiers(i, i + 1)}
+            />
+          ))
         )}
       </div>
 

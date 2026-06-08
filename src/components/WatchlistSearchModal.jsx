@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { Search, X, Film, Tv, Plus, Check } from 'lucide-react';
 import { imageUrl } from '../api/tmdb';
 import { enhancedSearch, initializeSearchCache, getRecommendedSearchContent } from '../utils/searchEngine';
 import Lenis from 'lenis';
+import { gsap } from 'gsap';
+import { useGSAP } from '@gsap/react';
 
 const WatchlistSearchModal = ({ isOpen, onClose, tierId, tierName, tierColor, onAdd, existingIds = [] }) => {
   const [query, setQuery] = useState('');
@@ -16,7 +17,56 @@ const WatchlistSearchModal = ({ isOpen, onClose, tierId, tierName, tierColor, on
   const resultsRef = useRef(null);
   const lenisRef = useRef(null);
 
-  // Trap and forward all scroll/wheel events globally to the .wl-search-results scroller with local smooth Lenis engine
+  const overlayRef = useRef(null);
+  const containerRef = useRef(null);
+  const [shouldRender, setShouldRender] = useState(isOpen);
+  const [isClosing, setIsClosing] = useState(false);
+
+  // Watch isOpen prop to trigger GSAP entrance or exit
+  useEffect(() => {
+    if (isOpen) {
+      setShouldRender(true);
+      setIsClosing(false);
+    } else if (shouldRender && !isClosing) {
+      setIsClosing(true);
+      const tl = gsap.timeline({
+        onComplete: () => {
+          setShouldRender(false);
+          setIsClosing(false);
+        }
+      });
+      tl.to(containerRef.current, { scale: 0.95, y: 20, opacity: 0, duration: 0.25, ease: "power3.in" })
+        .to(overlayRef.current, { opacity: 0, duration: 0.2 }, "-=0.15");
+    }
+  }, [isOpen]);
+
+  // Entrance animation
+  useGSAP(() => {
+    if (isOpen && shouldRender && !isClosing) {
+      const tl = gsap.timeline();
+      tl.fromTo(overlayRef.current, { opacity: 0 }, { opacity: 1, duration: 0.3 })
+        .fromTo(containerRef.current,
+          { scale: 0.95, y: 20, opacity: 0 },
+          { scale: 1, y: 0, opacity: 1, duration: 0.45, ease: "power4.out" },
+          "-=0.15"
+        );
+    }
+  }, [isOpen, shouldRender]);
+
+  // Stagger cards when search results or recommended lists load
+  useGSAP(() => {
+    if (!loading && shouldRender && containerRef.current) {
+      const cards = containerRef.current.querySelectorAll('.wl-search-card');
+      if (cards && cards.length > 0) {
+        gsap.fromTo(cards,
+          { opacity: 0, y: 15 },
+          { opacity: 1, y: 0, duration: 0.4, stagger: 0.03, ease: "power3.out", overwrite: "auto" }
+        );
+      }
+    }
+  }, [results.length, recommended.length, loading, shouldRender]);
+
+  // Trap and forward all scroll/wheel events globally
   useEffect(() => {
     const handleEscape = (e) => {
       if (e.key === 'Escape') onClose();
@@ -26,8 +76,7 @@ const WatchlistSearchModal = ({ isOpen, onClose, tierId, tierName, tierColor, on
     let rafId = null;
 
     const resultsEl = resultsRef.current;
-    if (isOpen && resultsEl) {
-      // Instantiate localized smooth scroller on watchlist search results container
+    if (shouldRender && resultsEl) {
       lenisInstance = new Lenis({
         wrapper: resultsEl,
         lerp: 0.1,
@@ -36,7 +85,6 @@ const WatchlistSearchModal = ({ isOpen, onClose, tierId, tierName, tierColor, on
       });
       lenisRef.current = lenisInstance;
 
-      // Smooth animation frame loop
       const raf = (time) => {
         lenisInstance.raf(time);
         rafId = requestAnimationFrame(raf);
@@ -51,23 +99,14 @@ const WatchlistSearchModal = ({ isOpen, onClose, tierId, tierName, tierColor, on
 
       const isInsideResults = resultsEl.contains(e.target);
       if (isInsideResults) {
-        // Inside results: let native/Lenis browser scrolling handle it natively
-        // Stop propagation so that Lenis or root scroll listeners do not intercept it
         e.stopPropagation();
         return;
       }
 
-      // Outside results (hovering over search input, header, overlay):
-      // Forward scroll delta to our local smooth Lenis instance.
       let delta = e.deltaY;
-      if (e.deltaMode === 1) { // Line mode
-        delta *= 33;
-      } else if (e.deltaMode === 2) { // Page mode
-        delta *= window.innerHeight;
-      } else if (Math.abs(delta) < 40) {
-        // Scale trackpad precision/smooth-scroll deltas slightly to feel responsive when forwarded
-        delta *= 2.5;
-      }
+      if (e.deltaMode === 1) delta *= 33;
+      else if (e.deltaMode === 2) delta *= window.innerHeight;
+      else if (Math.abs(delta) < 40) delta *= 2.5;
 
       lenis.scrollTo(lenis.scroll + delta, { immediate: false });
       
@@ -103,17 +142,15 @@ const WatchlistSearchModal = ({ isOpen, onClose, tierId, tierName, tierColor, on
       e.stopPropagation();
     };
 
-    if (isOpen) {
+    if (shouldRender) {
       document.addEventListener('keydown', handleEscape);
       window.addEventListener('wheel', handleWheel, { passive: false });
       window.addEventListener('touchstart', handleTouchStart, { passive: true });
       window.addEventListener('touchmove', handleTouchMove, { passive: false });
 
-      // Lock scroll and compensate for scrollbar width on body to prevent layout shifting
       const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
       document.body.style.paddingRight = `${scrollbarWidth}px`;
       
-      // Add global no-scroll utility to html, body, and the root wrapper
       document.documentElement.classList.add('no-scroll');
       document.body.classList.add('no-scroll');
       const rootEl = document.getElementById('root');
@@ -136,7 +173,6 @@ const WatchlistSearchModal = ({ isOpen, onClose, tierId, tierName, tierColor, on
         cancelAnimationFrame(rafId);
       }
 
-      // Restore scrolling and clean up classes and padding
       document.body.style.paddingRight = '';
       document.documentElement.classList.remove('no-scroll');
       document.body.classList.remove('no-scroll');
@@ -145,7 +181,7 @@ const WatchlistSearchModal = ({ isOpen, onClose, tierId, tierName, tierColor, on
         rootEl.classList.remove('no-scroll');
       }
     };
-  }, [isOpen, onClose]);
+  }, [shouldRender, onClose]);
 
   useEffect(() => {
     if (isOpen) {
@@ -192,158 +228,151 @@ const WatchlistSearchModal = ({ isOpen, onClose, tierId, tierName, tierColor, on
 
   const alreadyAdded = (item) => existingIds.includes(item.id) || addedIds.has(item.id);
 
+  if (!shouldRender) return null;
+
   return (
-    <AnimatePresence>
-      {isOpen && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="wl-search-overlay"
-          onClick={(e) => e.target === e.currentTarget && onClose()}
-          data-lenis-prevent
-        >
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            className="wl-search-modal"
-            data-lenis-prevent
-          >
-            {/* Header */}
-            <div className="wl-search-header">
-              <div className="wl-search-tier-badge" style={{ background: tierColor + '22', borderColor: tierColor + '55' }}>
-                <span style={{ color: tierColor, fontWeight: 700, fontSize: '0.85rem' }}>{tierName}</span>
-              </div>
-              <h3 className="wl-search-title">Add to Watchlist</h3>
-              <button className="wl-search-close" onClick={onClose}><X size={18} /></button>
-            </div>
+    <div
+      ref={overlayRef}
+      style={{ opacity: 0 }}
+      className="wl-search-overlay"
+      onClick={(e) => e.target === e.currentTarget && onClose()}
+      data-lenis-prevent
+    >
+      <div
+        ref={containerRef}
+        style={{ opacity: 0, transform: 'translateY(20px) scale(0.95)' }}
+        className="wl-search-modal"
+        data-lenis-prevent
+      >
+        {/* Header */}
+        <div className="wl-search-header">
+          <div className="wl-search-tier-badge" style={{ background: tierColor + '22', borderColor: tierColor + '55' }}>
+            <span style={{ color: tierColor, fontWeight: 700, fontSize: '0.85rem' }}>{tierName}</span>
+          </div>
+          <h3 className="wl-search-title">Add to Watchlist</h3>
+          <button className="wl-search-close" onClick={onClose}><X size={18} /></button>
+        </div>
 
-            {/* Input */}
-            <div className="wl-search-input-wrap">
-              <Search size={18} className="wl-search-icon" />
-              <input
-                ref={inputRef}
-                className="wl-search-input"
-                placeholder="Search movies or TV shows…"
-                value={query}
-                onChange={e => setQuery(e.target.value)}
-              />
-              {query && (
-                <button className="wl-search-clear" onClick={() => setQuery('')}>
-                  <X size={14} />
-                </button>
-              )}
-            </div>
+        {/* Input */}
+        <div className="wl-search-input-wrap">
+          <Search size={18} className="wl-search-icon" />
+          <input
+            ref={inputRef}
+            className="wl-search-input"
+            placeholder="Search movies or TV shows…"
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+          />
+          {query && (
+            <button className="wl-search-clear" onClick={() => setQuery('')}>
+              <X size={14} />
+            </button>
+          )}
+        </div>
 
-            {/* Results */}
-            <div className="wl-search-results" ref={resultsRef}>
-              {loading && (
-                <div className="wl-search-state">
-                  <div className="wl-spinner" />
-                  <span>Searching…</span>
-                </div>
-              )}
-              {!loading && query && results.length === 0 && (
-                <div className="wl-search-state">
-                  <span>No exact matches found. Showing recommendations:</span>
-                </div>
-              )}
-              {!loading && query && results.length === 0 && (
-                <div className="wl-search-grid" style={{ marginTop: '1rem' }}>
-                  {recommended.map(item => {
-                    const title = item.media_type === 'movie' ? item.title : item.name;
-                    const year = (item.release_date || item.first_air_date || '').slice(0, 4);
-                    const added = alreadyAdded(item);
-                    return (
-                      <motion.div
-                        key={`rec-${item.id}`}
-                        className={`wl-search-card ${added ? 'added' : ''}`}
-                        whileHover={{ scale: 1.03, y: -2 }}
-                        whileTap={{ scale: 0.97 }}
-                        onClick={() => !added && handleAdd(item)}
-                      >
-                        <div className="wl-search-card-img">
-                          <img src={imageUrl(item.poster_path, 'w300')} alt={title} loading="lazy" />
-                          <div className="wl-search-card-type">
-                            {item.media_type === 'movie' ? <Film size={10} /> : <Tv size={10} />}
-                            <span>{item.media_type === 'movie' ? 'Movie' : 'TV'}</span>
-                          </div>
-                          {added && (
-                            <div className="wl-search-card-added">
-                              <Check size={20} />
-                            </div>
-                          )}
-                        </div>
-                        <div className="wl-search-card-info">
-                          <p className="wl-search-card-title">{title}</p>
-                          <p className="wl-search-card-meta">{year} {item.vote_average > 0 && `· ⭐ ${item.vote_average.toFixed(1)}`}</p>
-                          <button
-                            className="wl-search-add-btn"
-                            style={{ background: added ? '#1a1a1a' : tierColor + '22', color: added ? '#555' : tierColor, borderColor: tierColor + '44' }}
-                            onClick={(e) => { e.stopPropagation(); !added && handleAdd(item); }}
-                          >
-                            {added ? <><Check size={12} /> Added</> : <><Plus size={12} /> Add</>}
-                          </button>
-                        </div>
-                      </motion.div>
-                    );
-                  })}
-                </div>
-              )}
-              {!loading && !query && (
-                <div className="wl-search-state">
-                  <span>Start typing to search</span>
-                </div>
-              )}
-              {!loading && results.length > 0 && (
-                <div className="wl-search-grid">
-                  {results.map(item => {
-                    const title = item.media_type === 'movie' ? item.title : item.name;
-                    const year = (item.release_date || item.first_air_date || '').slice(0, 4);
-                    const added = alreadyAdded(item);
-                    return (
-                      <motion.div
-                        key={item.id}
-                        className={`wl-search-card ${added ? 'added' : ''}`}
-                        whileHover={{ scale: 1.03, y: -2 }}
-                        whileTap={{ scale: 0.97 }}
-                        onClick={() => !added && handleAdd(item)}
-                      >
-                        <div className="wl-search-card-img">
-                          <img src={imageUrl(item.poster_path, 'w300')} alt={title} loading="lazy" />
-                          <div className="wl-search-card-type">
-                            {item.media_type === 'movie' ? <Film size={10} /> : <Tv size={10} />}
-                            <span>{item.media_type === 'movie' ? 'Movie' : 'TV'}</span>
-                          </div>
-                          {added && (
-                            <div className="wl-search-card-added">
-                              <Check size={20} />
-                            </div>
-                          )}
-                        </div>
-                        <div className="wl-search-card-info">
-                          <p className="wl-search-card-title">{title}</p>
-                          <p className="wl-search-card-meta">{year} {item.vote_average > 0 && `· ⭐ ${item.vote_average.toFixed(1)}`}</p>
-                          <button
-                            className="wl-search-add-btn"
-                            style={{ background: added ? '#1a1a1a' : tierColor + '22', color: added ? '#555' : tierColor, borderColor: tierColor + '44' }}
-                            onClick={(e) => { e.stopPropagation(); !added && handleAdd(item); }}
-                          >
-                            {added ? <><Check size={12} /> Added</> : <><Plus size={12} /> Add</>}
-                          </button>
-                        </div>
-                      </motion.div>
-                    );
-                  })}
-                </div>
-              )}
+        {/* Results */}
+        <div className="wl-search-results" ref={resultsRef}>
+          {loading && (
+            <div className="wl-search-state">
+              <div className="wl-spinner" />
+              <span>Searching…</span>
             </div>
-          </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+          )}
+          {!loading && query && results.length === 0 && (
+            <div className="wl-search-state">
+              <span>No exact matches found. Showing recommendations:</span>
+            </div>
+          )}
+          {!loading && query && results.length === 0 && (
+            <div className="wl-search-grid" style={{ marginTop: '1rem' }}>
+              {recommended.map(item => {
+                const title = item.media_type === 'movie' ? item.title : item.name;
+                const year = (item.release_date || item.first_air_date || '').slice(0, 4);
+                const added = alreadyAdded(item);
+                return (
+                  <div
+                    key={`rec-${item.id}`}
+                    className={`wl-search-card ${added ? 'added' : ''}`}
+                    onClick={() => !added && handleAdd(item)}
+                    style={{ opacity: 0, transform: 'translateY(15px)' }}
+                  >
+                    <div className="wl-search-card-img">
+                      <img src={imageUrl(item.poster_path, 'w300')} alt={title} loading="lazy" />
+                      <div className="wl-search-card-type">
+                        {item.media_type === 'movie' ? <Film size={10} /> : <Tv size={10} />}
+                        <span>{item.media_type === 'movie' ? 'Movie' : 'TV'}</span>
+                      </div>
+                      {added && (
+                        <div className="wl-search-card-added">
+                          <Check size={20} />
+                        </div>
+                      )}
+                    </div>
+                    <div className="wl-search-card-info">
+                      <p className="wl-search-card-title">{title}</p>
+                      <p className="wl-search-card-meta">{year} {item.vote_average > 0 && `· ⭐ ${item.vote_average.toFixed(1)}`}</p>
+                      <button
+                        className="wl-search-add-btn"
+                        style={{ background: added ? '#1a1a1a' : tierColor + '22', color: added ? '#555' : tierColor, borderColor: tierColor + '44' }}
+                        onClick={(e) => { e.stopPropagation(); !added && handleAdd(item); }}
+                      >
+                        {added ? <><Check size={12} /> Added</> : <><Plus size={12} /> Add</>}
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+          {!loading && !query && (
+            <div className="wl-search-state">
+              <span>Start typing to search</span>
+            </div>
+          )}
+          {!loading && results.length > 0 && (
+            <div className="wl-search-grid">
+              {results.map(item => {
+                const title = item.media_type === 'movie' ? item.title : item.name;
+                const year = (item.release_date || item.first_air_date || '').slice(0, 4);
+                const added = alreadyAdded(item);
+                return (
+                  <div
+                    key={item.id}
+                    className={`wl-search-card ${added ? 'added' : ''}`}
+                    onClick={() => !added && handleAdd(item)}
+                    style={{ opacity: 0, transform: 'translateY(15px)' }}
+                  >
+                    <div className="wl-search-card-img">
+                      <img src={imageUrl(item.poster_path, 'w300')} alt={title} loading="lazy" />
+                      <div className="wl-search-card-type">
+                        {item.media_type === 'movie' ? <Film size={10} /> : <Tv size={10} />}
+                        <span>{item.media_type === 'movie' ? 'Movie' : 'TV'}</span>
+                      </div>
+                      {added && (
+                        <div className="wl-search-card-added">
+                          <Check size={20} />
+                        </div>
+                      )}
+                    </div>
+                    <div className="wl-search-card-info">
+                      <p className="wl-search-card-title">{title}</p>
+                      <p className="wl-search-card-meta">{year} {item.vote_average > 0 && `· ⭐ ${item.vote_average.toFixed(1)}`}</p>
+                      <button
+                        className="wl-search-add-btn"
+                        style={{ background: added ? '#1a1a1a' : tierColor + '22', color: added ? '#555' : tierColor, borderColor: tierColor + '44' }}
+                        onClick={(e) => { e.stopPropagation(); !added && handleAdd(item); }}
+                      >
+                        {added ? <><Check size={12} /> Added</> : <><Plus size={12} /> Add</>}
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
   );
 };
 

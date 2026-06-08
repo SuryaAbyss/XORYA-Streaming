@@ -6,6 +6,8 @@ import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion'
 import useYouTubePlayer from '../hooks/useYouTubePlayer';
 import { selectBestTrailer } from '../utils/trailerSelector';
 import ShinyPill from './ShinyPill';
+import { gsap } from 'gsap';
+import { useGSAP } from '@gsap/react';
 
 // Detect mobile/touch devices — trailers are disabled on phones
 const isMobileDevice = () => {
@@ -27,11 +29,52 @@ const Hero = ({ movie, onPlay, onInfo, onTrailerStart, isTrailerPlaying, onTrail
     const [isMuteFaded, setIsMuteFaded] = useState(false);
     const playerContainerRef = useRef(null);
     const muteFadeTimerRef = useRef(null);
+    const backgroundRef = useRef(null);
+    const contentRef = useRef(null);
 
     // Parallax scrolling hooks
     const { scrollY } = useScroll();
     const backgroundY = useTransform(scrollY, [0, 1000], ['0%', '25%']);
     const contentY = useTransform(scrollY, [0, 1000], ['0%', '15%']);
+
+    // GSAP animations for Hero entrance and transitions
+    useGSAP(() => {
+        if (!movie) return;
+
+        // Reset and fade in/scale background
+        gsap.fromTo(backgroundRef.current,
+            { scale: 1.08, opacity: 0 },
+            { scale: 1, opacity: showVideo ? 0 : 1, duration: 1.8, ease: "power3.out", overwrite: "auto" }
+        );
+
+        // Staggered fade in/up for title logo and CTA buttons
+        const items = contentRef.current?.querySelectorAll('.hero-anim-item');
+        if (items && items.length > 0) {
+            gsap.fromTo(items,
+                { opacity: 0, y: 30 },
+                { 
+                    opacity: 1, 
+                    y: 0, 
+                    duration: 1.0, 
+                    ease: "power4.out", 
+                    stagger: 0.12, 
+                    delay: 0.2,
+                    overwrite: "auto"
+                }
+            );
+        }
+    }, [movie]);
+
+    useGSAP(() => {
+        if (backgroundRef.current) {
+            gsap.to(backgroundRef.current, {
+                opacity: showVideo ? 0 : 1,
+                duration: 0.8,
+                ease: "power2.inOut",
+                overwrite: "auto"
+            });
+        }
+    }, [showVideo]);
 
     // Handle mute fade timer
     useEffect(() => {
@@ -163,7 +206,18 @@ const Hero = ({ movie, onPlay, onInfo, onTrailerStart, isTrailerPlaying, onTrail
         return new Date(releaseStr) > new Date();
     }, [movie]);
 
-    if (!movie) return null;
+    if (!movie) {
+        return (
+            <div
+                style={{
+                    height: isMobile ? '55vh' : '100vh',
+                    width: '100%',
+                    background: '#050505',
+                    position: 'relative'
+                }}
+            />
+        );
+    }
 
     return (
         <div
@@ -223,22 +277,15 @@ const Hero = ({ movie, onPlay, onInfo, onTrailerStart, isTrailerPlaying, onTrail
             )}
 
             {/* Static Background Image - w1280 for fast load, preloaded from Home */}
-            <motion.div
-                initial={{ opacity: 0, scale: 1.05 }}
-                animate={{
-                    opacity: showVideo ? 0 : 1,
-                    scale: 1
-                }}
-                transition={{
-                    opacity: { duration: 0.8, ease: "easeIn" }, // Fades out slightly earlier than video fades in
-                    scale: { duration: 1.5, ease: "easeOut" }
-                }}
+            <motion.img
+                ref={backgroundRef}
+                src={imageUrl(movie.backdrop_path, isMobile ? 'w780' : 'w1280')}
+                alt={movie.title || "Movie backdrop"}
+                fetchpriority="high"
                 style={{
                     position: 'absolute',
                     top: 0, left: 0, width: '100%', height: '100%',
-                    backgroundImage: `url(${imageUrl(movie.backdrop_path, 'w1280')})`,
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
+                    objectFit: 'cover',
                     zIndex: 0,
                     maskImage: 'linear-gradient(to bottom, black 50%, transparent 100%)',
                     WebkitMaskImage: 'linear-gradient(to bottom, black 50%, transparent 100%)',
@@ -288,18 +335,7 @@ const Hero = ({ movie, onPlay, onInfo, onTrailerStart, isTrailerPlaying, onTrail
 
             {/* Content */}
             <motion.div
-                initial="hidden"
-                animate="visible"
-                variants={{
-                    hidden: { opacity: 0 },
-                    visible: {
-                        opacity: 1,
-                        transition: {
-                            staggerChildren: 0.15,
-                            delayChildren: 0.2
-                        }
-                    }
-                }}
+                ref={contentRef}
                 style={isMobile ? {
                     position: 'absolute',
                     bottom: '1.5rem',
@@ -317,30 +353,30 @@ const Hero = ({ movie, onPlay, onInfo, onTrailerStart, isTrailerPlaying, onTrail
                     y: contentY,
                     transition: 'top 1s cubic-bezier(0.25, 0.46, 0.45, 0.94), left 1s cubic-bezier(0.25, 0.46, 0.45, 0.94)'
                 }}>
-                <motion.div
-                    variants={{
-                        hidden: { opacity: 0, y: 30, scale: 0.95 },
-                        visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.8, type: "spring", bounce: 0.4 } }
-                    }}
+                <div
+                    className="hero-anim-item"
                     style={{ marginBottom: '1rem' }}
                 >
                     {logoPath ? (
                         <img
                             src={imageUrl(logoPath, 'w500')}
                             alt={movie.title}
-                            style={{ maxHeight: '100px', width: 'auto', display: 'block' }}
+                            width="300"
+                            height="100"
+                            style={{ maxHeight: '100px', width: 'auto', display: 'block', objectFit: 'contain' }}
                         />
                     ) : (
                         <h1 className="gradient-text" style={{ fontSize: '2.5rem', lineHeight: 1.1 }}>
                             {movie.title}
                         </h1>
                     )}
-                </motion.div>
+                </div>
 
-                <motion.div
+                <div
+                    className="hero-anim-item"
                     style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}
                 >
-                    <motion.div variants={{ hidden: { opacity: 0, x: -20 }, visible: { opacity: 1, x: 0, transition: { duration: 0.6, ease: "easeOut" } } }}>
+                    <div>
                         <button
                             onClick={() => {
                                 if (onPlay) onPlay(movie);
@@ -363,9 +399,9 @@ const Hero = ({ movie, onPlay, onInfo, onTrailerStart, isTrailerPlaying, onTrail
                                 <Play fill="black" color="black" size={16} />
                             </div>
                         </button>
-                    </motion.div>
+                    </div>
 
-                    <motion.div variants={{ hidden: { opacity: 0, x: -20 }, visible: { opacity: 1, x: 0, transition: { duration: 0.6, ease: "easeOut" } } }}>
+                    <div>
                         <button
                             onClick={() => {
                                 if (onInfo) onInfo(movie);
@@ -383,13 +419,14 @@ const Hero = ({ movie, onPlay, onInfo, onTrailerStart, isTrailerPlaying, onTrail
                             <Info size={isMobile ? 18 : 20} />
                             <span>More Info</span>
                         </button>
-                    </motion.div>
+                    </div>
 
                     {/* Mute Toggle - Only on desktop (trailer is desktop-only) */}
                     {!isMobile && (
-                        <motion.div variants={{ hidden: { opacity: 0, x: -20 }, visible: { opacity: 1, x: 0, transition: { duration: 0.6, ease: "easeOut" } } }}>
+                        <div>
                             <button
                                 onClick={toggleMute}
+                                aria-label={isMuted ? "Unmute video" : "Mute video"}
                                 onMouseEnter={() => setIsMuteHovered(true)}
                                 onMouseLeave={() => setIsMuteHovered(false)}
                                 className="glass"
@@ -411,12 +448,12 @@ const Hero = ({ movie, onPlay, onInfo, onTrailerStart, isTrailerPlaying, onTrail
                             >
                                 {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
                             </button>
-                        </motion.div>
+                        </div>
                     )}
 
                     {/* Soon Releasing Badge */}
                     {isUpcoming && (
-                        <motion.div variants={{ hidden: { opacity: 0, x: -20 }, visible: { opacity: 1, x: 0, transition: { duration: 0.6, ease: "easeOut" } } }}>
+                        <div>
                             <div style={{
                                 padding: '0.5rem 1rem',
                                 borderRadius: '50px',
@@ -434,9 +471,9 @@ const Hero = ({ movie, onPlay, onInfo, onTrailerStart, isTrailerPlaying, onTrail
                             }}>
                                 Soon Releasing
                             </div>
-                        </motion.div>
+                        </div>
                     )}
-                </motion.div>
+                </div>
             </motion.div>
         </div >
     );

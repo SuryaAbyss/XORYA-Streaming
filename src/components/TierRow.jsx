@@ -1,5 +1,4 @@
 import React, { useState, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Pencil, Trash2, Check, X, ChevronUp, ChevronDown } from 'lucide-react';
 import WatchlistCard from './WatchlistCard';
 import WatchlistSearchModal from './WatchlistSearchModal';
@@ -8,6 +7,8 @@ import { HoverBorderGradient } from './ui/hover-border-gradient';
 import { imageUrl } from '../api/tmdb';
 import { Film, Tv, Play, Info, Star } from 'lucide-react';
 import { useMovieModal } from '../context/MovieModalContext';
+import { gsap } from 'gsap';
+import { useGSAP } from '@gsap/react';
 
 const PRESET_COLORS = [
   '#ff4757', '#ff6b81', '#ffa502', '#eccc68',
@@ -41,6 +42,27 @@ const TierRow = ({
   const [collapsed, setCollapsed] = useState(false);
   const inputRef = useRef(null);
 
+  const rowRef = useRef(null);
+  const colorPickerRef = useRef(null);
+
+  // Mount animation for rows
+  useGSAP(() => {
+    gsap.fromTo(rowRef.current,
+      { opacity: 0, y: 20 },
+      { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }
+    );
+  }, []);
+
+  // Animating color picker dropdown on toggle
+  useGSAP(() => {
+    if (showColorPicker && colorPickerRef.current) {
+      gsap.fromTo(colorPickerRef.current,
+        { opacity: 0, scale: 0.85 },
+        { opacity: 1, scale: 1, duration: 0.25, ease: "back.out(1.2)" }
+      );
+    }
+  }, [showColorPicker]);
+
   const handleRename = () => {
     if (editName.trim()) onRename(tier.id, editName.trim());
     setIsEditing(false);
@@ -54,13 +76,10 @@ const TierRow = ({
 
   return (
     <>
-      <motion.div
-        layout
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -20 }}
+      <div
+        ref={rowRef}
         className="wl-tier-row"
-        style={{ '--tier-color': tier.color }}
+        style={{ '--tier-color': tier.color, opacity: 0 }}
       >
         {/* ── Tier Header ── */}
         <div className="wl-tier-header">
@@ -74,26 +93,23 @@ const TierRow = ({
                 onClick={() => setShowColorPicker(v => !v)}
                 title="Change color"
               />
-              <AnimatePresence>
-                {showColorPicker && (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.85 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.85 }}
-                    className="wl-color-picker"
-                    onMouseLeave={() => setShowColorPicker(false)}
-                  >
-                    {PRESET_COLORS.map(c => (
-                      <button
-                        key={c}
-                        className={`wl-color-swatch ${c === tier.color ? 'selected' : ''}`}
-                        style={{ background: c }}
-                        onClick={() => { onRecolor(tier.id, c); setShowColorPicker(false); }}
-                      />
-                    ))}
-                  </motion.div>
-                )}
-              </AnimatePresence>
+              {showColorPicker && (
+                <div
+                  ref={colorPickerRef}
+                  className="wl-color-picker"
+                  onMouseLeave={() => setShowColorPicker(false)}
+                  style={{ opacity: 0, transform: 'scale(0.85)' }}
+                >
+                  {PRESET_COLORS.map(c => (
+                    <button
+                      key={c}
+                      className={`wl-color-swatch ${c === tier.color ? 'selected' : ''}`}
+                      style={{ background: c }}
+                      onClick={() => { onRecolor(tier.id, c); setShowColorPicker(false); }}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Name */}
@@ -134,12 +150,13 @@ const TierRow = ({
             {entries.length > 0 && (
               <div className="wl-tier-progress-wrap">
                 <div className="wl-tier-progress-bar">
-                  <motion.div
+                  <div
                     className="wl-tier-progress-fill"
-                    style={{ background: tier.color }}
-                    initial={{ width: 0 }}
-                    animate={{ width: `${pct}%` }}
-                    transition={{ duration: 0.6, ease: 'easeOut' }}
+                    style={{
+                      background: tier.color,
+                      width: `${pct}%`,
+                      transition: 'width 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94)'
+                    }}
                   />
                 </div>
                 <span className="wl-tier-progress-label" style={{ color: tier.color }}>{pct}%</span>
@@ -195,96 +212,92 @@ const TierRow = ({
         </div>
 
         {/* ── Cards grid ── */}
-        <AnimatePresence>
-          {!collapsed && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.3 }}
-              style={{ overflow: 'hidden' }}
+        <div
+          style={{
+            maxHeight: collapsed ? '0px' : '1500px',
+            opacity: collapsed ? 0 : 1,
+            overflow: 'hidden',
+            transition: 'max-height 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.3s ease'
+          }}
+        >
+          {entries.length === 0 ? (
+            <div
+              className="wl-tier-empty"
+              onClick={() => setShowSearch(true)}
+              style={{ cursor: 'pointer' }}
             >
-              {entries.length === 0 ? (
-                <motion.div
-                  className="wl-tier-empty"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
+              <p>This tier is empty</p>
+              <span className="wl-tier-empty-hint">Click <strong>Add</strong> to add movies or series</span>
+            </div>
+          ) : visibleEntries.length === 0 ? (
+            <div className="wl-tier-cards-new">
+              <div
+                className="wl-tier-empty"
+                style={{ flex: 1, margin: 0, minHeight: '120px' }}
+              >
+                <p style={{ color: tier.color }}>All caught up! 🎉</p>
+                <span className="wl-tier-empty-hint">You have watched everything in this tier.</span>
+              </div>
+              <div className="wl-tier-add-row">
+                <button
+                  className="wl-btn-add-compact"
+                  style={{
+                    '--tier-color': tier.color,
+                    borderColor: tier.color + '33',
+                    transition: 'transform 0.2s'
+                  }}
                   onClick={() => setShowSearch(true)}
+                  onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
+                  onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                  title={`Add titles to ${tier.name}`}
                 >
-                  <p>This tier is empty</p>
-                  <span className="wl-tier-empty-hint">Click <strong>Add</strong> to add movies or series</span>
-                </motion.div>
-              ) : visibleEntries.length === 0 ? (
-                <div className="wl-tier-cards-new">
-                  <motion.div
-                    className="wl-tier-empty"
-                    style={{ flex: 1, margin: 0, minHeight: '120px' }}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                  >
-                    <p style={{ color: tier.color }}>All caught up! 🎉</p>
-                    <span className="wl-tier-empty-hint">You have watched everything in this tier.</span>
-                  </motion.div>
-                  <div className="wl-tier-add-row">
-                    <motion.button
-                      className="wl-btn-add-compact"
-                      style={{
-                        '--tier-color': tier.color,
-                        borderColor: tier.color + '33'
-                      }}
-                      onClick={() => setShowSearch(true)}
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
-                      title={`Add titles to ${tier.name}`}
-                    >
-                      <Plus size={14} />
-                    </motion.button>
-                  </div>
-                </div>
-              ) : (
-                <div className="wl-tier-cards-new">
-                  {/* Expanding Cards Layout */}
-                  <ExpandingCards
-                    defaultActiveIndex={0}
-                    items={visibleEntries.map(entry => ({
-                      id: entry.id,
-                      title: entry.title,
-                      description: `${entry.year || 'N/A'} • ⭐ ${entry.rating || '0.0'} • ${entry.type === 'tv' ? 'Series' : 'Movie'}`,
-                      imgSrc: imageUrl(entry.poster, 'w500'),
-                      backdropSrc: entry.backdrop ? imageUrl(entry.backdrop, 'w1280') : imageUrl(entry.poster, 'w780'),
-                      status: entry.status,
-                      progress: entry.type === 'tv' ? (entry.progress || { season: 1, episode: 1 }) : null,
-                      icon: entry.type === 'tv' ? <Tv size={16} /> : <Film size={16} />,
-                      onViewDetails: () => openModal(entry.tmdbId, entry.type),
-                      onStatusChange: (status) => onStatusChange(entry.id, status),
-                      onProgressChange: (s, e) => onProgress(entry.id, s, e),
-                      onDelete: () => onRemoveEntry(entry.id)
-                    }))}
-                    className="mb-4"
-                  />
+                  <Plus size={14} />
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="wl-tier-cards-new">
+              {/* Expanding Cards Layout */}
+              <ExpandingCards
+                defaultActiveIndex={0}
+                items={visibleEntries.map(entry => ({
+                  id: entry.id,
+                  title: entry.title,
+                  description: `${entry.year || 'N/A'} • ⭐ ${entry.rating || '0.0'} • ${entry.type === 'tv' ? 'Series' : 'Movie'}`,
+                  imgSrc: imageUrl(entry.poster, 'w500'),
+                  backdropSrc: entry.backdrop ? imageUrl(entry.backdrop, 'w1280') : imageUrl(entry.poster, 'w780'),
+                  status: entry.status,
+                  progress: entry.type === 'tv' ? (entry.progress || { season: 1, episode: 1 }) : null,
+                  icon: entry.type === 'tv' ? <Tv size={16} /> : <Film size={16} />,
+                  onViewDetails: () => openModal(entry.tmdbId, entry.type),
+                  onStatusChange: (status) => onStatusChange(entry.id, status),
+                  onProgressChange: (s, e) => onProgress(entry.id, s, e),
+                  onDelete: () => onRemoveEntry(entry.id)
+                }))}
+                className="mb-4"
+              />
 
-                  {/* Add more button at end of row */}
-                  <div className="wl-tier-add-row">
-                    <motion.button
-                      className="wl-btn-add-compact"
-                      style={{
-                        '--tier-color': tier.color,
-                        borderColor: tier.color + '33'
-                      }}
-                      onClick={() => setShowSearch(true)}
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
-                      title={`Add titles to ${tier.name}`}
-                    >
-                      <Plus size={14} />
-                    </motion.button>
-                  </div>
-                </div>
-              )}
-            </motion.div>
+              {/* Add more button at end of row */}
+              <div className="wl-tier-add-row">
+                <button
+                  className="wl-btn-add-compact"
+                  style={{
+                    '--tier-color': tier.color,
+                    borderColor: tier.color + '33',
+                    transition: 'transform 0.2s'
+                  }}
+                  onClick={() => setShowSearch(true)}
+                  onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
+                  onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                  title={`Add titles to ${tier.name}`}
+                >
+                  <Plus size={14} />
+                </button>
+              </div>
+            </div>
           )}
-        </AnimatePresence>
-      </motion.div>
+        </div>
+      </div>
 
       {/* Search modal */}
       <WatchlistSearchModal

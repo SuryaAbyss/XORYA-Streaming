@@ -190,7 +190,7 @@ export function useWatchlist() {
 
   /**
    * Automatically updates or adds a title based on playback activity
-   * media: { tmdbId, type, title, poster, backdrop, year, rating, season, episode }
+   * media: { tmdbId, type, title, poster, backdrop, year, rating, season, episode, server }
    */
   const syncPlaybackWithWatchlist = useCallback((media) => {
     setEntries(prev => {
@@ -202,6 +202,7 @@ export function useWatchlist() {
           ...e,
           status: 'watching',
           updatedAt: Date.now(),
+          lastServer: media.server || e.lastServer,
           progress: media.type === 'tv' && (media.season > 1 || media.episode > 1 || !e.progress)
             ? { season: media.season || 1, episode: media.episode || 1 }
             : e.progress
@@ -224,6 +225,7 @@ export function useWatchlist() {
         status: 'watching',
         addedAt: Date.now(),
         updatedAt: Date.now(),
+        lastServer: media.server,
         progress: media.type === 'tv' ? { season: media.season || 1, episode: media.episode || 1 } : undefined,
       };
 

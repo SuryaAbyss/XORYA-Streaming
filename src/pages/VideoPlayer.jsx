@@ -23,7 +23,22 @@ const VideoPlayer = () => {
     const [collectionData, setCollectionData] = useState(null);
     const [recommendations, setRecommendations] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [activeServer, setActiveServer] = useState('vidfast');
+    // Safe initialization of active server from watchlist localStorage
+    const getInitialServer = () => {
+        try {
+            const raw = localStorage.getItem('xorya_watchlist');
+            if (raw) {
+                const saved = JSON.parse(raw);
+                const entry = saved.entries?.find(e => String(e.tmdbId) === String(id));
+                if (entry?.lastServer) {
+                    return entry.lastServer;
+                }
+            }
+        } catch { }
+        return 'vidfast';
+    };
+
+    const [activeServer, setActiveServer] = useState(getInitialServer);
     const [iframeKey, setIframeKey] = useState(0);
 
     // Safe initialisation bypassing ANY state closures by scanning localStorage directly
@@ -112,11 +127,12 @@ const VideoPlayer = () => {
                 year: (contentData.release_date || contentData.first_air_date)?.split('-')[0],
                 rating: contentData.vote_average?.toFixed(1),
                 season: type === 'tv' ? currentSeason : undefined,
-                episode: type === 'tv' ? currentEpisode : undefined
+                episode: type === 'tv' ? currentEpisode : undefined,
+                server: activeServer
             });
         }, 1000);
         return () => clearTimeout(timer);
-    }, [id, type, contentData, currentSeason, currentEpisode, syncPlaybackWithWatchlist]);
+    }, [id, type, contentData, currentSeason, currentEpisode, activeServer, syncPlaybackWithWatchlist]);
 
     const fetchContentData = async () => {
         setLoading(true);
@@ -554,7 +570,7 @@ const VideoPlayer = () => {
                                         allowFullScreen
                                         webkitAllowFullScreen
                                         mozAllowFullScreen
-                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
+                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen *"
                                         referrerPolicy="no-referrer-when-downgrade"
                                         scrolling="no"
                                     />

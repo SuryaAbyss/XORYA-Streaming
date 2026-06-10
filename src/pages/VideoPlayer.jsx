@@ -655,6 +655,10 @@ const VideoPlayer = () => {
                                     />
                                     <div style={{ marginTop: '1.5rem', display: 'flex', justifyContent: 'center' }}>
                                         <DownloadButton
+                                            tmdbId={id}
+                                            type={type}
+                                            season={currentSeason}
+                                            episode={currentEpisode}
                                             onDownload={() => handleServerChange('rive-download')}
                                         />
                                     </div>
@@ -683,6 +687,8 @@ const VideoPlayer = () => {
                                     <MovieInfoSidebar movie={contentData} />
                                     <div style={{ marginTop: '1.5rem', display: 'flex', justifyContent: 'center' }}>
                                         <DownloadButton
+                                            tmdbId={id}
+                                            type={type}
                                             onDownload={() => handleServerChange('rive-download')}
                                         />
                                     </div>

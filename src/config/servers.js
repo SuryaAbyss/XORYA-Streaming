@@ -203,8 +203,8 @@ export const servers = [
         type: 'testing',
         category: 'testing',
         urlTemplate: {
-            movie: (tmdbId) => `https://rivestream.org/embed?type=movie&id=${tmdbId}`,
-            tv: (tmdbId, season, episode) => `https://rivestream.org/embed?type=tv&id=${tmdbId}&season=${season}&episode=${episode}`
+            movie: (tmdbId) => `https://rivestream.ru/embed?type=movie&id=${tmdbId}`,
+            tv: (tmdbId, season, episode) => `https://rivestream.ru/embed?type=tv&id=${tmdbId}&season=${season}&episode=${episode}`
         }
     },
     {
@@ -214,8 +214,8 @@ export const servers = [
         category: 'testing',
         hasDownload: true,
         urlTemplate: {
-            movie: (tmdbId) => `https://rivestream.org/download?type=movie&id=${tmdbId}`,
-            tv: (tmdbId, season, episode) => `https://rivestream.org/download?type=tv&id=${tmdbId}&season=${season}&episode=${episode}`
+            movie: (tmdbId) => `https://rivestream.ru/download?type=movie&id=${tmdbId}`,
+            tv: (tmdbId, season, episode) => `https://rivestream.ru/download?type=tv&id=${tmdbId}&season=${season}&episode=${episode}`
         }
     },
     {

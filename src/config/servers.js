@@ -247,6 +247,16 @@ export const servers = [
             movie: (tmdbId) => `https://mappl.tv/watch/movie/${tmdbId}`,
             tv: (tmdbId, season, episode) => `https://mappl.tv/watch/tv/${tmdbId}-${season}-${episode}`
         }
+    },
+    {
+        id: 'vidapi',
+        name: 'VidAPI',
+        type: 'testing',
+        category: 'testing',
+        urlTemplate: {
+            movie: (tmdbId) => `https://vaplayer.ru/embed/movie/${tmdbId}?primaryColor=%2300bcd4&autoplay=1`,
+            tv: (tmdbId, season, episode) => `https://vaplayer.ru/embed/tv/${tmdbId}/${season}/${episode}?primaryColor=%2300bcd4&autoplay=1`
+        }
     }
 ];
 

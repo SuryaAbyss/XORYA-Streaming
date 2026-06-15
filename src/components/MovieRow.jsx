@@ -7,14 +7,19 @@ import { useGSAP } from '@gsap/react';
 
 gsap.registerPlugin(ScrollTrigger);
 
-const MovieRow = ({ title, movies, onMovieClick }) => {
+const MovieRow = ({ title, movies, onMovieClick, isUpcoming }) => {
     const rowRef = useRef(null);
     const containerRef = useRef(null);
 
     const scroll = (direction) => {
         if (rowRef.current) {
             const { current } = rowRef;
-            const scrollAmount = direction === 'left' ? -600 : 600;
+            const style = window.getComputedStyle(current);
+            const paddingLeft = parseFloat(style.paddingLeft) || 0;
+            const paddingRight = parseFloat(style.paddingRight) || 0;
+            const gap = parseFloat(style.gap) || 0;
+            const visibleWidth = current.clientWidth - paddingLeft - paddingRight;
+            const scrollAmount = (visibleWidth + gap) * (direction === 'left' ? -1 : 1);
             current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
         }
     };
@@ -102,7 +107,7 @@ const MovieRow = ({ title, movies, onMovieClick }) => {
                     className="movie-row-container"
                 >
                     {movies.map((movie, index) => (
-                        <InteractiveMovieCard key={movie.id} movie={movie} index={index} />
+                        <InteractiveMovieCard key={movie.id} movie={movie} index={index} isUpcoming={isUpcoming} />
                     ))}
                 </div>
 

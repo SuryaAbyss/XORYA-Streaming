@@ -14,6 +14,7 @@ export const getTrendingMovies = (page = 1) => tmdb.get('/trending/movie/day', {
 export const getTrendingMoviesWeek = (page = 1) => tmdb.get('/trending/movie/week', { params: { page } });
 export const getUpcomingMovies = () => tmdb.get('/movie/upcoming');
 export const getTopRatedMovies = () => tmdb.get('/movie/top_rated');
+export const getPopularMovies = () => tmdb.get('/movie/popular');
 export const getActionMovies = () => tmdb.get('/discover/movie?with_genres=28');
 export const getComedyMovies = () => tmdb.get('/discover/movie?with_genres=35');
 export const getHorrorMovies = () => tmdb.get('/discover/movie?with_genres=27');
@@ -29,6 +30,28 @@ export const getTopRatedTVShows = () => tmdb.get('/discover/tv?sort_by=vote_aver
 export const getActionTVShows = () => tmdb.get('/discover/tv?with_genres=10759&without_genres=16'); // Action & Adventure
 export const getComedyTVShows = () => tmdb.get('/discover/tv?with_genres=35&without_genres=16');
 export const getDramaTVShows = () => tmdb.get('/discover/tv?with_genres=18&without_genres=16');
+export const getAiringTodayTVShows = () => tmdb.get('/tv/airing_today');
+export const getOnTheAirTVShows = () => tmdb.get('/tv/on_the_air');
+export const getSciFiTVShows = () => tmdb.get('/discover/tv?with_genres=10765&without_genres=16');
+export const getMysteryTVShows = () => tmdb.get('/discover/tv?with_genres=9648&without_genres=16');
+export const getCrimeTVShows = () => tmdb.get('/discover/tv?with_genres=80&without_genres=16');
+export const getDocumentaryTVShows = () => tmdb.get('/discover/tv?with_genres=99&without_genres=16');
+
+// Extra Movie Category APIs
+export const getCrimeMovies = () => tmdb.get('/discover/movie?with_genres=80');
+export const getThrillerMovies = () => tmdb.get('/discover/movie?with_genres=53');
+
+// Anime APIs (Genre ID 16 is Animation)
+export const getAnimeTVShows = () => tmdb.get('/discover/tv?with_genres=16');
+export const getAnimeMovies = () => tmdb.get('/discover/movie?with_genres=16');
+export const getAnimeAction = () => tmdb.get('/discover/tv?with_genres=16,10759');
+export const getAnimeFantasy = () => tmdb.get('/discover/tv?with_genres=16,10765');
+export const getAnimeComedy = () => tmdb.get('/discover/tv?with_genres=16,35');
+
+// Documentaries APIs
+export const getCrimeDocs = () => tmdb.get('/discover/movie?with_genres=99,80');
+export const getHistoryDocs = () => tmdb.get('/discover/movie?with_genres=99,36');
+export const getScienceDocs = () => tmdb.get('/discover/movie?with_genres=99,10787');
 
 
 export const searchMovies = (query) => tmdb.get(`/search/movie?query=${query}`);

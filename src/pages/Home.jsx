@@ -8,43 +8,21 @@ import GridBackground from '../components/GridBackground';
 import SEO from '../components/SEO';
 import { imageUrl } from '../api/tmdb';
 import { loadYouTubeAPI } from '../hooks/useYouTubePlayer';
+import DynamicContentShelf from '../components/DynamicContentShelf';
+import UpcomingShelf from '../components/UpcomingShelf';
 import {
     getTrendingMovies,
     getTrendingMoviesWeek,
-    getTopRatedMovies,
-    getActionMovies,
-    getComedyMovies,
-    getHorrorMovies,
-    getRomanceMovies,
-    getDocumentaries,
-    getSciFiMovies,
-    getUpcomingMovies,
     getTrendingTVShows,
-    getTrendingTVShowsWeek,
-    getPopularTVShows,
-    getTopRatedTVShows,
-    getDramaTVShows
+    getTrendingTVShowsWeek
 } from '../api/tmdb';
 
 const Home = ({ category = 'all' }) => {
     const [trending, setTrending] = useState([]);
-    const [topRated, setTopRated] = useState([]);
-    const [action, setAction] = useState([]);
-    const [comedy, setComedy] = useState([]);
-    const [horror, setHorror] = useState([]);
-    const [romance, setRomance] = useState([]);
-    const [docs, setDocs] = useState([]);
-    const [scifi, setSciFi] = useState([]);
-    const [upcoming, setUpcoming] = useState([]);
+    const [trendingTV, setTrendingTV] = useState([]);
 
     // Detect mobile for layout adjustments
     const isMobileView = typeof window !== 'undefined' && navigator.maxTouchPoints > 0 && window.innerWidth <= 768;
-
-    // TV Show state
-    const [trendingTV, setTrendingTV] = useState([]);
-    const [popularTV, setPopularTV] = useState([]);
-    const [topRatedTV, setTopRatedTV] = useState([]);
-    const [dramaTV, setDramaTV] = useState([]);
 
     // Preload YouTube API early so trailer loads faster (desktop only)
     useEffect(() => {
@@ -60,40 +38,7 @@ const Home = ({ category = 'all' }) => {
     }, [category]);
 
     useEffect(() => {
-        const fetchSecondary = async () => {
-            // allSettled: if any single request fails/throttles, others still succeed
-            const safe = (r) => {
-                if (r.status !== 'fulfilled') return [];
-                return (r.value?.data?.results || []).filter(item => item.poster_path && item.backdrop_path);
-            };
-            const results = await Promise.allSettled([
-                getTopRatedMovies(), getActionMovies(), getComedyMovies(), getHorrorMovies(),
-                getRomanceMovies(), getDocumentaries(), getSciFiMovies(), getUpcomingMovies(),
-                getPopularTVShows(), getTopRatedTVShows(), getDramaTVShows()
-            ]);
-            const [
-                topRatedRes, actionRes, comedyRes, horrorRes,
-                romanceRes, docsRes, scifiRes, upcomingRes,
-                popularTVRes, topRatedTVRes, dramaTVRes
-            ] = results;
-
-            if (safe(topRatedRes).length) setTopRated(safe(topRatedRes));
-            if (safe(actionRes).length) setAction(safe(actionRes));
-            if (safe(comedyRes).length) setComedy(safe(comedyRes));
-            if (safe(horrorRes).length) setHorror(safe(horrorRes));
-            if (safe(romanceRes).length) setRomance(safe(romanceRes));
-            if (safe(docsRes).length) setDocs(safe(docsRes));
-            if (safe(scifiRes).length) setSciFi(safe(scifiRes));
-            if (safe(upcomingRes).length) setUpcoming(safe(upcomingRes));
-
-            const filterAnimation = (arr) => arr.filter(item => !item.genre_ids?.includes(16));
-            if (safe(popularTVRes).length) setPopularTV(filterAnimation(safe(popularTVRes)));
-            if (safe(topRatedTVRes).length) setTopRatedTV(filterAnimation(safe(topRatedTVRes)));
-            if (safe(dramaTVRes).length) setDramaTV(filterAnimation(safe(dramaTVRes)));
-        };
-
         const fetchPrimary = async () => {
-            // allSettled: one throttled page won't kill the whole batch
             const safe = (r) => {
                 if (r.status !== 'fulfilled') return [];
                 return (r.value?.data?.results || []).filter(item => item.poster_path && item.backdrop_path);
@@ -113,7 +58,6 @@ const Home = ({ category = 'all' }) => {
                 trendingTVWeekRes1, trendingTVWeekRes2, trendingTVWeekRes3
             ] = results;
 
-            // Helper to merge, deduplicate by id, and shuffle
             const mergeAndShuffle = (...arrays) => {
                 const uniqueMap = new Map();
                 arrays.forEach(arr => {
@@ -144,14 +88,10 @@ const Home = ({ category = 'all' }) => {
                 filterAnimation(safe(trendingTVWeekRes3))
             );
             if (trendingTVItems.length) setTrendingTV(trendingTVItems);
-
-            // Trigger secondary load after primary completes
-            fetchSecondary();
         };
 
         fetchPrimary();
     }, []);
-
 
     const [isTrailerPlaying, setIsTrailerPlaying] = useState(false);
     const [currentHeroIndex, setCurrentHeroIndex] = useState(() => Math.floor(Math.random() * 20));
@@ -161,11 +101,11 @@ const Home = ({ category = 'all' }) => {
     const mainData = category === 'tv' ? trendingTV : trending;
 
     // Re-randomize when trending data first loads
-    React.useEffect(() => {
+    useEffect(() => {
         if (mainData.length > 0) {
             setCurrentHeroIndex(Math.floor(Math.random() * mainData.length));
         }
-    }, [mainData.length > 0, category]);
+    }, [mainData.length, category]);
 
     const handleTrailerStart = React.useCallback(() => {
         setIsTrailerPlaying(true);
@@ -203,12 +143,12 @@ const Home = ({ category = 'all' }) => {
 
     return (
         <div className="home-page pb-0">
-            <SEO 
+            <SEO
                 title="XORYA - Premium Streaming Platform"
                 description="Watch the latest and most popular movies and TV shows on XORYA. Experience premium streaming with an interactive interface."
             />
             <h1 style={{ position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clip: 'rect(0, 0, 0, 0)', border: 0 }}>XORYA - Premium Streaming Platform</h1>
-            {/* Grid pattern only in the hero/header area */}
+
             <GridBackground>
                 <Hero
                     movie={heroMovie}
@@ -219,7 +159,6 @@ const Home = ({ category = 'all' }) => {
             </GridBackground>
 
             <div style={{ position: 'relative', zIndex: 20, pointerEvents: 'none' }}>
-                {/* Custom XORAYA Open Layout */}
                 <div style={{
                     position: 'relative',
                     background: 'linear-gradient(to bottom, transparent 0%, #000 150px)',
@@ -234,7 +173,6 @@ const Home = ({ category = 'all' }) => {
                     </div>
                 </div>
 
-                {/* Full-area animated smoke background: TOP 10 → end of page */}
                 <div style={{
                     position: 'relative',
                     marginTop: '-250px',
@@ -242,7 +180,6 @@ const Home = ({ category = 'all' }) => {
                     overflow: 'visible',
                     pointerEvents: 'auto'
                 }}>
-                    {/* Animated Smoke Background with a soft fade-in effect at the top */}
                     <div style={{
                         position: 'absolute',
                         inset: 0,
@@ -258,7 +195,6 @@ const Home = ({ category = 'all' }) => {
                     </div>
 
                     <div style={{ position: 'relative', zIndex: 1 }}>
-                        {/* Red box - wraps entire TOP 10 section (header + carousel) */}
                         <div
                             className="top10-outer-box"
                             style={{
@@ -275,7 +211,6 @@ const Home = ({ category = 'all' }) => {
                                     : '0 0 40px rgba(220, 38, 38, 0.15), inset 0 0 80px rgba(220, 38, 38, 0.04)',
                                 overflow: 'hidden',
                             }}>
-                            {/* Gradient blur overlay for extra glassmorphism depth */}
                             <div style={{
                                 position: 'absolute',
                                 inset: 0,
@@ -294,163 +229,30 @@ const Home = ({ category = 'all' }) => {
                         }}>
                             {category === 'all' && <ProvidersSection />}
 
-                            {/* Stylish TV Popular Header */}
-                            {showTV && (
-                                <>
-                                    <div className="home-section-header" style={{ padding: '0 2rem', marginBottom: '-1rem', marginTop: '1rem', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                        <h2 style={{
-                                            fontSize: '1.8rem',
-                                            fontWeight: '800',
-                                            textTransform: 'uppercase',
-                                            background: 'linear-gradient(to right, #38bdf8, #818cf8)',
-                                            WebkitBackgroundClip: 'text',
-                                            WebkitTextFillColor: 'transparent',
-                                            margin: 0,
-                                            letterSpacing: '2px',
-                                            textShadow: '0 0 20px rgba(56, 189, 248, 0.3)'
-                                        }}>
-                                            TV
-                                        </h2>
-                                        <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#818cf8', opacity: 0.8 }} />
-                                        <span style={{
-                                            fontSize: '1.1rem',
-                                            color: '#e2e8f0',
-                                            fontWeight: '600',
-                                            letterSpacing: '3px',
-                                            textTransform: 'uppercase',
-                                            textShadow: '0 2px 4px rgba(0,0,0,0.5)'
-                                        }}>
-                                            Popular
-                                        </span>
-                                    </div>
-                                    <MovieRow title="" movies={popularTV} />
-                                    {/* Stylish TV Top Rated Header */}
-                                    <div className="home-section-header" style={{ padding: '0 2rem', marginBottom: '-1rem', marginTop: '1rem', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                        <h2 style={{
-                                            fontSize: '1.8rem',
-                                            fontWeight: '800',
-                                            textTransform: 'uppercase',
-                                            background: 'linear-gradient(to right, #38bdf8, #818cf8)',
-                                            WebkitBackgroundClip: 'text',
-                                            WebkitTextFillColor: 'transparent',
-                                            margin: 0,
-                                            letterSpacing: '2px',
-                                            textShadow: '0 0 20px rgba(56, 189, 248, 0.3)'
-                                        }}>
-                                            TV
-                                        </h2>
-                                        <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#818cf8', opacity: 0.8 }} />
-                                        <span style={{
-                                            fontSize: '1.1rem',
-                                            color: '#e2e8f0',
-                                            fontWeight: '600',
-                                            letterSpacing: '3px',
-                                            textTransform: 'uppercase',
-                                            textShadow: '0 2px 4px rgba(0,0,0,0.5)'
-                                        }}>
-                                            Top Rated
-                                        </span>
-                                    </div>
-                                    <MovieRow title="" movies={topRatedTV} />
+                            {/* Dynamic Content Shelf System */}
+                            <DynamicContentShelf shelfType="tv" show={showTV} />
+                            <DynamicContentShelf shelfType="movie" show={showMovies} />
+                            <DynamicContentShelf shelfType="anime" show={category === 'all' || category === 'tv' || category === 'movies'} />
+                            <DynamicContentShelf shelfType="docs" show={category === 'all' || category === 'movies' || category === 'tv'} />
 
-                                    {/* Removed TV Trending Header and Row */}
-                                </>
-                            )}
-
-                            {/* Stylish Movie Upcoming Header */}
-                            {showMovies && (
-                                <>
-                                    <div className="home-section-header" style={{ padding: '0 2rem', marginBottom: '-1rem', marginTop: '1rem', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                        <h2 style={{
-                                            fontSize: '1.8rem',
-                                            fontWeight: '800',
-                                            textTransform: 'uppercase',
-                                            background: 'linear-gradient(to right, #fbbf24, #f59e0b)',
-                                            WebkitBackgroundClip: 'text',
-                                            WebkitTextFillColor: 'transparent',
-                                            margin: 0,
-                                            letterSpacing: '2px',
-                                            textShadow: '0 0 20px rgba(251, 191, 36, 0.3)'
-                                        }}>
-                                            Movies
-                                        </h2>
-                                        <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#f59e0b', opacity: 0.8 }} />
-                                        <span style={{
-                                            fontSize: '1.1rem',
-                                            color: '#e2e8f0',
-                                            fontWeight: '600',
-                                            letterSpacing: '3px',
-                                            textTransform: 'uppercase',
-                                            textShadow: '0 2px 4px rgba(0,0,0,0.5)'
-                                        }}>
-                                            Upcoming
-                                        </span>
-                                    </div>
-                                    <MovieRow title="" movies={upcoming} />
-
-                                    {/* Stylish Movie Action Thriller Header */}
-                                    <div className="home-section-header" style={{ padding: '0 2rem', marginBottom: '-1rem', marginTop: '1rem', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                        <h2 style={{
-                                            fontSize: '1.8rem',
-                                            fontWeight: '800',
-                                            textTransform: 'uppercase',
-                                            background: 'linear-gradient(to right, #fbbf24, #f59e0b)',
-                                            WebkitBackgroundClip: 'text',
-                                            WebkitTextFillColor: 'transparent',
-                                            margin: 0,
-                                            letterSpacing: '2px',
-                                            textShadow: '0 0 20px rgba(251, 191, 36, 0.3)'
-                                        }}>
-                                            Movies
-                                        </h2>
-                                        <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#f59e0b', opacity: 0.8 }} />
-                                        <span style={{
-                                            fontSize: '1.1rem',
-                                            color: '#e2e8f0',
-                                            fontWeight: '600',
-                                            letterSpacing: '3px',
-                                            textTransform: 'uppercase',
-                                            textShadow: '0 2px 4px rgba(0,0,0,0.5)'
-                                        }}>
-                                            Action Thriller
-                                        </span>
-                                    </div>
-                                    <MovieRow title="" movies={action} />
-
-                                    {/* Stylish Movie Horror Header */}
-                                    <div className="home-section-header" style={{ padding: '0 2rem', marginBottom: '-1rem', marginTop: '1rem', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                        <h2 style={{
-                                            fontSize: '1.8rem',
-                                            fontWeight: '800',
-                                            textTransform: 'uppercase',
-                                            background: 'linear-gradient(to right, #fbbf24, #f59e0b)',
-                                            WebkitBackgroundClip: 'text',
-                                            WebkitTextFillColor: 'transparent',
-                                            margin: 0,
-                                            letterSpacing: '2px',
-                                            textShadow: '0 0 20px rgba(251, 191, 36, 0.3)'
-                                        }}>
-                                            Movies
-                                        </h2>
-                                        <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#f59e0b', opacity: 0.8 }} />
-                                        <span style={{
-                                            fontSize: '1.1rem',
-                                            color: '#e2e8f0',
-                                            fontWeight: '600',
-                                            letterSpacing: '3px',
-                                            textTransform: 'uppercase',
-                                            textShadow: '0 2px 4px rgba(0,0,0,0.5)'
-                                        }}>
-                                            Horror
-                                        </span>
-                                    </div>
-                                    <MovieRow title="" movies={horror} />
-                                </>
-                            )}
+                            {/* Concept 6 - Dynamic Upcoming Shelves */}
+                            <UpcomingShelf
+                                title="Upcoming Movies"
+                                subtitle="Exciting new releases coming soon."
+                                theme="amber"
+                                sliceRange={[0, 10]}
+                                show={category === 'all' || category === 'movies'}
+                            />
+                            <UpcomingShelf
+                                title="Coming Soon"
+                                subtitle="Upcoming next on XORYA."
+                                theme="red"
+                                sliceRange={[10, 20]}
+                                show={category === 'all' || category === 'movies'}
+                            />
                         </div>
                     </div>
 
-                    {/* Smooth bottom fade — blends the last row into the footer */}
                     <div style={{
                         position: 'relative',
                         height: '180px',
@@ -464,4 +266,5 @@ const Home = ({ category = 'all' }) => {
         </div>
     );
 };
+
 export default Home;

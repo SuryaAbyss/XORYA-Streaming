@@ -52,12 +52,12 @@ const Hero = ({ movie, onPlay, onInfo, onTrailerStart, isTrailerPlaying, onTrail
         if (items && items.length > 0) {
             gsap.fromTo(items,
                 { opacity: 0, y: 30 },
-                { 
-                    opacity: 1, 
-                    y: 0, 
-                    duration: 1.0, 
-                    ease: "power4.out", 
-                    stagger: 0.12, 
+                {
+                    opacity: 1,
+                    y: 0,
+                    duration: 1.0,
+                    ease: "power4.out",
+                    stagger: 0.12,
                     delay: 0.2,
                     overwrite: "auto"
                 }

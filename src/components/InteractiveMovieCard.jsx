@@ -4,7 +4,7 @@ import { imageUrl } from '../api/tmdb';
 import { Play, Star, Eye, Bookmark, ChevronRight } from 'lucide-react';
 import { useMovieModal } from '../context/MovieModalContext';
 
-const InteractiveMovieCard = ({ movie, index = 0 }) => {
+const InteractiveMovieCard = ({ movie, index = 0, isUpcoming }) => {
     const { openModal, selectedMovieId } = useMovieModal();
     const [isHovered, setIsHovered] = useState(false);
     const [showDetails, setShowDetails] = useState(false);
@@ -81,11 +81,39 @@ const InteractiveMovieCard = ({ movie, index = 0 }) => {
                             fontSize: '2rem', color: 'rgba(255,255,255,0.15)'
                         }}>🎬</div>
                     )}
-                    <div className="gradient-overlay">
+                    <div className="gradient-overlay" style={isUpcoming ? { display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', alignItems: 'flex-start' } : undefined}>
                         <h3 className="movie-card-title">
                             {movie.title || movie.name}
                         </h3>
+                        {isUpcoming && (
+                            <span style={{ color: '#ff7a00', fontSize: '0.85rem', fontWeight: '800', marginTop: '4px', letterSpacing: '0.5px' }}>Coming Soon</span>
+                        )}
                     </div>
+                    {/* Unobtrusive Rating Badge */}
+                    {movie.vote_average ? (
+                        <div style={{
+                            position: 'absolute',
+                            top: '10px',
+                            right: '10px',
+                            background: 'rgba(0, 0, 0, 0.7)',
+                            backdropFilter: 'blur(8px)',
+                            WebkitBackdropFilter: 'blur(8px)',
+                            padding: '4px 8px',
+                            borderRadius: '6px',
+                            fontSize: '0.75rem',
+                            fontWeight: '700',
+                            color: '#fff',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            zIndex: 2,
+                            border: '1px solid rgba(255, 255, 255, 0.1)',
+                            boxShadow: '0 4px 10px rgba(0,0,0,0.5)'
+                        }}>
+                            <Star size={11} fill="#fbbf24" color="#fbbf24" style={{ transform: 'translateY(-0.5px)' }} />
+                            {movie.vote_average.toFixed(1)}
+                        </div>
+                    ) : null}
                 </div>
 
                 {/* Play Button Overlay - shows on hover */}

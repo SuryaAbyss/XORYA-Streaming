@@ -22,12 +22,12 @@ export const servers = [
         }
     },
     {
-        id: 'vidnest',
-        name: 'VidNest',
+        id: 'vidapi',
+        name: 'VidAPI',
         type: 'alternate',
         urlTemplate: {
-            movie: (tmdbId) => `https://vidnest.fun/movie/${tmdbId}`,
-            tv: (tmdbId, season, episode) => `https://vidnest.fun/tv/${tmdbId}/${season}/${episode}`
+            movie: (tmdbId) => `https://vaplayer.ru/embed/movie/${tmdbId}?primaryColor=%2300bcd4&autoplay=1`,
+            tv: (tmdbId, season, episode) => `https://vaplayer.ru/embed/tv/${tmdbId}/${season}/${episode}?primaryColor=%2300bcd4&autoplay=1`
         }
     },
     // Server #2 - VidKing
@@ -249,13 +249,13 @@ export const servers = [
         }
     },
     {
-        id: 'vidapi',
-        name: 'VidAPI',
+        id: 'vidnest',
+        name: 'VidNest',
         type: 'testing',
         category: 'testing',
         urlTemplate: {
-            movie: (tmdbId) => `https://vaplayer.ru/embed/movie/${tmdbId}?primaryColor=%2300bcd4&autoplay=1`,
-            tv: (tmdbId, season, episode) => `https://vaplayer.ru/embed/tv/${tmdbId}/${season}/${episode}?primaryColor=%2300bcd4&autoplay=1`
+            movie: (tmdbId) => `https://vidnest.fun/movie/${tmdbId}`,
+            tv: (tmdbId, season, episode) => `https://vidnest.fun/tv/${tmdbId}/${season}/${episode}`
         }
     }
 ];

@@ -257,6 +257,16 @@ export const servers = [
             movie: (tmdbId) => `https://vidnest.fun/movie/${tmdbId}`,
             tv: (tmdbId, season, episode) => `https://vidnest.fun/tv/${tmdbId}/${season}/${episode}`
         }
+    },
+    {
+        id: 'moviebox',
+        name: 'MovieBox API',
+        type: 'testing',
+        category: 'testing',
+        urlTemplate: {
+            movie: (tmdbId) => `http://localhost:8000/embed/movie/${tmdbId}`,
+            tv: (tmdbId, season, episode) => `http://localhost:8000/embed/tv/${tmdbId}/${season}/${episode}`
+        }
     }
 ];
 

@@ -11,15 +11,14 @@ export const servers = [
             tv: (tmdbId, season, episode) => `https://vidfast.pro/tv/${tmdbId}/${season}/${episode}?autoPlay=true&nextButton=true&autoNext=true&theme=00bcd4`
         }
     },
-    // Server #2 - VidKing
+    // Server #6 - Videasy Pro
     {
-        id: 'vidking',
-        name: 'VidKing',
+        id: 'videasy-pro',
+        name: 'Videasy Pro',
         type: 'alternate',
-        hasDownload: true, // Associated with VidKing downloader apps
         urlTemplate: {
-            movie: (tmdbId) => `https://www.vidking.net/embed/movie/${tmdbId}?color=00bcd4&autoPlay=true`,
-            tv: (tmdbId, season, episode) => `https://www.vidking.net/embed/tv/${tmdbId}/${season}/${episode}?color=00bcd4&autoPlay=true&nextEpisode=true&episodeSelector=true`
+            movie: (tmdbId) => `https://player.videasy.net/movie/${tmdbId}?color=00bcd4`,
+            tv: (tmdbId, season, episode) => `https://player.videasy.net/tv/${tmdbId}/${season}/${episode}?color=00bcd4&nextEpisode=true&autoplayNextEpisode=true`
         }
     },
     {
@@ -31,14 +30,15 @@ export const servers = [
             tv: (tmdbId, season, episode) => `https://vidnest.fun/tv/${tmdbId}/${season}/${episode}`
         }
     },
-    // Server #6 - Videasy Pro
+    // Server #2 - VidKing
     {
-        id: 'videasy-pro',
-        name: 'Videasy Pro',
+        id: 'vidking',
+        name: 'VidKing',
         type: 'alternate',
+        hasDownload: true, // Associated with VidKing downloader apps
         urlTemplate: {
-            movie: (tmdbId) => `https://player.videasy.net/movie/${tmdbId}?color=00bcd4`,
-            tv: (tmdbId, season, episode) => `https://player.videasy.net/tv/${tmdbId}/${season}/${episode}?color=00bcd4&nextEpisode=true&autoplayNextEpisode=true`
+            movie: (tmdbId) => `https://www.vidking.net/embed/movie/${tmdbId}?color=00bcd4&autoPlay=true`,
+            tv: (tmdbId, season, episode) => `https://www.vidking.net/embed/tv/${tmdbId}/${season}/${episode}?color=00bcd4&autoPlay=true&nextEpisode=true&episodeSelector=true`
         }
     },
     {

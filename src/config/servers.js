@@ -21,16 +21,17 @@ export const servers = [
             tv: (tmdbId, season, episode) => `https://vidsrc.sbs/embed/tv/${tmdbId}/${season}/${episode}?autoplay=1`
         }
     },
-    // Server #6 - Videasy Pro
+    // Server #3 - Videasy Net
     {
-        id: 'videasy-pro',
-        name: 'Videasy Pro',
+        id: 'videasy-net',
+        name: 'Videasy',
         type: 'alternate',
         urlTemplate: {
-            movie: (tmdbId) => `https://player.videasy.to/movie/${tmdbId}?color=00bcd4`,
-            tv: (tmdbId, season, episode) => `https://player.videasy.to/tv/${tmdbId}/${season}/${episode}?color=00bcd4&nextEpisode=true&autoplayNextEpisode=true`
+            movie: (tmdbId) => `https://player.videasy.net/movie/${tmdbId}?color=00bcd4&overlay=true`,
+            tv: (tmdbId, season, episode) => `https://player.videasy.net/tv/${tmdbId}/${season}/${episode}?color=00bcd4&nextEpisode=true&autoplayNextEpisode=true&episodeSelector=true&overlay=true`
         }
     },
+
     {
         id: 'vidapi',
         name: 'VidAPI',
@@ -330,13 +331,13 @@ export const servers = [
         }
     },
     {
-        id: 'videasy-net',
-        name: 'Videasy Net',
+        id: 'videasy-pro',
+        name: 'Videasy Pro',
         type: 'testing',
         category: 'testing',
         urlTemplate: {
-            movie: (tmdbId) => `https://player.videasy.net/movie/${tmdbId}?color=00bcd4&overlay=true`,
-            tv: (tmdbId, season, episode) => `https://player.videasy.net/tv/${tmdbId}/${season}/${episode}?color=00bcd4&nextEpisode=true&autoplayNextEpisode=true&episodeSelector=true&overlay=true`
+            movie: (tmdbId) => `https://player.videasy.to/movie/${tmdbId}?color=00bcd4`,
+            tv: (tmdbId, season, episode) => `https://player.videasy.to/tv/${tmdbId}/${season}/${episode}?color=00bcd4&nextEpisode=true&autoplayNextEpisode=true`
         }
     }
 ];

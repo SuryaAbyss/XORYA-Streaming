@@ -7,7 +7,7 @@ import { useGSAP } from '@gsap/react';
 
 gsap.registerPlugin(ScrollTrigger);
 
-const MovieRow = ({ title, movies, onMovieClick, isUpcoming }) => {
+const MovieRow = ({ title, movies, onMovieClick, isUpcoming, isTrendingRow, isLandscape }) => {
     const rowRef = useRef(null);
     const containerRef = useRef(null);
 
@@ -64,17 +64,22 @@ const MovieRow = ({ title, movies, onMovieClick, isUpcoming }) => {
 
     if (!movies || movies.length === 0) {
         return (
-            <div style={{ marginBottom: '2.5rem', minHeight: '272px', position: 'relative' }}>
+            <div style={{ marginBottom: '2.5rem', position: 'relative' }}>
                 {title && (
                     <h2 className="movie-row-title" style={{ opacity: 0.3, marginTop: 0 }}>
-                        {title}
+                        {title.split(' ').map((word, i) => (
+                            <span key={i} className={`nw-word nw-${(i % 4) + 1}`}>{word}</span>
+                        ))}
                     </h2>
                 )}
-                <div className="movie-row-container" style={{ overflow: 'hidden' }}>
+                {/* Skeleton shimmer row — shows while data loads */}
+                <div className="skeleton-row">
                     {[...Array(6)].map((_, i) => (
                         <div
                             key={i}
-                            className="card-skeleton"
+                            className="skeleton-card"
+                            aria-hidden="true"
+                            style={{ animationDelay: `${i * 0.08}s` }}
                         />
                     ))}
                 </div>
@@ -89,7 +94,9 @@ const MovieRow = ({ title, movies, onMovieClick, isUpcoming }) => {
         >
             {title && (
                 <h2 className="movie-row-title">
-                    {title}
+                    {title.split(' ').map((word, i) => (
+                        <span key={i} className={`nw-word nw-${(i % 4) + 1}`}>{word}</span>
+                    ))}
                 </h2>
             )}
 
@@ -104,10 +111,59 @@ const MovieRow = ({ title, movies, onMovieClick, isUpcoming }) => {
 
                 <div
                     ref={rowRef}
-                    className="movie-row-container"
+                    className="movie-row-container netflix-row-container"
                 >
                     {movies.map((movie, index) => (
-                        <InteractiveMovieCard key={movie.id} movie={movie} index={index} isUpcoming={isUpcoming} />
+                        <div
+                            key={movie.id}
+                            className="netflix-card-item"
+                            onMouseEnter={(e) => {
+                                const container = rowRef.current;
+                                if (!container) return;
+                                const items = Array.from(container.querySelectorAll('.netflix-card-item'));
+                                const nLi = items.length;
+                                if (nLi === 0) return;
+
+                                const scaleFactor = 1.4;
+                                const cardWidth = e.currentTarget.offsetWidth;
+                                const wBigElement = cardWidth * scaleFactor;
+                                const translation = (wBigElement - cardWidth) / 2;
+
+                                e.currentTarget.style.transform = `scale(${scaleFactor})`;
+                                e.currentTarget.style.zIndex = '50';
+
+                                if (index === 0) {
+                                    e.currentTarget.style.transformOrigin = '0px center';
+                                    items.slice(1).forEach(item => {
+                                        item.style.transform = `translate(${translation * 2}px, 0px)`;
+                                    });
+                                } else if (index === nLi - 1) {
+                                    e.currentTarget.style.transformOrigin = '100% center';
+                                    items.slice(0, nLi - 1).forEach(item => {
+                                        item.style.transform = `translate(-${translation * 2}px, 0px)`;
+                                    });
+                                } else {
+                                    e.currentTarget.style.transformOrigin = 'center center';
+                                    items.slice(0, index).forEach(item => {
+                                        item.style.transform = `translate(-${translation}px, 0px)`;
+                                    });
+                                    items.slice(index + 1).forEach(item => {
+                                        item.style.transform = `translate(${translation}px, 0px)`;
+                                    });
+                                }
+                            }}
+                            onMouseLeave={() => {
+                                const container = rowRef.current;
+                                if (!container) return;
+                                const items = container.querySelectorAll('.netflix-card-item');
+                                items.forEach(item => {
+                                    item.style.transform = 'translate(0px, 0px) scale(1)';
+                                    item.style.zIndex = '1';
+                                });
+                            }}
+                        >
+                            <InteractiveMovieCard movie={movie} index={index} isUpcoming={isUpcoming} isTrendingRow={isTrendingRow} isLandscape={isLandscape} />
+                        </div>
                     ))}
                 </div>
 

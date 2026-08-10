@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DiMAAC</title>
+</head>
+
+<style>
+    /* Fonts */
+    @import url('https://fonts.googleapis.com/css2?family=Raleway:wght@400;500&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@1&display=swap');
+
+    /* Reset */
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: "Raleway", sans-serif;
+        min-height: 100vh;
+        overflow-x: hidden;
+        background: #f2f2f2;
+    }
+
+    /* Loading Screen */
+    .loading {
+        width: 100vw;
+        height: 100vh;
+        position: fixed;
+        z-index: 2;
+        background: #1C1D20;
+    }
+
+    .loading-round {
+        position: absolute;
+        height: 20vh;
+        width: 100vw;
+        top: 99%;
+        overflow: hidden;
+    }
+
+    .curve {
+        height: 200%;
+        width: 150%;
+        background: #1C1D20;
+        border-radius: 50%;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -100%);
+    }
+
+    /* Loading Text */
+    .text {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 10;
+    }
+
+    .welcome-text {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        opacity: 0;
+    }
+
+    .welcome-text .dot {
+        width: 12px;
+        height: 12px;
+        background: white;
+        border-radius: 50%;
+    }
+
+    .welcome-text h2 {
+        color: white;
+        font-size: 2.5rem;
+        font-weight: 500;
+        letter-spacing: 0.05em;
+        white-space: nowrap;
+    }
+
+    /* Content Section */
+    .content {
+        height: 100vh;
+        width: 100vw;
+        position: fixed;
+        top: 0;
+        left: 0;
+        transform: translateY(100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .content h1 {
+        font-family: "Syne", sans-serif;
+        font-size: clamp(2.5rem, 9vw, 4rem);
+        font-weight: 800;
+        color: #1C1D20;
+        text-align: center;
+        line-height: 1.1;
+        letter-spacing: -0.03em;
+        opacity: 0;
+        filter: blur(20px);
+    }
+
+    .content h1 em {
+        font-family: "Instrument Serif", serif;
+        font-style: italic;
+        font-weight: 400;
+    }
+</style>
+
+<body>
+    <div class="loading">
+        <div class="text">
+            <div class="welcome-text">
+                <div class="dot"></div>
+                <h2>Hello</h2>
+            </div>
+            <div class="welcome-text">
+                <div class="dot"></div>
+                <h2>Bonjour</h2>
+            </div>
+            <div class="welcome-text">
+                <div class="dot"></div>
+                <h2>स्वागत हे</h2>
+            </div>
+            <div class="welcome-text">
+                <div class="dot"></div>
+                <h2>Ciao</h2>
+            </div>
+            <div class="welcome-text">
+                <div class="dot"></div>
+                <h2>Olá</h2>
+            </div>
+            <div class="welcome-text">
+                <div class="dot"></div>
+                <h2>おい</h2>
+            </div>
+            <div class="welcome-text">
+                <div class="dot"></div>
+                <h2>Hallå</h2>
+            </div>
+            <div class="welcome-text">
+                <div class="dot"></div>
+                <h2>Guten tag</h2>
+            </div>
+            <div class="welcome-text">
+                <div class="dot"></div>
+                <h2>Hallo</h2>
+            </div>
+            <div class="welcome-text">
+                <div class="dot"></div>
+                <h2>স্বাগতম</h2>
+            </div>
+        </div>
+        <div class="loading-round">
+            <div class="curve"></div>
+        </div>
+    </div>
+    <div class="content">
+        <h1>Make <em>it</em><br>Happen</h1>
+    </div>
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/gsap.min.js"
+        integrity="sha512-NcZdtrT77bJr4STcmsGAESr06BYGE8woZdSdEgqnpyqac7sugNO+Tr4bGwGF3MsnEkGKhU2KL2xh6Ec+BqsaHA=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <script>
+        const timeline = gsap.timeline({ defaults: { ease: "power2.inOut" } });
+        const welcomeTexts = gsap.utils.toArray(".welcome-text");
+
+        welcomeTexts.forEach((text, index) => {
+            const isFirst = index === 0;
+            const isLast = index === welcomeTexts.length - 1;
+            const holdTime = isFirst ? 0.6 : isLast ? 0.6 : 0.12;
+
+            if (isFirst) {
+                timeline.to(text, { opacity: 1, duration: 0.6, ease: "power2.out", delay: 0.8 });
+            } else {
+                timeline.set(text, { opacity: 1 });
+            }
+
+            if (!isLast) timeline.set(text, { opacity: 0 }, `+=${holdTime}`);
+        });
+
+
+        timeline.to(".text", {
+            y: -50,
+            opacity: 0,
+            duration: 0.4,
+            ease: "power3.inOut"
+        }, "+=0.3");
+
+
+        timeline.to(".loading", { y: "-100%", duration: 0.8, ease: "expo.out" }, "-=0.1")
+            .to(".loading-round", { height: 0, ease: "expo.out" }, "-=0.5")
+            .to(".content", { y: 0, duration: 0.8, ease: "expo.out" }, "-=0.78")
+            .to(".content h1", {
+                opacity: 1,
+                filter: "blur(0px)",
+                duration: 0.9,
+                ease: "power3.out"
+            }, "-=0.3");
+    </script>
+</body>
+
+</html>

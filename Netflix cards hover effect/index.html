@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Netflix Cards Hover Effect Prototype</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <main>
+    <div class="logo">
+      <svg viewBox="0 0 1024 276.742">
+        <path d="M140.803 258.904c-15.404 2.705-31.079 3.516-47.294 5.676l-49.458-144.856v151.073c-15.404 1.621-29.457 3.783-44.051 5.945v-276.742h41.08l56.212 157.021v-157.021h43.511v258.904zm85.131-157.558c16.757 0 42.431-.811 57.835-.811v43.24c-19.189 0-41.619 0-57.835.811v64.322c25.405-1.621 50.809-3.785 76.482-4.596v41.617l-119.724 9.461v-255.39h119.724v43.241h-76.482v58.105zm237.284-58.104h-44.862v198.908c-14.594 0-29.188 0-43.239.539v-199.447h-44.862v-43.242h132.965l-.002 43.242zm70.266 55.132h59.187v43.24h-59.187v98.104h-42.433v-239.718h120.808v43.241h-78.375v55.133zm148.641 103.507c24.594.539 49.456 2.434 73.51 3.783v42.701c-38.646-2.434-77.293-4.863-116.75-5.676v-242.689h43.24v201.881zm109.994 49.457c13.783.812 28.377 1.623 42.43 3.242v-254.58h-42.43v251.338zm231.881-251.338l-54.863 131.615 54.863 145.127c-16.217-2.162-32.432-5.135-48.648-7.838l-31.078-79.994-31.617 73.51c-15.678-2.705-30.812-3.516-46.484-5.678l55.672-126.75-50.269-129.992h46.482l28.377 72.699 30.27-72.699h47.295z"/>
+      </svg>
+    </div>
+
+    <!-- Section 1: Top Movies -->
+    <section>
+      <h2>Top Movies 2019</h2>
+      <ul>
+        <li class="item01">
+          <div class="img" style="background-image: url(https://fanart.tv/fanart/movies/466272/moviethumb/once-upon-a-time-in-hollywood-5dfeb7beb0d22.jpg)">
+            <img src="https://fanart.tv/fanart/movies/466272/moviebackground/untitled-manson-murders-project-5c58b437a6e65.jpg" alt="Once Upon a Time in Hollywood">
+          </div>
+          <div class="card">
+            <h3>Once Upon a Time in... Hollywood</h3>
+            <div class="info">
+              <span class="match">99% Match</span>
+              <span class="age">TV-14</span>
+              <span class="dur">2h 40min</span>
+            </div>
+            <div class="tags">
+              <span>Comedy</span>
+              <span>Drama</span>
+              <span>Action</span>
+            </div>
+          </div>
+        </li>
+
+        <li class="item02">
+          <div class="img" style="background-image: url(https://fanart.tv/fanart/movies/475557/moviethumb/joker-5db693c454a3e.jpg)">
+            <img src="https://fanart.tv/fanart/movies/475557/moviebackground/joker-5d68337505352.jpg" alt="Joker">
+          </div>
+          <div class="card">
+            <h3>Joker</h3>
+            <div class="info">
+              <span class="match">95% Match</span>
+              <span class="age">TV-14</span>
+              <span class="dur">2h 2min</span>
+            </div>
+            <div class="tags">
+              <span>Crime</span>
+              <span>Drama</span>
+              <span>Thriller</span>
+            </div>
+          </div>
+        </li>
+
+        <li class="item03">
+          <div class="img" style="background-image: url(https://fanart.tv/fanart/movies/496243/moviethumb/parasite-5d2d5ab30c73d.jpg)">
+            <img src="https://fanart.tv/fanart/movies/496243/moviebackground/parasite-5df5fb5439d1d.jpg" alt="Parasite">
+          </div>
+          <div class="card">
+            <h3>Parasite</h3>
+            <div class="info">
+              <span class="match">98% Match</span>
+              <span class="age">TV-14</span>
+              <span class="dur">2h 12min</span>
+            </div>
+            <div class="tags">
+              <span>Comedy</span>
+              <span>Crime</span>
+              <span>Drama</span>
+            </div>
+          </div>
+        </li>
+
+        <li class="item04">
+          <div class="img" style="background-image: url(https://fanart.tv/fanart/movies/359724/moviethumb/ford-v-ferrari-5db74ab5a49b9.jpg)">
+            <img src="https://fanart.tv/fanart/movies/359724/moviebackground/go-like-hell-5d0839e2ecc25.jpg" alt="Ford v. Ferrari">
+          </div>
+          <div class="card">
+            <h3>Ford v. Ferrari</h3>
+            <div class="info">
+              <span class="match">96% Match</span>
+              <span class="age">TV-PG</span>
+              <span class="dur">2h 32min</span>
+            </div>
+            <div class="tags">
+              <span>Action</span>
+              <span>Biography</span>
+              <span>Drama</span>
+            </div>
+          </div>
+        </li>
+
+        <li class="item05">
+          <div class="img" style="background-image: url(https://fanart.tv/fanart/movies/398978/moviethumb/the-irishman-5ded4b24803d2.jpg)">
+            <img src="https://fanart.tv/fanart/movies/398978/moviebackground/the-irishman-5de15d18d48f4.jpg" alt="The Irishman">
+          </div>
+          <div class="card">
+            <h3>The Irishman</h3>
+            <div class="info">
+              <span class="match">92% Match</span>
+              <span class="age">TV-MA</span>
+              <span class="dur">3h 29min</span>
+            </div>
+            <div class="tags">
+              <span>Biography</span>
+              <span>Crime</span>
+              <span>Drama</span>
+            </div>
+          </div>
+        </li>
+
+        <li class="item06">
+          <div class="img" style="background-image: url(https://fanart.tv/fanart/movies/492188/moviethumb/marriage-story-5dd0c5d3db138.jpg)">
+            <img src="https://fanart.tv/fanart/movies/492188/moviebackground/marriage-story-5def5bf3a229b.jpg" alt="Marriage Story">
+          </div>
+          <div class="card">
+            <h3>Marriage Story</h3>
+            <div class="info">
+              <span class="match">94% Match</span>
+              <span class="age">TV-14</span>
+              <span class="dur">2h 17min</span>
+            </div>
+            <div class="tags">
+              <span>Comedy</span>
+              <span>Drama</span>
+              <span>Romance</span>
+            </div>
+          </div>
+        </li>
+      </ul>
+    </section>
+
+    <!-- Section 2: Top TV Shows -->
+    <section>
+      <h2>Top TV Shows 2019</h2>
+      <ul>
+        <li class="item01">
+          <div class="img" style="background-image: url(https://fanart.tv/fanart/tv/360893/tvthumb/chernobyl-5d9f83da0b06d.jpg)">
+            <img src="https://fanart.tv/fanart/tv/360893/showbackground/chernobyl-5cee1a264b23a.jpg" alt="Chernobyl">
+          </div>
+          <div class="card">
+            <h3>Chernobyl</h3>
+            <div class="info">
+              <span class="match">99% Match</span>
+              <span class="age">TV-14</span>
+              <span class="dur">1 Season</span>
+            </div>
+            <div class="tags">
+              <span>Drama</span>
+              <span>History</span>
+              <span>Thriller</span>
+            </div>
+          </div>
+        </li>
+
+        <li class="item02">
+          <div class="img" style="background-image: url(https://fanart.tv/fanart/tv/355567/tvthumb/the-boys-5d50fd5fe5f13.jpg)">
+            <img src="https://fanart.tv/fanart/tv/355567/showbackground/the-boys-5d4c66a61f5cb.jpg" alt="The Boys">
+          </div>
+          <div class="card">
+            <h3>The Boys</h3>
+            <div class="info">
+              <span class="match">98% Match</span>
+              <span class="age">TV-14</span>
+              <span class="dur">1 Season</span>
+            </div>
+            <div class="tags">
+              <span>Action</span>
+              <span>Comedy</span>
+              <span>Crime</span>
+            </div>
+          </div>
+        </li>
+
+        <li class="item03">
+          <div class="img" style="background-image: url(https://fanart.tv/fanart/tv/314614/tvthumb/fleabag-5808829144e0d.jpg)">
+            <img src="https://fanart.tv/fanart/tv/314614/showbackground/fleabag-5bbfae2909224.jpg" alt="Fleabag">
+          </div>
+          <div class="card">
+            <h3>Fleabag</h3>
+            <div class="info">
+              <span class="match">98% Match</span>
+              <span class="age">TV-14</span>
+              <span class="dur">2 Seasons</span>
+            </div>
+            <div class="tags">
+              <span>Comedy</span>
+              <span>Drama</span>
+              <span>Romance</span>
+            </div>
+          </div>
+        </li>
+
+        <li class="item04">
+          <div class="img" style="background-image: url(https://fanart.tv/fanart/tv/328708/tvthumb/mindhunter-5b1257a535a01.jpg)">
+            <img src="https://fanart.tv/fanart/tv/328708/showbackground/mindhunter-5b125a7844f6a.jpg" alt="Mindhunter">
+          </div>
+          <div class="card">
+            <h3>Mindhunter</h3>
+            <div class="info">
+              <span class="match">94% Match</span>
+              <span class="age">TV-14</span>
+              <span class="dur">2 Seasons</span>
+            </div>
+            <div class="tags">
+              <span>Crime</span>
+              <span>Drama</span>
+              <span>Thriller</span>
+            </div>
+          </div>
+        </li>
+
+        <li class="item05">
+          <div class="img" style="background-image: url(https://fanart.tv/fanart/tv/305288/tvthumb/stranger-things-5d1e691923280.jpg)">
+            <img src="https://fanart.tv/fanart/tv/305288/showbackground/stranger-things-5d2f417e8faae.jpg" alt="Stranger Things">
+          </div>
+          <div class="card">
+            <h3>Stranger Things</h3>
+            <div class="info">
+              <span class="match">93% Match</span>
+              <span class="age">TV-PG</span>
+              <span class="dur">3 Seasons</span>
+            </div>
+            <div class="tags">
+              <span>Drama</span>
+              <span>Fantasy</span>
+              <span>Horror</span>
+            </div>
+          </div>
+        </li>
+
+        <li class="item06">
+          <div class="img" style="background-image: url(https://fanart.tv/fanart/tv/270915/tvthumb/peaky-blinders-5277bdad6f903.jpg)">
+            <img src="https://fanart.tv/fanart/tv/270915/showbackground/peaky-blinders-5277be064c089.jpg" alt="Peaky Blinders">
+          </div>
+          <div class="card">
+            <h3>Peaky Blinders</h3>
+            <div class="info">
+              <span class="match">87% Match</span>
+              <span class="age">TV-14</span>
+              <span class="dur">5 Seasons</span>
+            </div>
+            <div class="tags">
+              <span>Crime</span>
+              <span>Drama</span>
+              <span>Action</span>
+            </div>
+          </div>
+        </li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

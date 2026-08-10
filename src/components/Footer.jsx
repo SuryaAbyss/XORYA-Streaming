@@ -9,28 +9,13 @@ const Footer = () => {
     if (location.pathname.includes('/watch/')) return null;
 
     return (
-        <div style={{ position: 'relative', marginTop: 'auto', zIndex: 50 }}>
-            {/* Seamless Transition Overlay */}
-            <div style={{
-                position: 'absolute',
-                top: '-80px',
-                left: 0,
-                width: '100%',
-                height: '80px',
-                background: 'linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.6) 100%)',
-                pointerEvents: 'none',
-                backdropFilter: 'blur(12px)',
-                WebkitBackdropFilter: 'blur(12px)',
-                maskImage: 'linear-gradient(to bottom, transparent 0%, black 100%)',
-                WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 100%)',
-                zIndex: -1
-            }} />
-
+        <div style={{ position: 'relative', marginTop: '10rem', zIndex: 50 }}>
             <footer style={{
-                background: 'radial-gradient(circle at top, rgba(30, 64, 175, 0.45), transparent 55%), #000',
+                background: 'radial-gradient(circle at top, rgba(30, 64, 175, 0.15), transparent 65%), #000',
+                borderTop: '1px solid rgba(255, 255, 255, 0.08)',
                 backdropFilter: 'blur(30px)',
                 WebkitBackdropFilter: 'blur(30px)',
-                padding: '3rem 1.5rem 1.5rem',
+                padding: '4rem 1.5rem 2rem',
                 textAlign: 'center',
                 color: 'rgba(255, 255, 255, 0.8)',
                 position: 'relative',

@@ -5,6 +5,8 @@ import { ArrowLeft, Play, Plus, Download, Volume2, VolumeX } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion';
 import useYouTubePlayer from '../hooks/useYouTubePlayer';
 import SEO from '../components/SEO';
+import LemniscateBloomLoader from '../components/LemniscateBloomLoader';
+
 
 const MovieDetails = () => {
     const { id } = useParams();
@@ -99,18 +101,9 @@ const MovieDetails = () => {
     }, [hasScrolled]);
 
     if (!movie) {
-        return (
-            <div style={{
-                minHeight: '100vh',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: 'white'
-            }}>
-                Loading...
-            </div>
-        );
+        return <LemniscateBloomLoader text="Loading details..." fullScreen={true} color="#00bcd4" />;
     }
+
 
     return (
         <div style={{ minHeight: '100vh', color: 'white', paddingBottom: isMobile ? '80px' : '3rem' }}>
@@ -171,6 +164,7 @@ const MovieDetails = () => {
                         {/* Player container */}
                         <div
                             ref={playerContainerRef}
+                            className="yt-player-container"
                             style={{
                                 position: 'absolute',
                                 top: '50%',

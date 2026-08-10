@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Film, Star, User, Award, Play } from 'lucide-react';
+import { ArrowLeft, Film, Star, User, Award, Play, Newspaper, ExternalLink } from 'lucide-react';
 import { getPersonDetails, getPersonCombinedCredits, imageUrl } from '../api/tmdb';
+import { getActorNews } from '../api/imdb';
 import InteractiveMovieCard from '../components/InteractiveMovieCard';
 
 const ActorDetails = () => {
@@ -12,6 +13,8 @@ const ActorDetails = () => {
     const [person, setPerson] = useState(null);
     const [credits, setCredits] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [news, setNews] = useState([]);
+    const [newsLoading, setNewsLoading] = useState(false);
 
     useEffect(() => {
         const fetchActorData = async () => {
@@ -38,6 +41,16 @@ const ActorDetails = () => {
 
         fetchActorData();
     }, [id]);
+
+    // Fetch IMDb news once we have the person's imdb_id
+    useEffect(() => {
+        if (!person?.imdb_id) return;
+        setNewsLoading(true);
+        getActorNews(person.imdb_id, 10).then(edges => {
+            setNews(edges);
+            setNewsLoading(false);
+        });
+    }, [person?.imdb_id]);
 
     if (loading) {
         return (
@@ -384,6 +397,127 @@ const ActorDetails = () => {
                         </motion.div>
                     ))}
                 </div>
+                {/* Latest IMDb News Section */}
+                {(newsLoading || news.length > 0) && (
+                    <div style={{ marginTop: '4rem' }}>
+                        <h2 style={{
+                            fontSize: '1.8rem',
+                            color: 'white',
+                            fontWeight: '800',
+                            marginBottom: '1.5rem',
+                            paddingLeft: '1rem',
+                            borderLeft: `5px solid ${colors.redAccent}`,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '12px'
+                        }}>
+                            <Newspaper size={24} color={colors.redAccent} />
+                            Latest News
+                        </h2>
+
+                        {newsLoading ? (
+                            <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+                                {[...Array(4)].map((_, i) => (
+                                    <div key={i} style={{
+                                        width: '280px', height: '200px',
+                                        borderRadius: '16px',
+                                        background: 'rgba(255,255,255,0.05)',
+                                        animation: 'pulse 1.5s ease infinite'
+                                    }} />
+                                ))}
+                            </div>
+                        ) : (
+                            <div style={{
+                                display: 'grid',
+                                gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+                                gap: '16px'
+                            }}>
+                                {news.map((edge, i) => {
+                                    const article = edge?.node;
+                                    if (!article) return null;
+                                    const thumb = article.image?.url;
+                                    const title = article.articleTitle?.plainText || 'Untitled';
+                                    const source = article.source?.homepage?.label || article.source?.homepage?.url || 'IMDb News';
+                                    const date = article.date
+                                        ? new Date(article.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                                        : '';
+                                    const link = article.externalUrl || '#';
+
+                                    return (
+                                        <motion.a
+                                            key={i}
+                                            href={link}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            initial={{ opacity: 0, y: 16 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ delay: i * 0.05 }}
+                                            whileHover={{ scale: 1.02 }}
+                                            style={{
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                background: 'rgba(255,255,255,0.04)',
+                                                border: '1px solid rgba(255,255,255,0.08)',
+                                                borderRadius: '16px',
+                                                overflow: 'hidden',
+                                                textDecoration: 'none',
+                                                cursor: 'pointer',
+                                                transition: 'border-color 0.2s ease',
+                                            }}
+                                            onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(220,38,38,0.4)'}
+                                            onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'}
+                                        >
+                                            {/* Thumbnail */}
+                                            <div style={{ height: '160px', overflow: 'hidden', background: '#111', flexShrink: 0 }}>
+                                                {thumb ? (
+                                                    <img
+                                                        src={thumb}
+                                                        alt={title}
+                                                        style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.3s ease' }}
+                                                        onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.05)'}
+                                                        onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+                                                    />
+                                                ) : (
+                                                    <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                        <Newspaper size={32} color="rgba(255,255,255,0.15)" />
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            {/* Text */}
+                                            <div style={{ padding: '14px 16px', flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+                                                    <span style={{ fontSize: '0.7rem', fontWeight: '700', color: colors.redAccent, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                                                        {source}
+                                                    </span>
+                                                    <ExternalLink size={12} color="rgba(255,255,255,0.3)" />
+                                                </div>
+                                                <p style={{
+                                                    color: 'white',
+                                                    fontSize: '0.9rem',
+                                                    fontWeight: '700',
+                                                    lineHeight: 1.4,
+                                                    margin: 0,
+                                                    display: '-webkit-box',
+                                                    WebkitLineClamp: 3,
+                                                    WebkitBoxOrient: 'vertical',
+                                                    overflow: 'hidden'
+                                                }}>
+                                                    {title}
+                                                </p>
+                                                {date && (
+                                                    <span style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.4)', marginTop: 'auto' }}>
+                                                        {date}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </motion.a>
+                                    );
+                                })}
+                            </div>
+                        )}
+                    </div>
+                )}
             </div>
         </div>
     );

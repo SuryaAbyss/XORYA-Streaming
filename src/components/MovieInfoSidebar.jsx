@@ -34,11 +34,6 @@ const MovieInfoSidebar = ({ movie }) => {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, ease: "easeOut" }}
             style={{
-                background: 'rgba(20, 20, 20, 0.4)',
-                backdropFilter: 'blur(20px)',
-                WebkitBackdropFilter: 'blur(20px)',
-                borderRadius: '15px',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
                 height: '530px',
                 overflow: 'hidden',
                 display: 'flex',

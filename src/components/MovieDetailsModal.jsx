@@ -700,7 +700,7 @@ const MovieDetailsModal = () => {
                             opacity: isVideoPlaying ? 0.8 : 0, transition: 'opacity 0.5s ease',
                             pointerEvents: 'none'
                         }}>
-                            <div ref={playerContainerRef} style={{
+                            <div ref={playerContainerRef} className="yt-player-container" style={{
                                 position: 'absolute', top: '50%', left: '50%',
                                 width: '100vw', height: '56.25vw', minHeight: '100vh', minWidth: '177.77vh',
                                 transform: 'translate(-50%, -50%) scale(1.15)',

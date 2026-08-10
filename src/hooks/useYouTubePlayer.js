@@ -93,9 +93,18 @@ export default function useYouTubePlayer(videoKey, containerRef, options = {}) {
     const [isMuted, setIsMuted] = useState(false);
     const [playerReady, setPlayerReady] = useState(false);
 
-    // Force highest available quality
+    // Force highest available quality — called once play begins
     const forceHighestQuality = useCallback(() => {
-        // Quality forcing temporarily removed for testing
+        if (!playerRef.current) return;
+        try {
+            const available = playerRef.current.getAvailableQualityLevels?.();
+            const best = getHighestQuality(available);
+            if (best) {
+                playerRef.current.setPlaybackQuality(best);
+            }
+        } catch (e) {
+            // ignore
+        }
     }, []);
 
     // Toggle mute
@@ -129,24 +138,25 @@ export default function useYouTubePlayer(videoKey, containerRef, options = {}) {
 
             if (destroyed || !containerRef.current) return;
 
-            // Match container dimensions so video fits correctly (no cropping/zoom)
-            const containerWidth = containerRef.current.offsetWidth || window.innerWidth;
-            const containerHeight = containerRef.current.offsetHeight || window.innerHeight;
-
-            // Create a target div inside the container for the player
+            // Create a target div inside the container for the player with full 100% fluid styling
             const targetDiv = document.createElement('div');
             targetDiv.id = `yt-player-${videoKey}-${Date.now()}`;
+            targetDiv.className = 'yt-player-target';
+            targetDiv.style.width = '100%';
+            targetDiv.style.height = '100%';
+            targetDiv.style.position = 'absolute';
+            targetDiv.style.top = '0';
+            targetDiv.style.left = '0';
             containerRef.current.innerHTML = '';
             containerRef.current.appendChild(targetDiv);
 
             playerRef.current = new window.YT.Player(targetDiv.id, {
-                width: containerWidth,
-                height: containerHeight,
+                width: '100%',
+                height: '100%',
                 host: 'https://www.youtube-nocookie.com',
-                // Omit videoId here to prevent adaptive streaming from starting immediately
                 playerVars: {
-                    autoplay: 0, // We will manually load and play
-                    mute: 1, // Must start muted to bypass browser autoplay restrictions
+                    autoplay: 1,
+                    mute: 1,
                     controls: 0,
                     modestbranding: 1,
                     rel: 0,
@@ -155,8 +165,8 @@ export default function useYouTubePlayer(videoKey, containerRef, options = {}) {
                     fs: 0,
                     playsinline: 1,
                     cc_load_policy: 0,
-                    origin: window.location.origin,
                     enablejsapi: 1,
+                    origin: window.location.origin,
                 },
                 events: {
                     onReady: (event) => {
@@ -164,34 +174,54 @@ export default function useYouTubePlayer(videoKey, containerRef, options = {}) {
                         setPlayerReady(true);
                         setIsMuted(true);
 
+                        // Force iframe element to be 100% fluid and responsive
+                        const iframeEl = event.target?.getIframe?.() || document.getElementById(targetDiv.id);
+                        if (iframeEl) {
+                            iframeEl.style.width = '100%';
+                            iframeEl.style.height = '100%';
+                            iframeEl.style.position = 'absolute';
+                            iframeEl.style.top = '0';
+                            iframeEl.style.left = '0';
+                        }
+
                         if (delayPlay > 0) {
                             setTimeout(() => {
                                 if (destroyed) return;
                                 event.target.loadVideoById({
-                                    videoId: videoKey
+                                    videoId: videoKey,
+                                    suggestedQuality: 'hd1080',
                                 });
                             }, delayPlay);
                         } else {
-                            // Load video immediately
                             event.target.loadVideoById({
-                                videoId: videoKey
+                                videoId: videoKey,
+                                suggestedQuality: 'hd1080',
                             });
                         }
 
                         if (onReady) onReady(event);
+                    },
+                    onPlaybackQualityChange: (event) => {
+                        if (destroyed) return;
+                        const quality = event.data;
+                        if (quality === 'hd1080' || quality === 'hd720' || quality === 'hd2160' || quality === 'highres') {
+                            if (options.onQualityHD) {
+                                options.onQualityHD(quality);
+                            }
+                        }
                     },
                     onStateChange: (event) => {
                         if (destroyed) return;
 
                         // YT.PlayerState.PLAYING === 1
                         if (event.data === 1) {
+                            forceHighestQuality();
                             if (onPlaying) onPlaying(event);
                         }
 
                         // YT.PlayerState.ENDED === 0
                         if (event.data === 0) {
                             if (loop) {
-                                // Seamless loop: seek to start and play again
                                 try {
                                     playerRef.current.seekTo(0, true);
                                     playerRef.current.playVideo();

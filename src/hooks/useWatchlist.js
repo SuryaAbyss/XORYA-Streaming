@@ -133,11 +133,28 @@ export function useWatchlist() {
     setEntries(prev => prev.map(e => e.id === entryId ? { ...e, note, updatedAt: Date.now() } : e));
   }, []);
 
-  // TV show episode progress  { season: 1, episode: 1 }
-  const setProgress = useCallback((entryId, season, episode) => {
-    setEntries(prev => prev.map(e =>
-      e.id === entryId ? { ...e, progress: { season: Math.max(1, season), episode: Math.max(1, episode) }, updatedAt: Date.now() } : e
-    ));
+  // TV show episode progress or Movie percent progress
+  const setProgress = useCallback((entryId, season, episode, percent) => {
+    setEntries(prev => prev.map(e => {
+      if (e.id !== entryId) return e;
+      const progressObj = percent !== undefined
+        ? { percent: Math.max(0, Math.min(100, percent)) }
+        : { season: Math.max(1, season), episode: Math.max(1, episode) };
+      
+      let status = e.status;
+      if (status === 'pending') {
+        if (percent !== undefined && percent > 0) {
+          status = 'watching';
+        } else if (season > 1 || episode > 1) {
+          status = 'watching';
+        }
+      }
+      if (percent === 100) {
+        status = 'watched';
+      }
+      
+      return { ...e, progress: progressObj, status, updatedAt: Date.now() };
+    }));
   }, []);
 
   // ─── Helpers ─────────────────────────────────────────────────────────────────

@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Home, Search, Monitor, Film, Bookmark } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import SearchModal from './SearchModal';
-import { gsap } from 'gsap';
-import { useGSAP } from '@gsap/react';
+import { createScope, createTimeline, stagger } from 'animejs';
+
 
 const Navbar = () => {
     const location = useLocation();
@@ -15,7 +16,21 @@ const Navbar = () => {
     const [hoveredItem, setHoveredItem] = useState(null);
 
     const isMobile = typeof window !== 'undefined' && navigator.maxTouchPoints > 0 && window.innerWidth <= 768;
-    const isActive = (path) => location.pathname === path;
+    const isActive = (path) => {
+        if (!path) return false;
+        if (location.pathname === path) return true;
+        
+        // Active tab matching for watch and details pages
+        if (location.pathname.startsWith('/watch/movie') || location.pathname.startsWith('/movie/')) {
+            return path === '/movies';
+        }
+        if (location.pathname.startsWith('/watch/tv') || location.pathname.startsWith('/watch/series') || location.pathname.startsWith('/tv/')) {
+            return path === '/series';
+        }
+        
+        return false;
+    };
+
 
     const startNavTimer = () => {
         if (timerRef.current) clearTimeout(timerRef.current);
@@ -65,30 +80,90 @@ const Navbar = () => {
 
     const navRef = useRef(null);
     const logoRef = useRef(null);
+    const navbarScopeRef = useRef(null);
+    const scopeRef = useRef(null);
 
-    // Timeline mount animations
-    useGSAP(() => {
-        const tl = gsap.timeline();
-        tl.fromTo(navRef.current,
-            { y: isMobile ? 100 : -100, opacity: 0 },
-            { y: 0, opacity: 1, duration: 0.8, ease: "power3.out" }
-        );
+    // Anime.js Timeline entrance reveal
+    useEffect(() => {
+        let isScopeCreated = false;
 
-        const items = navRef.current?.querySelectorAll('.nav-item-wrap');
-        if (items && items.length > 0) {
-            tl.fromTo(items,
-                { opacity: 0, y: isMobile ? 20 : -20 },
-                { opacity: 1, y: 0, duration: 0.5, stagger: 0.06, ease: "power2.out" },
-                "-=0.55"
-            );
+        if (navbarScopeRef.current) {
+            scopeRef.current = createScope({ root: navbarScopeRef }).add(self => {
+                self.add('playEntrance', () => {
+                    console.log('Navbar: playEntrance called inside scope context');
+                    const timeline = createTimeline({
+                        defaults: {
+                            ease: 'out(3)',
+                            duration: 800
+                        }
+                    });
+
+                    // 1. Slide and fade in the navbar container
+                    timeline.add(navRef.current, {
+                        translateY: isMobile ? [100, 0] : [-100, 0],
+                        opacity: [0, 1]
+                    });
+
+                    // 2. Stagger nav item pills
+                    const items = navRef.current?.querySelectorAll('.nav-item-wrap');
+                    if (items && items.length > 0) {
+                        timeline.add(items, {
+                            opacity: [0, 1],
+                            translateY: isMobile ? [20, 0] : [-20, 0],
+                            delay: stagger(60)
+                        }, '-=600');
+                    }
+
+                    // 3. Slide and fade in the logo container
+                    timeline.add(logoRef.current, {
+                        opacity: [0, 1],
+                        translateY: [-20, 0],
+                        duration: 700
+                    }, '-=500');
+
+                    timeline.play();
+                });
+            });
+            isScopeCreated = true;
         }
 
-        tl.fromTo(logoRef.current,
-            { opacity: 0, y: -20 },
-            { opacity: 1, y: 0, duration: 0.7, ease: "power3.out" },
-            "-=0.4"
-        );
-    }, []);
+        const triggerPlayEntrance = () => {
+            if (scopeRef.current && scopeRef.current.methods.playEntrance) {
+                scopeRef.current.methods.playEntrance();
+            } else {
+                if (navRef.current) {
+                    navRef.current.style.opacity = '1';
+                    navRef.current.style.transform = 'translateY(0)';
+                }
+                if (logoRef.current) {
+                    logoRef.current.style.opacity = '1';
+                    logoRef.current.style.transform = 'translateY(0)';
+                }
+            }
+        };
+
+        const handleIntroComplete = () => {
+            console.log('Navbar: handleIntroComplete triggered');
+            triggerPlayEntrance();
+        };
+
+        const isInitial = typeof window !== 'undefined' && !window.XORYA_INITIAL_LOAD_COMPLETE && location.pathname === '/';
+        console.log('Navbar: isInitial?', isInitial);
+
+        if (isInitial) {
+            window.addEventListener('xorya-intro-complete', handleIntroComplete);
+        } else {
+            // Play immediately on client route navigations or non-home pages
+            triggerPlayEntrance();
+        }
+
+        return () => {
+            window.removeEventListener('xorya-intro-complete', handleIntroComplete);
+            if (isScopeCreated && scopeRef.current) {
+                scopeRef.current.revert();
+            }
+        };
+    }, [location.pathname, isMobile]);
 
     const navbarStyle = isMobile ? {
         backgroundColor: 'rgba(5, 5, 5, 0.92)',
@@ -107,7 +182,7 @@ const Navbar = () => {
     };
 
     return (
-        <>
+        <div ref={navbarScopeRef} style={{ display: 'contents' }}>
             <div
                 ref={navRef}
                 onMouseEnter={handleMouseEnter}
@@ -116,7 +191,6 @@ const Navbar = () => {
                 style={{
                     ...navbarStyle,
                     ...(isMobile ? {} : { alignItems: 'center' }),
-                    opacity: 0, // start hidden for GSAP to reveal
                 }}
             >
                 {navItems.map((item) => {
@@ -253,42 +327,56 @@ const Navbar = () => {
                                 } : {
                                     display: 'flex',
                                     alignItems: 'center',
-                                    background: active
-                                        ? 'linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 100%)'
-                                        : 'transparent',
-                                    border: active
-                                        ? '1px solid rgba(255,255,255,0.1)'
-                                        : '1px solid transparent',
-                                    color: active ? '#fff' : 'rgba(255, 255, 255, 0.6)',
-                                    padding: '0.6rem 0.8rem',
+                                    position: 'relative',
+                                    background: 'transparent',
+                                    border: '1px solid transparent',
+                                    color: active ? '#fff' : 'rgba(255, 255, 255, 0.65)',
+                                    padding: '0.6rem 0.85rem',
                                     borderRadius: '30px',
+                                    transition: 'color 0.25s ease',
                                 }}
                             >
-                                <Icon size={isMobile ? 22 : 18} />
+                                <span style={{ position: 'relative', zIndex: 2, display: 'inline-flex', alignItems: 'center' }}>
+                                    <Icon size={isMobile ? 22 : 18} />
+                                </span>
                                 <span 
                                     className="nav-label" 
                                     style={isMobile ? {} : {
+                                        position: 'relative',
+                                        zIndex: 2,
                                         fontSize: '0.9rem',
-                                        fontWeight: '500',
+                                        fontWeight: '600',
                                         whiteSpace: 'nowrap',
                                         overflow: 'hidden',
                                         display: 'inline-block',
                                         verticalAlign: 'middle',
                                         maxWidth: (active || hoveredItem === item.path) ? '120px' : '0px',
                                         opacity: (active || hoveredItem === item.path) ? 1 : 0,
-                                        marginLeft: (active || hoveredItem === item.path) ? '0.4rem' : '0px',
+                                        marginLeft: (active || hoveredItem === item.path) ? '0.45rem' : '0px',
                                         transition: 'max-width 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.2s ease, margin-left 0.25s ease'
                                     }}
                                 >
                                     {item.label}
                                 </span>
                                 {active && !isMobile && (
-                                    <div
+                                    <motion.div
+                                        layoutId="navbar-glass-active-pill"
+                                        transition={{
+                                            type: "spring",
+                                            stiffness: 380,
+                                            damping: 28
+                                        }}
                                         style={{
                                             position: 'absolute',
                                             inset: 0,
-                                            background: 'radial-gradient(circle at center, rgba(255,255,255,0.1) 0%, transparent 70%)',
-                                            zIndex: -1
+                                            borderRadius: '30px',
+                                            background: 'rgba(255, 255, 255, 0.16)',
+                                            border: '1px solid rgba(255, 255, 255, 0.28)',
+                                            boxShadow: '0 4px 18px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.4)',
+                                            backdropFilter: 'blur(12px)',
+                                            WebkitBackdropFilter: 'blur(12px)',
+                                            pointerEvents: 'none',
+                                            zIndex: 1
                                         }}
                                     />
                                 )}
@@ -302,8 +390,8 @@ const Navbar = () => {
                 ref={logoRef}
                 className="navbar-logo-container"
                 style={{
-                    pointerEvents: isLogoTransparent ? 'none' : 'auto',
-                    opacity: isLogoTransparent ? 0.3 : 1,
+                    pointerEvents: 'auto',
+                    opacity: isLogoTransparent ? 0.75 : 1,
                     transition: 'opacity 0.8s ease'
                 }}
             >
@@ -334,7 +422,7 @@ const Navbar = () => {
                 isOpen={isSearchOpen}
                 onClose={() => setIsSearchOpen(false)}
             />
-        </>
+        </div>
     );
 };
 

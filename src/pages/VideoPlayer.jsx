@@ -1,13 +1,16 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { useParams, useNavigate, Link } from 'react-router-dom';
+
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Heart, Bookmark, ChevronLeft, ChevronRight, Tv, Languages, Settings, Share2, Download, Star } from 'lucide-react';
-import { getMovieDetails, getTVShowDetails, imageUrl, getMovieImages, getTVShowImages, getCollectionDetails, getMovieRecommendations, getTVShowRecommendations, getSeasonDetails } from '../api/tmdb';
+import { ArrowLeft, Heart, Bookmark, ChevronLeft, ChevronRight, Tv, Languages, Settings, Share2, Download, Star, Maximize2, Minimize2 } from 'lucide-react';
+import { getMovieDetails, getTVShowDetails, imageUrl, getMovieImages, getTVShowImages, getCollectionDetails, getMovieRecommendations, getMovieSimilar, getTVShowRecommendations, getTVShowSimilar, getSeasonDetails, getTrendingTVShows, getTrendingMovies, tmdb } from '../api/tmdb';
 import { useWatchlist } from '../hooks/useWatchlist';
 import { servers, getServerUrl } from '../config/servers';
 import EpisodesSidebar from '../components/EpisodesSidebar';
 import MovieRow from '../components/MovieRow';
 import WatchDetailsTabs from '../components/WatchDetailsTabs';
+import LemniscateBloomLoader from '../components/LemniscateBloomLoader';
+
 
 // Genre to color mappings for atmospheric fallback themes
 const GENRE_COLOR_MAP = {
@@ -46,34 +49,34 @@ const extractDominantColor = (imageUrl) => {
                 canvas.height = 10;
                 ctx.drawImage(img, 0, 0, 10, 10);
                 const data = ctx.getImageData(0, 0, 10, 10).data;
-                
+
                 let r = 0, g = 0, b = 0, count = 0;
                 for (let i = 0; i < data.length; i += 4) {
-                    const pixelBrightness = (data[i] + data[i+1] + data[i+2]) / 3;
-                    if (pixelBrightness > 30 && pixelBrightness < 220) { 
+                    const pixelBrightness = (data[i] + data[i + 1] + data[i + 2]) / 3;
+                    if (pixelBrightness > 30 && pixelBrightness < 220) {
                         r += data[i];
-                        g += data[i+1];
-                        b += data[i+2];
+                        g += data[i + 1];
+                        b += data[i + 2];
                         count++;
                     }
                 }
-                
+
                 if (count === 0) {
                     resolve(null);
                     return;
                 }
-                
+
                 r = Math.round(r / count);
                 g = Math.round(g / count);
                 b = Math.round(b / count);
-                
+
                 const maxVal = Math.max(r, g, b);
                 const minVal = Math.min(r, g, b);
                 if (maxVal - minVal < 20) {
                     resolve(null); // Too grey, discard
                     return;
                 }
-                
+
                 resolve(`${r}, ${g}, ${b}`);
             } catch {
                 resolve(null);
@@ -115,6 +118,19 @@ const VideoPlayer = () => {
 
     const [activeServer, setActiveServer] = useState(getInitialServer);
     const [iframeKey, setIframeKey] = useState(0);
+    const [isTheaterMode, setIsTheaterMode] = useState(false);
+    const playerFrameRef = useRef(null);
+
+    const toggleFullscreen = () => {
+        if (!playerFrameRef.current) return;
+        if (!document.fullscreenElement) {
+            playerFrameRef.current.requestFullscreen().catch((err) => {
+                console.error("Error attempting to enable fullscreen:", err);
+            });
+        } else {
+            document.exitFullscreen();
+        }
+    };
 
     // Safe initialisation bypassing ANY state closures by scanning localStorage directly
     const getInitialProgress = () => {
@@ -139,13 +155,36 @@ const VideoPlayer = () => {
     const [currentSeason, setCurrentSeason] = useState(initProg.s);
     const [currentEpisode, setCurrentEpisode] = useState(initProg.e);
 
-    // Keep state perfectly in sync if URL changes outside of component load
+    // Keep state perfectly in sync and reset progress when show ID or URL changes
     useEffect(() => {
+        if (type !== 'tv') return;
+
         if (urlSeason && urlEpisode) {
             setCurrentSeason(parseInt(urlSeason));
             setCurrentEpisode(parseInt(urlEpisode));
+            return;
         }
-    }, [urlSeason, urlEpisode]);
+
+        // Try loading from saved progress for this specific ID
+        try {
+            const raw = localStorage.getItem('xorya_watchlist');
+            if (raw) {
+                const saved = JSON.parse(raw);
+                const entry = saved.entries?.find(e => String(e.tmdbId) === String(id));
+                if (entry?.progress) {
+                    setCurrentSeason(parseInt(entry.progress.season) || 1);
+                    setCurrentEpisode(parseInt(entry.progress.episode) || 1);
+                    return;
+                }
+            }
+        } catch (e) {
+            console.error('Failed to parse watchlist for ID change reset:', e);
+        }
+
+        // Default fallback: reset to Season 1 Episode 1
+        setCurrentSeason(1);
+        setCurrentEpisode(1);
+    }, [id, type, urlSeason, urlEpisode]);
     const [seasons, setSeasons] = useState([]);
     // Tracks total episode count per season: { 1: 10, 2: 13, ... }
     const [episodeCounts, setEpisodeCounts] = useState({});
@@ -197,7 +236,7 @@ const VideoPlayer = () => {
     useEffect(() => {
         const calculateTheme = async () => {
             if (!contentData) return;
-            
+
             // 1. Try canvas color extraction from backdrop image (w92 size for performance)
             const backdropPath = contentData.backdrop_path || contentData.poster_path;
             if (backdropPath) {
@@ -208,7 +247,7 @@ const VideoPlayer = () => {
                     return;
                 }
             }
-            
+
             // 2. Fallback to genre-based coloring
             if (contentData.genres && contentData.genres.length > 0) {
                 for (const genreObj of contentData.genres) {
@@ -219,11 +258,11 @@ const VideoPlayer = () => {
                     }
                 }
             }
-            
+
             // 3. Fallback to default cyan
             setAccentColorRgb('0, 188, 212');
         };
-        
+
         calculateTheme();
     }, [contentData]);
 
@@ -302,13 +341,38 @@ const VideoPlayer = () => {
                     }
                 }
 
-                // Fetch recommendations
+                // Multi-tier recommendation fetcher (Recommendations -> Similar -> Genre -> Trending)
+                let recs = [];
                 try {
                     const recResponse = await getMovieRecommendations(id);
-                    setRecommendations(recResponse.data.results.filter(r => r.poster_path));
-                } catch (recError) {
-                    console.warn('Failed to fetch movie recommendations:', recError);
+                    recs = (recResponse.data?.results || []).filter(r => r.poster_path);
+                } catch (e) {}
+
+                if (recs.length === 0) {
+                    try {
+                        const simResponse = await getMovieSimilar(id);
+                        recs = (simResponse.data?.results || []).filter(r => r.poster_path);
+                    } catch (e) {}
                 }
+
+                if (recs.length === 0 && data.genres && data.genres.length > 0) {
+                    try {
+                        const genreId = data.genres[0].id;
+                        const popResponse = await tmdb.get('/discover/movie', {
+                            params: { with_genres: genreId, sort_by: 'popularity.desc' }
+                        });
+                        recs = (popResponse.data?.results || []).filter(r => r.poster_path && String(r.id) !== String(id));
+                    } catch (e) {}
+                }
+
+                if (recs.length === 0) {
+                    try {
+                        const trendResponse = await getTrendingMovies();
+                        recs = (trendResponse.data?.results || []).filter(r => r.poster_path && String(r.id) !== String(id));
+                    } catch (e) {}
+                }
+
+                setRecommendations(recs);
             } else {
                 const response = await getTVShowDetails(id);
                 data = response.data;
@@ -324,13 +388,45 @@ const VideoPlayer = () => {
                     console.warn('Failed to fetch TV logo:', imgError);
                 }
 
-                // Fetch recommendations
+                // Multi-tier recommendation fetcher (Recommendations -> Similar -> Genre -> Trending -> Top Rated)
+                let recs = [];
                 try {
                     const recResponse = await getTVShowRecommendations(id);
-                    setRecommendations(recResponse.data.results.filter(r => r.poster_path));
-                } catch (recError) {
-                    console.warn('Failed to fetch tv recommendations:', recError);
+                    recs = (recResponse.data?.results || []).filter(r => r.backdrop_path || r.poster_path);
+                } catch (e) {}
+
+                if (recs.length === 0) {
+                    try {
+                        const simResponse = await getTVShowSimilar(id);
+                        recs = (simResponse.data?.results || []).filter(r => r.backdrop_path || r.poster_path);
+                    } catch (e) {}
                 }
+
+                if (recs.length === 0 && data.genres && data.genres.length > 0) {
+                    try {
+                        const genreId = data.genres[0].id;
+                        const popResponse = await tmdb.get('/discover/tv', {
+                            params: { with_genres: genreId, sort_by: 'popularity.desc' }
+                        });
+                        recs = (popResponse.data?.results || []).filter(r => (r.backdrop_path || r.poster_path) && String(r.id) !== String(id));
+                    } catch (e) {}
+                }
+
+                if (recs.length === 0) {
+                    try {
+                        const trendResponse = await getTrendingTVShows();
+                        recs = (trendResponse.data?.results || []).filter(r => (r.backdrop_path || r.poster_path) && String(r.id) !== String(id));
+                    } catch (e) {}
+                }
+
+                if (recs.length === 0) {
+                    try {
+                        const popTv = await tmdb.get('/tv/popular');
+                        recs = (popTv.data?.results || []).filter(r => (r.backdrop_path || r.poster_path) && String(r.id) !== String(id));
+                    } catch (e) {}
+                }
+
+                setRecommendations(recs);
             }
 
             setContentData(data);
@@ -349,6 +445,15 @@ const VideoPlayer = () => {
     const handleReload = () => {
         setIframeKey(prev => prev + 1);
     };
+
+    // Generate URL using logic we fixed earlier (passing handles for TV correctly)
+    const playerUrl = getServerUrl(
+        activeServer,
+        type,
+        id,
+        type === 'tv' ? currentSeason : null,
+        type === 'tv' ? currentEpisode : null
+    );
 
     const loadTimeoutRef = React.useRef(null);
     const [fallbackToast, setFallbackToast] = useState(null);
@@ -422,30 +527,9 @@ const VideoPlayer = () => {
     };
 
     if (loading) {
-        return (
-            <div style={{
-                minHeight: '100vh',
-                background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: 'white'
-            }}>
-                <div style={{ textAlign: 'center' }}>
-                    <div style={{
-                        width: '50px',
-                        height: '50px',
-                        border: '3px solid rgba(0, 188, 212, 0.3)',
-                        borderTop: '3px solid #00bcd4',
-                        borderRadius: '50%',
-                        animation: 'spin 1s linear infinite',
-                        margin: '0 auto 1rem'
-                    }}></div>
-                    <p>Loading player...</p>
-                </div>
-            </div>
-        );
+        return <LemniscateBloomLoader text="Loading player..." fullScreen={true} color="#00bcd4" />;
     }
+
 
     if (!contentData) {
         return (
@@ -461,15 +545,6 @@ const VideoPlayer = () => {
             </div>
         );
     }
-
-    // Generate URL using logic we fixed earlier (passing handles for TV correctly)
-    const playerUrl = getServerUrl(
-        activeServer,
-        type,
-        id,
-        type === 'tv' ? currentSeason : null,
-        type === 'tv' ? currentEpisode : null
-    );
 
     const title = type === 'movie' ? contentData.title : contentData.name;
     const displayTitle = type === 'tv'
@@ -518,7 +593,7 @@ const VideoPlayer = () => {
                                 width: '110%',
                                 height: '110%',
                                 objectFit: 'cover',
-                                filter: 'blur(40px) brightness(0.35) saturate(0.8)',
+                                filter: 'blur(40px) brightness(0.85) saturate(0.95)',
                                 opacity: 0.85,
                                 transform: 'scale(1.1)',
                             }}
@@ -552,10 +627,16 @@ const VideoPlayer = () => {
                 </div>
 
                 {/* Main Content */}
-                <div style={{ display: 'flex', justifyContent: 'center', padding: '0 0 2.4rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'center', padding: '0 0 2.4rem', transition: 'all 0.3s ease' }}>
                     <div
                         className="watch-layout-outer"
-                        style={{ width: '100%', maxWidth: '1720px', padding: '0 1rem', boxSizing: 'border-box' }}
+                        style={{
+                            width: '100%',
+                            maxWidth: isTheaterMode ? '100vw' : '1720px',
+                            padding: isTheaterMode ? '0 0.5rem' : '0 1rem',
+                            boxSizing: 'border-box',
+                            transition: 'max-width 0.35s ease'
+                        }}
                     >
                         <motion.div
                             className="watch-layout"
@@ -566,41 +647,49 @@ const VideoPlayer = () => {
                                 display: 'flex',
                                 flexDirection: 'column',
                                 minHeight: 'calc(100vh - 120px)',
-                                padding: '2.5rem',
+                                padding: isTheaterMode ? '1rem 1.2rem 2.5rem' : '1.5rem 2.5rem 2.5rem',
                                 background: 'rgba(10, 10, 15, 0.45)',
                                 backdropFilter: 'blur(40px)',
                                 WebkitBackdropFilter: 'blur(40px)',
                                 border: '1px solid rgba(255, 255, 255, 0.08)',
                                 borderRadius: '28px',
                                 boxShadow: '0 24px 60px rgba(0, 0, 0, 0.65)',
-                                gap: '2rem',
+                                gap: '0px',
                                 boxSizing: 'border-box',
+                                transition: 'padding 0.35s ease'
                             }}
                         >
                             {/* Hero Details Block */}
                             <div style={{
                                 width: '100%',
                                 display: 'flex',
-                                flexDirection: 'column',
-                                gap: '0.4rem',
-                                marginBottom: '0.5rem',
-                                borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
-                                paddingBottom: '1.5rem'
+                                flexDirection: 'row',
+                                alignItems: 'center',
+                                justifyContent: 'flex-start', // Overrides CSS flex-end
+                                minHeight: '0px',
+                                paddingBottom: '0px',
+                                marginBottom: '0px',
+                                gap: '1.6rem',
+                                marginTop: '0.2rem',
+                                flexWrap: 'wrap'
                             }}>
                                 {logoPath ? (
-                                    <img
-                                        src={imageUrl(logoPath, 'w500')}
-                                        alt={title}
-                                        style={{
-                                            maxHeight: '54px',
-                                            width: 'auto',
-                                            objectFit: 'contain',
-                                            alignSelf: 'flex-start'
-                                        }}
-                                    />
+                                    <div style={{ display: 'flex', flexShrink: 0 }}>
+                                        <img
+                                            src={imageUrl(logoPath, 'w500')}
+                                            alt={title}
+                                            style={{
+                                                height: '52px', // Taller logo
+                                                width: 'auto',
+                                                maxHeight: '60px',
+                                                objectFit: 'contain',
+                                                display: 'block'
+                                            }}
+                                        />
+                                    </div>
                                 ) : (
                                     <h1 style={{
-                                        fontSize: '2.25rem',
+                                        fontSize: '1.6rem',
                                         fontWeight: '800',
                                         color: 'white',
                                         margin: 0,
@@ -609,49 +698,64 @@ const VideoPlayer = () => {
                                         {title}
                                     </h1>
                                 )}
-                                <div style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '0.8rem',
-                                    color: 'rgba(255, 255, 255, 0.6)',
-                                    fontSize: '0.83rem',
-                                    fontWeight: '500',
-                                    flexWrap: 'wrap'
-                                }}>
-                                    {releaseYear && <span>{releaseYear}</span>}
-                                    {releaseYear && <span>•</span>}
-                                    {genreLine && <span>{genreLine}</span>}
-                                    {genreLine && durationLabel && <span>•</span>}
-                                    {durationLabel && <span>{durationLabel}</span>}
-                                    {contentData.vote_average > 0 && (
-                                        <>
-                                            <span>•</span>
-                                            <span style={{ color: '#facc15', fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
-                                                <Star size={15} fill="#facc15" color="#facc15" />
-                                                {contentData.vote_average.toFixed(1)}
-                                            </span>
-                                        </>
+
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem', justifyContent: 'center' }}>
+                                    <div style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '0.6rem',
+                                        color: 'rgba(255, 255, 255, 0.65)',
+                                        fontSize: '0.82rem',
+                                        fontWeight: '600',
+                                        flexWrap: 'wrap'
+                                    }}>
+                                        {releaseYear && <span>{releaseYear}</span>}
+                                        {releaseYear && <span style={{ color: 'rgba(255,255,255,0.25)' }}>•</span>}
+                                        {genreLine && <span>{genreLine}</span>}
+                                        {genreLine && durationLabel && <span style={{ color: 'rgba(255,255,255,0.25)' }}>•</span>}
+                                        {durationLabel && <span>{durationLabel}</span>}
+                                        {contentData.vote_average > 0 && (
+                                            <>
+                                                <span style={{ color: 'rgba(255,255,255,0.25)' }}>•</span>
+                                                <span style={{ color: '#facc15', fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
+                                                    <Star size={13} fill="#facc15" color="#facc15" />
+                                                    {contentData.vote_average.toFixed(1)}
+                                                </span>
+                                            </>
+                                        )}
+                                    </div>
+                                    {contentData.tagline && (
+                                        <p className="watch-hero-tagline" style={{
+                                            margin: 0,
+                                            color: 'var(--theme-accent)',
+                                            fontSize: '0.85rem',
+                                            fontStyle: 'italic',
+                                            fontWeight: 500
+                                        }}>
+                                            "{contentData.tagline}"
+                                        </p>
                                     )}
                                 </div>
-                                {contentData.tagline && (
-                                    <p className="watch-hero-tagline" style={{
-                                        margin: '0.45rem 0 0',
-                                        color: 'var(--theme-accent)',
-                                        fontSize: '1.0rem',
-                                        fontStyle: 'italic',
-                                        fontWeight: 500
-                                    }}>
-                                        "{contentData.tagline}"
-                                    </p>
-                                )}
                             </div>
+
+                            {/* Divider Line (Position Control) */}
+                            <div style={{
+                                width: '100%',
+                                height: '1px',
+                                background: 'rgba(255, 255, 255, 0.05)',
+                                marginTop: '0px',
+                                marginBottom: '0px'
+                            }} />
 
                             {/* Columns Wrapper */}
                             <div className="watch-columns" style={{
                                 display: 'flex',
+                                flexDirection: isTheaterMode ? 'column' : 'row',
+                                alignItems: isTheaterMode ? 'center' : 'flex-start',
                                 gap: '2.5rem',
                                 width: '100%',
-                                boxSizing: 'border-box'
+                                boxSizing: 'border-box',
+                                marginTop: '-1.2rem'
                             }}>
                                 {/* Player Area */}
                                 <motion.div
@@ -663,23 +767,29 @@ const VideoPlayer = () => {
                                         flex: 1,
                                         minWidth: 0,
                                         display: 'flex',
-                                        flexDirection: 'column'
+                                        flexDirection: 'column',
+                                        alignItems: 'center',
+                                        width: '100%'
                                     }}
                                 >
                                     {/* Video Player Container */}
-                                    <div className="watch-player-frame" style={{
-                                        width: '100%',
-                                        maxWidth: '990px', // Matches the player's maxWidth
-                                        margin: '0 auto',
-                                        borderRadius: '16px',
-                                        overflow: 'hidden',
-                                        backgroundColor: 'rgba(0, 0, 0, 0.9)',
-                                        boxShadow: '0 24px 70px rgba(0, 0, 0, 0.8), 0 0 40px rgba(var(--theme-accent-rgb), 0.1)',
-                                        border: '1px solid rgba(var(--theme-accent-rgb), 0.2)',
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        position: 'relative'
-                                    }}>
+                                    <div 
+                                        ref={playerFrameRef}
+                                        className="watch-player-frame" 
+                                        style={{
+                                            width: '100%',
+                                            maxWidth: isTheaterMode ? '100%' : '990px', // Full width in theater mode
+                                            margin: '0 auto',
+                                            borderRadius: '16px',
+                                            overflow: 'hidden',
+                                            backgroundColor: 'rgba(0, 0, 0, 0.9)',
+                                            boxShadow: '0 24px 70px rgba(0, 0, 0, 0.8), 0 0 40px rgba(var(--theme-accent-rgb), 0.1)',
+                                            border: '1px solid rgba(var(--theme-accent-rgb), 0.2)',
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            position: 'relative'
+                                        }}
+                                    >
                                         {/* Player Header Bar */}
                                         <div className="watch-player-status" style={{
                                             height: '44px',
@@ -715,28 +825,55 @@ const VideoPlayer = () => {
                                             </div>
                                             <div style={{
                                                 display: 'flex',
-                                                gap: '1.2rem',
-                                                color: 'rgba(255, 255, 255, 0.65)',
+                                                gap: '0.6rem',
+                                                color: 'rgba(255, 255, 255, 0.75)',
                                                 alignItems: 'center'
                                             }}>
-                                                <Tv 
-                                                    size={16} 
-                                                    style={{ cursor: 'pointer', transition: 'color 0.2s' }}
-                                                    onMouseEnter={(e) => e.currentTarget.style.color = 'var(--theme-accent)'}
-                                                    onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255, 255, 255, 0.65)'}
-                                                />
-                                                <Languages 
-                                                    size={16} 
-                                                    style={{ cursor: 'pointer', transition: 'color 0.2s' }}
-                                                    onMouseEnter={(e) => e.currentTarget.style.color = 'var(--theme-accent)'}
-                                                    onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255, 255, 255, 0.65)'}
-                                                />
-                                                <Settings 
-                                                    size={16} 
-                                                    style={{ cursor: 'pointer', transition: 'color 0.2s' }}
-                                                    onMouseEnter={(e) => e.currentTarget.style.color = 'var(--theme-accent)'}
-                                                    onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255, 255, 255, 0.65)'}
-                                                />
+                                                {/* Cinema / Theater Mode Toggle Button */}
+                                                <button
+                                                    onClick={() => setIsTheaterMode(!isTheaterMode)}
+                                                    title={isTheaterMode ? "Exit Cinema View" : "Cinema View"}
+                                                    style={{
+                                                        background: isTheaterMode ? 'rgba(var(--theme-accent-rgb), 0.25)' : 'rgba(255, 255, 255, 0.08)',
+                                                        border: isTheaterMode ? '1px solid var(--theme-accent)' : '1px solid rgba(255, 255, 255, 0.12)',
+                                                        color: isTheaterMode ? 'var(--theme-accent)' : 'white',
+                                                        cursor: 'pointer',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: '0.4rem',
+                                                        padding: '0.3rem 0.65rem',
+                                                        borderRadius: '6px',
+                                                        fontSize: '0.75rem',
+                                                        fontWeight: '600',
+                                                        transition: 'all 0.2s ease'
+                                                    }}
+                                                >
+                                                    <Minimize2 size={13} style={{ transform: isTheaterMode ? 'none' : 'rotate(45deg)' }} />
+                                                    <span>{isTheaterMode ? 'Exit Cinema' : 'Cinema View'}</span>
+                                                </button>
+
+                                                {/* Fullscreen Button */}
+                                                <button
+                                                    onClick={toggleFullscreen}
+                                                    title="Fullscreen"
+                                                    style={{
+                                                        background: 'rgba(255, 255, 255, 0.08)',
+                                                        border: '1px solid rgba(255, 255, 255, 0.12)',
+                                                        color: 'white',
+                                                        cursor: 'pointer',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: '0.4rem',
+                                                        padding: '0.3rem 0.65rem',
+                                                        borderRadius: '6px',
+                                                        fontSize: '0.75rem',
+                                                        fontWeight: '600',
+                                                        transition: 'all 0.2s ease'
+                                                    }}
+                                                >
+                                                    <Maximize2 size={13} />
+                                                    <span>Fullscreen</span>
+                                                </button>
                                             </div>
                                         </div>
 
@@ -760,20 +897,19 @@ const VideoPlayer = () => {
                                         </div>
                                     </div>
 
-                                    {/* Redesigned Premium Action Bar */}
-                                    {contentData && (
-                                        <div className="watch-action-bar" style={{
-                                            width: '100%',
-                                            maxWidth: '990px',
-                                            margin: '1.2rem auto 0',
-                                            display: 'flex',
-                                            justifyContent: 'space-between',
-                                            alignItems: 'center',
-                                            flexWrap: 'wrap',
-                                            gap: '1rem',
-                                            boxSizing: 'border-box',
-                                            padding: '0 0.2rem'
-                                        }}>
+                                    {/* Under-Player Control Bar */}
+                                        {contentData && (
+                                            <div className="watch-action-bar" style={{
+                                                width: '100%',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'space-between',
+                                                marginTop: '1.2rem',
+                                                flexWrap: 'wrap',
+                                                gap: '1rem',
+                                                boxSizing: 'border-box',
+                                                padding: '0 0.2rem'
+                                            }}>
                                             {/* Left side: Action Utilities */}
                                             <div style={{ display: 'flex', gap: '0.8rem', alignItems: 'center', flexWrap: 'wrap' }}>
                                                 {(() => {
@@ -1029,43 +1165,103 @@ const VideoPlayer = () => {
                                                 </div>
                                             )}
                                         </div>
-                                     )}
+                                    )}
 
-                                     {/* Tabbed Details Area */}
-                                     <div className="watch-details-wrap" style={{
-                                         width: '100%',
-                                         maxWidth: '990px',
-                                         boxSizing: 'border-box',
-                                         margin: '1.5rem auto 0',
-                                     }}>
-                                         <WatchDetailsTabs
-                                             contentData={contentData}
-                                             type={type}
-                                             season={currentSeason}
-                                             episode={currentEpisode}
-                                             activeServer={activeServer}
-                                             onServerChange={handleServerChange}
-                                             onReload={handleReload}
-                                             onDownload={() => handleServerChange('rive-download')}
-                                         />
-                                     </div>
+                                    {/* Tabbed Details Area - only shown in normal (non-theater) mode */}
+                                    {!isTheaterMode && (
+                                        <div className="watch-details-wrap" style={{
+                                            width: '100%',
+                                            maxWidth: '990px',
+                                            boxSizing: 'border-box',
+                                            margin: '1.5rem auto 0',
+                                        }}>
+                                            <WatchDetailsTabs
+                                                contentData={contentData}
+                                                type={type}
+                                                season={currentSeason}
+                                                episode={currentEpisode}
+                                                activeServer={activeServer}
+                                                onServerChange={handleServerChange}
+                                                onReload={handleReload}
+                                                onDownload={() => handleServerChange('rive-download')}
+                                            />
+                                        </div>
+                                    )}
 
-                                 </motion.div>
+                                </motion.div>
 
+                                {/* ── Theater Mode: Tabs + Sidebar side-by-side row ── */}
+                                {isTheaterMode && (
+                                    <div style={{
+                                        display: 'flex',
+                                        gap: '2rem',
+                                        width: '100%',
+                                        alignItems: 'flex-start',
+                                        marginTop: '1.5rem'
+                                    }}>
+                                        {/* Left: Overview / Servers / Downloads tabs */}
+                                        <div style={{ flex: 1, minWidth: 0 }}>
+                                            <WatchDetailsTabs
+                                                contentData={contentData}
+                                                type={type}
+                                                season={currentSeason}
+                                                episode={currentEpisode}
+                                                activeServer={activeServer}
+                                                onServerChange={handleServerChange}
+                                                onReload={handleReload}
+                                                onDownload={() => handleServerChange('rive-download')}
+                                            />
+                                        </div>
+                                        {/* Right: Episodes Sidebar (TV) */}
+                                        {type === 'tv' && (
+                                            <div style={{ width: '450px', flexShrink: 0 }}>
+                                                <EpisodesSidebar
+                                                    showId={id}
+                                                    seasons={seasons}
+                                                    currentSeason={currentSeason}
+                                                    currentEpisode={currentEpisode}
+                                                    onSeasonChange={setCurrentSeason}
+                                                    onEpisodeSelect={handleEpisodeSelect}
+                                                    onEpisodesLoaded={(season, count) =>
+                                                        setEpisodeCounts(prev => ({ ...prev, [season]: count }))
+                                                    }
+                                                    showData={contentData}
+                                                    recommendations={recommendations}
+                                                    hideTabs={false}
+                                                />
+                                            </div>
+                                        )}
+                                        {/* Right: Movie Sidebar (Movies) */}
+                                        {type === 'movie' && (
+                                            <div style={{ width: '450px', flexShrink: 0 }}>
+                                                <EpisodesSidebar
+                                                    showId={id}
+                                                    mediaType="movie"
+                                                    showData={contentData}
+                                                    recommendations={recommendations}
+                                                    hideTabs={false}
+                                                />
+                                            </div>
+                                        )}
+
+                                    </div>
+                                )}
+
+                                {/* ── Normal Mode Sidebars ── */}
                                 {/* Episodes Sidebar (TV Shows Only) */}
-                                {type === 'tv' && (
+                                {!isTheaterMode && type === 'tv' && (
                                     <motion.div
                                         className="watch-sidebar"
                                         initial={{ opacity: 0, x: 20 }}
                                         animate={{ opacity: 1, x: 0 }}
                                         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.15 }}
                                         style={{
-                                            width: '510px',
+                                            width: isTheaterMode ? '100%' : '510px',
                                             flexShrink: 0,
                                             minWidth: 0,
-                                            position: 'sticky',
+                                            position: isTheaterMode ? 'relative' : 'sticky',
                                             top: '1.1rem',
-                                            height: 'calc(100% - 1.1rem)',
+                                            height: isTheaterMode ? 'auto' : 'calc(100% - 1.1rem)',
                                             display: 'flex',
                                             flexDirection: 'column'
                                         }}
@@ -1087,148 +1283,36 @@ const VideoPlayer = () => {
                                     </motion.div>
                                 )}
 
-                                {/* Recommendations Sidebar (Movies Only) */}
-                                {type === 'movie' && (
+                                {/* Movie Sidebar (Details, Cast, More Like This) */}
+                                {!isTheaterMode && type === 'movie' && (
                                     <motion.div
                                         className="watch-sidebar"
                                         initial={{ opacity: 0, x: 20 }}
                                         animate={{ opacity: 1, x: 0 }}
                                         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.15 }}
                                         style={{
-                                            width: '490px',
+                                            width: isTheaterMode ? '100%' : '510px',
                                             flexShrink: 0,
                                             minWidth: 0,
-                                            position: 'sticky',
+                                            position: isTheaterMode ? 'relative' : 'sticky',
                                             top: '1.1rem',
-                                            height: 'calc(100% - 1.1rem)',
+                                            height: isTheaterMode ? 'auto' : 'calc(100% - 1.1rem)',
                                             display: 'flex',
                                             flexDirection: 'column'
                                         }}
                                     >
-                                        <div className="watch-episode-panel" style={{
-                                            width: '100%',
-                                            height: '100%',
-                                            display: 'flex',
-                                            flexDirection: 'column',
-                                            position: 'relative',
-                                            overflow: 'hidden'
-                                        }}>
-                                            <h3 style={{
-                                                fontSize: '0.95rem',
-                                                fontWeight: '700',
-                                                color: 'rgba(255, 255, 255, 0.65)',
-                                                borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
-                                                paddingBottom: '0.8rem',
-                                                marginBottom: '1rem',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                gap: '0.6rem'
-                                            }}>
-                                                <span style={{
-                                                    width: '6px',
-                                                    height: '6px',
-                                                    background: 'var(--theme-accent)',
-                                                    borderRadius: '50%',
-                                                    boxShadow: '0 0 6px var(--theme-accent)'
-                                                }}></span>
-                                                Fans Also Watched
-                                            </h3>
-
-                                            <div
-                                                style={{
-                                                    flex: 1,
-                                                    overflowY: 'auto',
-                                                    paddingRight: '0.2rem',
-                                                    display: 'flex',
-                                                    flexDirection: 'column',
-                                                    gap: '0.8rem',
-                                                    scrollbarWidth: 'none',
-                                                    msOverflowStyle: 'none'
-                                                }}
-                                                onWheel={(e) => e.stopPropagation()}
-                                            >
-                                                {recommendations.length === 0 ? (
-                                                    <div style={{ color: 'rgba(255,255,255,0.4)', padding: '2rem 1rem', textAlign: 'center' }}>
-                                                        No recommendations available
-                                                    </div>
-                                                ) : (
-                                                    recommendations.slice(0, 10).map((recMovie) => {
-                                                        const recYear = recMovie.release_date?.split('-')[0];
-                                                        return (
-                                                            <div
-                                                                key={recMovie.id}
-                                                                onClick={() => navigate(`/watch/movie/${recMovie.id}`)}
-                                                                className="movie-sidebar-card"
-                                                                style={{
-                                                                    display: 'flex',
-                                                                    gap: '1rem',
-                                                                    padding: '0.6rem',
-                                                                    borderRadius: '12px',
-                                                                    background: 'rgba(255, 255, 255, 0.03)',
-                                                                    border: '1px solid rgba(255, 255, 255, 0.06)',
-                                                                    cursor: 'pointer',
-                                                                    transition: 'all 0.25s ease',
-                                                                    alignItems: 'center',
-                                                                    boxSizing: 'border-box'
-                                                                }}
-                                                            >
-                                                                <div style={{
-                                                                    width: '85px',
-                                                                    height: '52px',
-                                                                    borderRadius: '8px',
-                                                                    overflow: 'hidden',
-                                                                    border: '1px solid rgba(255,255,255,0.1)',
-                                                                    flexShrink: 0
-                                                                }}>
-                                                                    <img
-                                                                        src={imageUrl(recMovie.backdrop_path || recMovie.poster_path, 'w300')}
-                                                                        alt={recMovie.title}
-                                                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                                                    />
-                                                                </div>
-                                                                <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
-                                                                    <h4 style={{
-                                                                        fontSize: '0.85rem',
-                                                                        fontWeight: '600',
-                                                                        color: 'white',
-                                                                        margin: 0,
-                                                                        overflow: 'hidden',
-                                                                        textOverflow: 'ellipsis',
-                                                                        whiteSpace: 'nowrap'
-                                                                    }}>
-                                                                        {recMovie.title}
-                                                                    </h4>
-                                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)' }}>
-                                                                        <span>{recYear}</span>
-                                                                        {recMovie.vote_average > 0 && (
-                                                                            <>
-                                                                                <span>•</span>
-                                                                                <span style={{ display: 'flex', alignItems: 'center', gap: '0.2rem', color: '#ffd700' }}>
-                                                                                    <Star size={10} fill="#ffd700" color="#ffd700" />
-                                                                                    {recMovie.vote_average.toFixed(1)}
-                                                                                </span>
-                                                                            </>
-                                                                        )}
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        );
-                                                    })
-                                                )}
-                                            </div>
-                                        </div>
-
-                                        <style>{`
-                                            .movie-sidebar-card:hover {
-                                                background: rgba(255, 255, 255, 0.08) !important;
-                                                border-color: var(--theme-accent) !important;
-                                                transform: scale(1.02);
-                                            }
-                                        `}</style>
+                                        <EpisodesSidebar
+                                            showId={id}
+                                            mediaType="movie"
+                                            showData={contentData}
+                                            recommendations={recommendations}
+                                            hideTabs={false}
+                                        />
                                     </motion.div>
                                 )}
-                             </div>
-                         </motion.div>
+
+                            </div>
+                        </motion.div>
                     </div>
                 </div>
 
@@ -1400,7 +1484,7 @@ const VideoPlayer = () => {
                             position: 'relative',
                             overflow: 'hidden'
                         }}
-                        className="watch-recommendations-row"
+                            className="watch-recommendations-row"
                         >
                             {/* Ambient glow in matching theme color */}
                             <div style={{
@@ -1479,46 +1563,46 @@ const VideoPlayer = () => {
                     }
                 `}
                 </style>
-            {/* Fallback Toast Notification */}
-            <AnimatePresence>
-                {fallbackToast && (
-                    <motion.div
-                        initial={{ opacity: 0, y: 50, scale: 0.9 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 20, scale: 0.9 }}
-                        transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-                        style={{
-                            position: 'fixed',
-                            bottom: '2rem',
-                            left: '2rem',
-                            background: 'rgba(15, 15, 20, 0.85)',
-                            backdropFilter: 'blur(20px)',
-                            WebkitBackdropFilter: 'blur(20px)',
-                            border: '1px solid rgba(0, 188, 212, 0.3)',
-                            borderRadius: '16px',
-                            padding: '1rem 1.5rem',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '0.8rem',
-                            boxShadow: '0 12px 40px rgba(0, 0, 0, 0.5), 0 0 20px rgba(0, 188, 212, 0.1)',
-                            zIndex: 999999,
-                            color: 'white',
-                            maxWidth: '380px'
-                        }}
-                    >
-                        <div style={{
-                            width: '8px',
-                            height: '8px',
-                            background: '#00bcd4',
-                            borderRadius: '50%',
-                            boxShadow: '0 0 8px #00bcd4'
-                        }} />
-                        <div style={{ fontSize: '0.88rem', fontWeight: '500' }}>
-                            Server slow. Auto-switched to <span style={{ color: '#00bcd4', fontWeight: '700' }}>{fallbackToast}</span>
-                        </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
+                {/* Fallback Toast Notification */}
+                <AnimatePresence>
+                    {fallbackToast && (
+                        <motion.div
+                            initial={{ opacity: 0, y: 50, scale: 0.9 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            exit={{ opacity: 0, y: 20, scale: 0.9 }}
+                            transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+                            style={{
+                                position: 'fixed',
+                                bottom: '2rem',
+                                left: '2rem',
+                                background: 'rgba(15, 15, 20, 0.85)',
+                                backdropFilter: 'blur(20px)',
+                                WebkitBackdropFilter: 'blur(20px)',
+                                border: '1px solid rgba(0, 188, 212, 0.3)',
+                                borderRadius: '16px',
+                                padding: '1rem 1.5rem',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.8rem',
+                                boxShadow: '0 12px 40px rgba(0, 0, 0, 0.5), 0 0 20px rgba(0, 188, 212, 0.1)',
+                                zIndex: 999999,
+                                color: 'white',
+                                maxWidth: '380px'
+                            }}
+                        >
+                            <div style={{
+                                width: '8px',
+                                height: '8px',
+                                background: '#00bcd4',
+                                borderRadius: '50%',
+                                boxShadow: '0 0 8px #00bcd4'
+                            }} />
+                            <div style={{ fontSize: '0.88rem', fontWeight: '500' }}>
+                                Server slow. Auto-switched to <span style={{ color: '#00bcd4', fontWeight: '700' }}>{fallbackToast}</span>
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
             </div>
         </div>
     );

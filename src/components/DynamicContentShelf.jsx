@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useLazySection } from '../hooks/useLazySection';
 import {
     ChevronDown,
     Check,
@@ -23,6 +24,8 @@ import {
 import { gsap } from 'gsap';
 import MovieRow from './MovieRow';
 import * as api from '../api/tmdb';
+import * as imdbApi from '../api/imdb';
+import GridPattern from './ui/GridPattern';
 
 const IconMap = {
     flame: Flame,
@@ -53,7 +56,7 @@ const SHELF_CONFIGS = {
             {
                 id: 'popular',
                 label: 'Popular Right Now',
-                apiFunc: 'getPopularTVShows',
+                apiFunc: 'getIMDbCuratedTVShows',
                 colorRgb: '0, 163, 255',
                 colorStart: '#00A3FF',
                 colorEnd: '#0047FF',
@@ -451,10 +454,44 @@ const SHELF_CONFIGS = {
                 icon: 'skull'
             }
         ]
+    },
+    topRatedMovies: {
+        categoryText: "MOVIES",
+        anchorLabel: "MOVIES",
+        categories: [
+            {
+                id: 'top_rated',
+                label: 'Top Rated Movies',
+                apiFunc: 'getIMDbCuratedTopMovies',
+                colorRgb: '255, 215, 0',
+                colorStart: '#FFD700',
+                colorEnd: '#FFB300',
+                subtitle: 'Highest Rated of All Time',
+                group: 'section',
+                icon: 'star'
+            }
+        ]
+    },
+    topRatedSeries: {
+        categoryText: "TV",
+        anchorLabel: "TV SHOWS",
+        categories: [
+            {
+                id: 'top_rated_tv',
+                label: 'Top Rated Series',
+                apiFunc: 'getIMDbCuratedTopTVShows',
+                colorRgb: '157, 77, 255',
+                colorStart: '#9D4DFF',
+                colorEnd: '#6030FF',
+                subtitle: 'Best-Rated Series of All Time',
+                group: 'section',
+                icon: 'star'
+            }
+        ]
     }
 };
 
-const DynamicContentShelf = ({ shelfType, show }) => {
+const DynamicContentShelf = ({ shelfType, show, lazyLoad = true }) => {
     const config = SHELF_CONFIGS[shelfType];
     if (!show || !config) return null;
 
@@ -464,6 +501,11 @@ const DynamicContentShelf = ({ shelfType, show }) => {
     const dropdownRef = useRef(null);
     const headerContentRef = useRef(null);
     const [isLoading, setIsLoading] = useState(true);
+
+    // Lazy section: only load when user scrolls near this section
+    const { ref: lazyRef, isVisible: lazyVisible } = useLazySection('250px 0px');
+    // If lazyLoad is disabled, treat as always visible
+    const shouldFetch = !lazyLoad || lazyVisible;
 
     // Close dropdown on click outside
     useEffect(() => {
@@ -476,58 +518,50 @@ const DynamicContentShelf = ({ shelfType, show }) => {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    // Load data when category changes
+    // Load data when category changes — but ONLY if section is visible (lazy)
     useEffect(() => {
+        if (!shouldFetch) return; // wait until scrolled into view
+
         let isCancelled = false;
 
         const fetchData = async () => {
             setIsLoading(true);
 
-            // 1. GSAP fade-out of header and current shelf area
+            // GSAP fade-out of header
             if (headerContentRef.current) {
                 gsap.to(headerContentRef.current, {
-                    opacity: 0,
-                    y: -10,
-                    duration: 0.15,
-                    ease: "power2.in"
+                    opacity: 0, y: -10, duration: 0.15, ease: 'power2.in'
                 });
             }
 
             try {
-                const fetchFn = api[selectedCat.apiFunc];
+                const fetchFn = api[selectedCat.apiFunc] || imdbApi[selectedCat.apiFunc];
                 if (!fetchFn) throw new Error(`API function ${selectedCat.apiFunc} is not defined`);
                 const response = await fetchFn();
-                const results = (response.data.results || [])
-                    .filter(item => item.poster_path && item.backdrop_path);
+                const rawList = Array.isArray(response) ? response : (response.data?.results || []);
+                const results = rawList.filter(item => item.poster_path && item.backdrop_path);
 
                 if (!isCancelled) {
                     setMovies(results);
                     setIsLoading(false);
-
-                    // 2. GSAP fade-in of updated content
                     setTimeout(() => {
                         if (headerContentRef.current) {
                             gsap.fromTo(headerContentRef.current,
                                 { opacity: 0, y: 10 },
-                                { opacity: 1, y: 0, duration: 0.35, ease: "power2.out" }
+                                { opacity: 1, y: 0, duration: 0.35, ease: 'power2.out' }
                             );
                         }
                     }, 50);
                 }
             } catch (error) {
-                console.error("Error fetching dynamic shelf data: ", error);
-                if (!isCancelled) {
-                    setIsLoading(false);
-                }
+                console.error('Error fetching dynamic shelf data: ', error);
+                if (!isCancelled) setIsLoading(false);
             }
         };
 
         fetchData();
-
-        return () => {
-            isCancelled = true;
-        };
-    }, [selectedCat]);
+        return () => { isCancelled = true; };
+    }, [selectedCat, shouldFetch]);
 
     const handleCategorySelect = (cat) => {
         setSelectedCat(cat);
@@ -570,15 +604,46 @@ const DynamicContentShelf = ({ shelfType, show }) => {
         );
     };
 
+    // While not yet visible and lazyLoad is on, show a slim placeholder
+    if (lazyLoad && !lazyVisible) {
+        return (
+            <div ref={lazyRef} className="section-lazy-placeholder" aria-hidden="true">
+                <div className="skeleton-row">
+                    {[...Array(5)].map((_, i) => (
+                        <div key={i} className="skeleton-card" style={{ animationDelay: `${i * 0.08}s` }} />
+                    ))}
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div
-            className={`premium-section-container ${selectedCat.scaledDown ? 'scaled-down' : ''} ${isDropdownOpen ? 'dropdown-open' : ''}`}
+            ref={lazyRef}
+            className={`premium-section-container section-loaded ${selectedCat.scaledDown ? 'scaled-down' : ''} ${isDropdownOpen ? 'dropdown-open' : ''}`}
             style={{
                 '--section-color-rgb': selectedCat.colorRgb,
                 '--section-color-start': selectedCat.colorStart,
                 '--section-color-end': selectedCat.colorEnd
             }}
         >
+            <GridPattern
+                width={30}
+                height={30}
+                strokeDasharray="2 2"
+                style={{
+                    position: 'absolute',
+                    inset: 0,
+                    width: '100%',
+                    height: '100%',
+                    opacity: 0.12,
+                    pointerEvents: 'none',
+                    zIndex: 0,
+                    stroke: 'rgba(255, 255, 255, 0.05)',
+                    maskImage: 'radial-gradient(ellipse 60% 50% at 50% 50%, #000 30%, transparent 100%)',
+                    WebkitMaskImage: 'radial-gradient(ellipse 60% 50% at 50% 50%, #000 30%, transparent 100%)'
+                }}
+            />
             <div className="premium-section-header">
                 <span className="premium-section-header-bg">{config.categoryText}</span>
                 <div className="premium-section-content" ref={headerContentRef}>
@@ -594,10 +659,6 @@ const DynamicContentShelf = ({ shelfType, show }) => {
                         className={`premium-dropdown-btn ${isDropdownOpen ? 'active' : ''}`}
                         aria-expanded={isDropdownOpen}
                         aria-haspopup="listbox"
-                        style={{
-                            borderColor: 'rgba(var(--section-color-rgb), 0.4)',
-                            boxShadow: `0 0 10px rgba(var(--section-color-rgb), 0.25)`
-                        }}
                     >
                         {selectedCat.label}
                         <ChevronDown size={16} className="premium-dropdown-chevron" />
@@ -631,7 +692,7 @@ const DynamicContentShelf = ({ shelfType, show }) => {
                 </div>
             </div>
 
-            <MovieRow title="" movies={movies} />
+            <MovieRow title="" movies={movies} isLandscape={true} />
         </div>
     );
 };

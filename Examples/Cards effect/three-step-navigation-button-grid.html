@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Component Preview</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      height: 100%;
+      overflow: auto;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #000000;
+      color: #ffffff;
+    }
+    .component-wrapper {
+      width: 100%;
+      height: 100%;
+      padding: 0;
+      box-sizing: border-box;
+      overflow: auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="component-wrapper">
+    <html><head></head><body><div class="lg:px-8 max-w-7xl mr-auto ml-auto pr-6 pl-6">
+        <!-- Title -->
+        <div class="mb-4">
+          <h2 class="text-[44px] sm:text-xl lg:text-7xl font-semibold tracking-tight">
+            <span class="text-white">
+              Testimonials
+            </span>
+          </h2>
+          <p class="mt-3 text-base sm:text-lg text-zinc-400 max-w-2xl">
+            Trusted by teams worldwide who ship faster with Flux
+          </p>
+        </div>
+
+        <!-- Ticker (two rows) -->
+        <div class="space-y-6">
+          <!-- Row 1: moves to the right -->
+          <div class="relative overflow-hidden">
+            <!-- Enhanced edge shades with black fade -->
+            <div aria-hidden="true" class="pointer-events-none absolute inset-y-0 left-0 w-40 sm:w-48 bg-gradient-to-r from-black via-black/90 to-transparent z-10"></div>
+            <div aria-hidden="true" class="pointer-events-none absolute inset-y-0 right-0 w-40 sm:w-48 bg-gradient-to-l from-black via-black/90 to-transparent z-10"></div>
+
+            <div class="flex w-[200%] gap-6 will-change-transform" style="animation: ticker-move 48s linear infinite; animation-direction: reverse;">
+              <!-- Set A -->
+              <div class="flex shrink-0 gap-6">
+                <!-- Card 1 -->
+                <div class="rounded-2xl border border-white/20 bg-white/10 backdrop-blur-xl p-4 w-[300px] min-h-[240px] flex flex-col shadow-[0_8px_32px_0_rgba(255,255,255,0.1)]">
+                  <div class="rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm p-5 flex-1 flex items-center">
+                    <p class="text-sm text-white leading-relaxed">
+                      "Flux transformed our deployment pipeline. We went from
+                      weekly releases to shipping multiple times per day with
+                      complete confidence."
+                    </p>
+                  </div>
+                  <div class="mt-auto pt-4 flex items-center gap-3">
+                    <img src="https://hoirqrkdgbmvpwutwuwj.supabase.co/storage/v1/object/public/assets/assets/787e2344-3f85-4363-8310-e17766fc9f61_3840w.webp" alt="" class="h-9 w-9 rounded-full object-cover flex-shrink-0 ring-2 ring-white/20">
+                    <div class="min-w-0">
+                      <div class="text-sm font-medium truncate text-white">
+                        Maya
+                        <span class="text-fuchsia-300">Rodriguez</span>
+                      </div>
+                      <div class="text-xs text-zinc-300 truncate">
+                        VP Engineering — Quantum Labs
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <!-- Card 2 -->
+                <div class="rounded-2xl border border-white/20 bg-white/10 backdrop-blur-xl p-4 w-[300px] min-h-[240px] flex flex-col shadow-[0_8px_32px_0_rgba(255,255,255,0.1)]">
+                  <div class="rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm p-5 flex-1 flex items-center">
+                    <p class="text-sm text-white leading-relaxed">
+                      "The AI automation alone has saved our team 15+ hours
+                      every week. Absolutely game-changing."
+                    </p>
+                  </div>
+                  <div class="mt-auto pt-4 flex items-center gap-3">
+                    <img src="https://hoirqrkdgbmvpwutwuwj.supabase.co/storage/v1/object/public/assets/assets/8996ab12-550b-417f-859c-e60383fc6ce0_3840w.webp" alt="" class="h-9 w-9 rounded-full object-cover flex-shrink-0 ring-2 ring-white/20">
+                    <div class="min-w-0">
+                      <div class="text-sm font-medium truncate text-white">
+                        Taylor
+                        <span class="text-fuchsia-300">Kim</span>
+                      </div>
+                      <div class="text-xs text-zinc-300 truncate">
+                        CTO — Helix Systems
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <!-- Card 3 -->
+                <div class="rounded-2xl border border-white/20 bg-white/10 backdrop-blur-xl p-4 w-[300px] min-h-[240px] flex flex-col shadow-[0_8px_32px_0_rgba(255,255,255,0.1)]">
+                  <div class="rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm p-5 flex-1 flex items-center">
+                    <p class="text-sm text-white leading-relaxed">
+                      "Best developer experience I've encountered. Flux makes
+                      complex workflows feel effortless."
+                    </p>
+                  </div>
+                  <div class="mt-auto pt-4 flex items-center gap-3">
+                    <img src="https://hoirqrkdgbmvpwutwuwj.supabase.co/storage/v1/object/public/assets/assets/dd395f37-778e-426f-9685-a0a3d48a3c14_3840w.webp" alt="" class="h-9 w-9 rounded-full object-cover flex-shrink-0 ring-2 ring-white/20">
+                    <div class="min-w-0">
+                      <div class="text-sm font-medium truncate text-white">
+                        Jordan
+                        <span class="text-fuchsia-300">Park</span>
+                      </div>
+                      <div class="text-xs text-zinc-300 truncate">
+                        Lead Developer — Prism AI
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <!-- Card 4 -->
+                <div class="rounded-2xl border border-white/20 bg-white/10 backdrop-blur-xl p-4 w-[300px] min-h-[240px] flex flex-col shadow-[0_8px_32px_0_rgba(255,255,255,0.1)]">
+                  <div class="rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm p-5 flex-1 flex items-center">
+                    <p class="text-sm text-white leading-relaxed">
+                      "Infrastructure costs down 40% while handling 3x the
+                      traffic. The performance gains are incredible."
+                    </p>
+                  </div>
+                  <div class="mt-auto pt-4 flex items-center gap-3">
+                    <img src="https://hoirqrkdgbmvpwutwuwj.supabase.co/storage/v1/object/public/assets/assets/5fe45363-dc90-4109-807a-3fefa11826ac_3840w.webp" alt="" class="h-9 w-9 rounded-full object-cover flex-shrink-0 ring-2 ring-white/20">
+                    <div class="min-w-0">
+                      <div class="text-sm font-medium truncate text-white">
+                        Riley
+                        <span class="text-fuchsia-300">Chen</span>
+                      </div>
+                      <div class="text-xs text-zinc-300 truncate">
+                        Head of Platform — Atlas Digital
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <!-- Card 5 -->
+                <div class="rounded-2xl border border-white/20 bg-white/10 backdrop-blur-xl p-4 w-[300px] min-h-[240px] flex flex-col shadow-[0_8px_32px_0_rgba(255,255,255,0.1)]">
+                  <div class="rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm p-5 flex-1 flex items-center">
+                    <p class="text-sm text-white leading-relaxed">
+                      "Onboarding was seamless and support is phenomenal. We
+                      were production-ready in under 48 hours."
+                    </p>
+                  </div>
+                  <div class="mt-auto pt-4 flex items-center gap-3">
+                    <img src="https://hoirqrkdgbmvpwutwuwj.supabase.co/storage/v1/object/public/assets/assets/ebf98776-9b0f-49cd-a030-c0ce87f6abe5_3840w.webp" alt="" class="h-9 w-9 rounded-full object-cover flex-shrink-0 ring-2 ring-white/20">
+                    <div class="min-w-0">
+                      <div class="text-sm font-medium truncate text-white">
+                        Alex
+                        <span class="text-fuchsia-300">Morgan</span>
+                      </div>
+                      <div class="text-xs text-zinc-300 truncate">
+                        Technical Lead — Cipher Labs
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <!-- Card 6 -->
+                <div class="rounded-2xl border border-white/20 bg-white/10 backdrop-blur-xl p-4 w-[300px] min-h-[240px] flex flex-col shadow-[0_8px_32px_0_rgba(255,255,255,0.1)]">
+                  <div class="rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm p-5 flex-1 flex items-center">
+                    <p class="text-sm text-white leading-relaxed">
+                      "Real-time analytics changed how we make decisions.
+                      Data-driven insights at every level."
+                    </p>
+                  </div>
+                  <div class="mt-auto pt-4 flex items-center gap-3">
+                    <img src="https://hoirqrkdgbmvpwutwuwj.supabase.co/storage/v1/object/public/assets/assets/4618126b-8a10-4e68-ab3d-91fcf5fea504_3840w.webp" alt="" class="h-9 w-9 rounded-full object-cover flex-shrink-0 ring-2 ring-white/20">
+                    <div class="min-w-0">
+                      <div class="text-sm font-medium truncate text-white">
+                        Casey
+                        <span class="text-fuchsia-300">Lee</span>
+                      </div>
+                      <div class="text-xs text-zinc-300 truncate">
+                        Product Director — Pulse Networks
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <!-- Card 7 -->
+                <div class="rounded-2xl border border-white/20 bg-white/10 backdrop-blur-xl p-4 w-[300px] min-h-[240px] flex flex-col shadow-[0_8px_32px_0_rgba(255,255,255,0.1)]">
+                  <div class="rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm p-5 flex-1 flex items-center">
+                    <p class="text-sm text-white leading-relaxed">
+                      "Security-first architecture without sacrificing developer
+                      velocity. Perfect balance."
+                    </p>
+                  </div>
+                  <div class="mt-auto pt-4 flex items-center gap-3">
+                    <img src="https://hoirqrkdgbmvpwutwuwj.supabase.co/storage/v1/object/public/assets/assets/1539de7e-4610-498e-924c-f475f92a9a74_3840w.webp" alt="" class="h-9 w-9 rounded-full object-cover flex-shrink-0 ring-2 ring-white/20">
+                    <div class="min-w-0">
+                      <div class="text-sm font-medium truncate text-white">
+                        Morgan
+                        <span class="text-fuchsia-300">Davis</span>
+                      </div>
+                      <div class="text-xs text-zinc-300 truncate">
+                        Security Lead — Velocity Inc
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <!-- Card 8 -->
+                <div class="rounded-2xl border border-white/20 bg-white/10 backdrop-blur-xl p-4 w-[300px] min-h-[240px] flex flex-col shadow-[0_8px_32px_0_rgba(255,255,255,0.1)]">
+                  <div class="rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm p-5 flex-1 flex items-center">
+                    <p class="text-sm text-white leading-relaxed">
+                      "Scales effortlessly from prototype to enterprise. Built
+                      for growth from day one."
+                    </p>
+                  </div>
+                  <div class="mt-auto pt-4 flex items-center gap-3">
+                    <img src="https://hoirqrkdgbmvpwutwuwj.supabase.co/storage/v1/object/public/assets/assets/8af5e860-0834-42ee-9c28-7a688c9c1907_3840w.webp" alt="" class="h-9 w-9 rounded-full object-cover flex-shrink-0 ring-2 ring-white/20">
+                    <div class="min-w-0">
+                      <div class="text-sm font-medium truncate text-white">
+                        Quinn
+                        <span class="text-fuchsia-300">Taylor</span>
+                      </div>
+                      <div class="text-xs text-zinc-300 truncate">
+                        Co-Founder — Apex Ventures
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Set B (duplicate for seamless loop) -->
+              <div class="flex shrink-0 gap-6" aria-hidden="true">
+                <div class="rounded-2xl border border-white/20 bg-white/10 backdrop-blur-xl p-4 w-[300px] min-h-[240px] flex flex-col shadow-[0_8px_32px_0_rgba(255,255,255,0.1)]">
+                  <div class="rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm p-5 flex-1 flex items-center">
+                    <p class="text-sm text-white leading-relaxed">
+                      "Flux transformed our deployment pipeline. We went from
+                      weekly releases to shipping multiple times per day with
+                      complete confidence."
+                    </p>
+                  </div>
+                  <div class="mt-auto pt-4 flex items-center gap-3">
+                    <img src="https://hoirqrkdgbmvpwutwuwj.supabase.co/storage/v1/object/public/assets/assets/d6224ed7-9233-425c-968a-2fb3fa272849_3840w.webp" alt="" class="h-9 w-9 rounded-full object-cover flex-shrink-0 ring-2 ring-white/20">
+                    <div class="min-w-0">
+                      <div class="text-sm font-medium truncate text-white">
+                        Maya
+                        <span class="text-fuchsia-300">Rodriguez</span>
+                      </div>
+                      <div class="text-xs text-zinc-300 truncate">
+                        VP Engineering — Quantum Labs
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="rounded-2xl border border-white/20 bg-white/10 backdrop-blur-xl p-4 w-[300px] min-h-[240px] flex flex-col shadow-[0_8px_32px_0_rgba(255,255,255,0.1)]">
+                  <div class="rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm p-5 flex-1 flex items-center">
+                    <p class="text-sm text-white leading-relaxed">
+                      "The AI automation alone has saved our team 15+ hours
+                      every week. Absolutely game-changing."
+                    </p>
+                  </div>
+                  <div class="mt-auto pt-4 flex items-center gap-3">
+                    <img src="https://images.unsplash.com/photo-1527980965255-d3b416303d12?q=80&amp;w=120&amp;auto=format&amp;fit=crop" alt="" class="h-9 w-9 rounded-full object-cover flex-shrink-0 ring-2 ring-white/20">
+                    <div class="min-w-0">
+                      <div class="text-sm font-medium truncate text-white">
+                        Taylor
+                        <span class="text-fuchsia-300">Kim</span>
+                      </div>
+                      <div class="text-xs text-zinc-300 truncate">
+                        CTO — Helix Systems
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="rounded-2xl border border-white/20 bg-white/10 backdrop-blur-xl p-4 w-[300px] min-h-[240px] flex flex-col shadow-[0_8px_32px_0_rgba(255,255,255,0.1)]">
+                  <div class="rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm p-5 flex-1 flex items-center">
+                    <p class="text-sm text-white leading-relaxed">
+                      "Best developer experience I've encountered. Flux makes
+                      complex workflows feel effortless."
+                    </p>
+                  </div>
+                  <div class="mt-auto pt-4 flex items-center gap-3">
+                    <img src="https://images.unsplash.com/photo-1607746882042-944635dfe10e?q=80&amp;w=120&amp;auto=format&amp;fit=crop" alt="" class="h-9 w-9 rounded-full object-cover flex-shrink-0 ring-2 ring-white/20">
+                    <div class="min-w-0">
+                      <div class="text-sm font-medium truncate text-white">
+                        Jordan
+                        <span class="text-fuchsia-300">Park</span>
+                      </div>
+                      <div class="text-xs text-zinc-300 truncate">
+                        Lead Developer — Prism AI
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="rounded-2xl border border-white/20 bg-white/10 backdrop-blur-xl p-4 w-[300px] min-h-[240px] flex flex-col shadow-[0_8px_32px_0_rgba(255,255,255,0.1)]">
+                  <div class="rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm p-5 flex-1 flex items-center">
+                    <p class="text-sm text-white leading-relaxed">
+                      "Infrastructure costs down 40% while handling 3x the
+                      traffic. The performance gains are incredible."
+                    </p>
+                  </div>
+                  <div class="mt-auto pt-4 flex items-center gap-3">
+                    <img src="https://images.unsplash.com/photo-1547425260-76bcadfb4f2c?q=80&amp;w=120&amp;auto=format&amp;fit=crop" alt="" class="h-9 w-9 rounded-full object-cover flex-shrink-0 ring-2 ring-white/20">
+                    <div class="min-w-0">
+                      <div class="text-sm font-medium truncate text-white">
+                        Riley
+                        <span class="text-fuchsia-300">Chen</span>
+                      </div>
+                      <div class="text-xs text-zinc-300 truncate">
+                        Head of Platform — Atlas Digital
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="rounded-2xl border border-white/20 bg-white/10 backdrop-blur-xl p-4 w-[300px] min-h-[240px] flex flex-col shadow-[0_8px_32px_0_rgba(255,255,255,0.1)]">
+                  <div class="rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm p-5 flex-1 flex items-center">
+                    <p class="text-sm text-white leading-relaxed">
+                      "Onboarding was seamless and support is phenomenal. We
+                      were production-ready in under 48 hours."
+                    </p>
+                  </div>
+                  <div class="mt-auto pt-4 flex items-center gap-3">
+                    <img src="https://images.unsplash.com/photo-1502685104226-ee32379fefbe?q=80&amp;w=120&amp;auto=format&amp;fit=crop" alt="" class="h-9 w-9 rounded-full object-cover flex-shrink-0 ring-2 ring-white/20">
+                    <div class="min-w-0">
+                      <div class="text-sm font-medium truncate text-white">
+                        Alex
+                        <span class="text-fuchsia-300">Morgan</span>
+                      </div>
+                      <div class="text-xs text-zinc-300 truncate">
+                        Technical Lead — Cipher Labs
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="rounded-2xl border border-white/20 bg-white/10 backdrop-blur-xl p-4 w-[300px] min-h-[240px] flex flex-col shadow-[0_8px_32px_0_rgba(255,255,255,0.1)]">
+                  <div class="rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm p-5 flex-1 flex items-center">
+                    <p class="text-sm text-white leading-relaxed">
+                      "Real-time analytics changed how we make decisions.
+                      Data-driven insights at every level."
+                    </p>
+                  </div>
+                  <div class="mt-auto pt-4 flex items-center gap-3">
+                    <img src="https://images.unsplash.com/photo-1621619856624-42fd193a0661?w=1080&amp;q=80" alt="" class="h-9 w-9 rounded-full object-cover flex-shrink-0 ring-2 ring-white/20">
+                    <div class="min-w-0">
+                      <div class="text-sm font-medium truncate text-white">
+                        Casey
+                        <span class="text-fuchsia-300">Lee</span>
+                      </div>
+                      <div class="text-xs text-zinc-300 truncate">
+                        Product Director — Pulse Networks
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="rounded-2xl border border-white/20 bg-white/10 backdrop-blur-xl p-4 w-[300px] min-h-[240px] flex flex-col shadow-[0_8px_32px_0_rgba(255,255,255,0.1)]">
+                  <div class="rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm p-5 flex-1 flex items-center">
+                    <p class="text-sm text-white leading-relaxed">
+                      "Security-first architecture without sacrificing developer
+                      velocity. Perfect balance."
+                    </p>
+                  </div>
+                  <div class="mt-auto pt-4 flex items-center gap-3">
+                    <img src="https://images.unsplash.com/photo-1519340241574-2cec6aef0c01?q=80&amp;w=120&amp;auto=format&amp;fit=crop" alt="" class="h-9 w-9 rounded-full object-cover flex-shrink-0 ring-2 ring-white/20">
+                    <div class="min-w-0">
+                      <div class="text-sm font-medium truncate text-white">
+                        Morgan
+                        <span class="text-fuchsia-300">Davis</span>
+                      </div>
+                      <div class="text-xs text-zinc-300 truncate">
+                        Security Lead — Velocity Inc
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="rounded-2xl border border-white/20 bg-white/10 backdrop-blur-xl p-4 w-[300px] min-h-[240px] flex flex-col shadow-[0_8px_32px_0_rgba(255,255,255,0.1)]">
+                  <div class="rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm p-5 flex-1 flex items-center">
+                    <p class="text-sm text-white leading-relaxed">
+                      "Scales effortlessly from prototype to enterprise. Built
+                      for growth from day one."
+                    </p>
+                  </div>
+                  <div class="mt-auto pt-4 flex items-center gap-3">
+                    <img src="https://images.unsplash.com/photo-1642615835477-d303d7dc9ee9?w=1080&amp;q=80" alt="" class="h-9 w-9 rounded-full object-cover flex-shrink-0 ring-2 ring-white/20">
+                    <div class="min-w-0">
+                      <div class="text-sm font-medium truncate text-white">
+                        Quinn
+                        <span class="text-fuchsia-300">Taylor</span>
+                      </div>
+                      <div class="text-xs text-zinc-300 truncate">
+                        Co-Founder — Apex Ventures
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <style>
+              @keyframes ticker-move {
+                0% {
+                  transform: translateX(0);
+                }
+                100% {
+                  transform: translateX(-50%);
+                }
+              }
+            </style>
+          </div>
+        </div>
+      </div></body></html>
+  </div>
+  
+    <script>
+      (function() {
+        function checkAndCenter() {
+          // Use double requestAnimationFrame to ensure DOM is fully painted and layout is stable
+          requestAnimationFrame(function() {
+            requestAnimationFrame(function() {
+              const wrapper = document.querySelector('.component-wrapper');
+              if (!wrapper) return;
+              
+              // Get all child elements
+              const children = Array.from(wrapper.children);
+              if (children.length === 0) return;
+              
+              // Temporarily override wrapper styles to shrink-wrap for measurement
+              // Set inline styles to shrink-wrap (inline styles override CSS)
+              wrapper.style.display = 'inline-block';
+              wrapper.style.width = 'auto';
+              wrapper.style.height = 'auto';
+              wrapper.style.overflow = 'visible';
+              wrapper.style.boxSizing = 'content-box';
+              
+              // Force multiple reflows to ensure styles are fully applied
+              void wrapper.offsetHeight;
+              void wrapper.offsetWidth;
+              void wrapper.offsetHeight;
+              
+              // Measure the wrapper's content size
+              const contentWidth = wrapper.offsetWidth;
+              const contentHeight = wrapper.offsetHeight;
+              
+              // Restore original styles by removing inline styles we added
+              wrapper.style.removeProperty('display');
+              wrapper.style.removeProperty('width');
+              wrapper.style.removeProperty('height');
+              wrapper.style.removeProperty('overflow');
+              wrapper.style.removeProperty('box-sizing');
+              
+              // If content is less than 500x500, center it
+              if (contentWidth > 0 && contentHeight > 0 && contentWidth < 500 && contentHeight < 500) {
+                wrapper.style.display = 'flex';
+                wrapper.style.alignItems = 'center';
+                wrapper.style.justifyContent = 'center';
+              }
+            });
+          });
+        }
+        
+        // Check immediately and after delays to ensure content is rendered and styled
+        function runChecks() {
+          checkAndCenter();
+          setTimeout(checkAndCenter, 50);
+          setTimeout(checkAndCenter, 150);
+          setTimeout(checkAndCenter, 300);
+          setTimeout(checkAndCenter, 500);
+          setTimeout(checkAndCenter, 1000);
+        }
+        
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', runChecks);
+        } else {
+          runChecks();
+        }
+        
+        // Also check when images or other resources load
+        window.addEventListener('load', () => {
+          setTimeout(checkAndCenter, 100);
+          setTimeout(checkAndCenter, 300);
+        });
+        
+        // Use ResizeObserver to detect size changes
+        if (window.ResizeObserver) {
+          setTimeout(() => {
+            const wrapper = document.querySelector('.component-wrapper');
+            if (wrapper) {
+              const observer = new ResizeObserver(() => {
+                setTimeout(checkAndCenter, 50);
+              });
+              observer.observe(wrapper);
+            }
+          }, 500);
+        }
+      })();
+    </script>
+  
+</body>
+</html>

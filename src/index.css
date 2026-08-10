@@ -1,14 +1,154 @@
 :root {
   --bg-dark: #000000;
-  --bg-card: #0a0a0a;
-  --text-primary: #ffffff;
-  --text-secondary: #888888;
-  --accent-color: #e50914;
+  /* Premium Navy Slate Base */
+  --bg-card: #121829;
+  /* Navy Slate Card Surface */
+  --text-primary: #f8fafc;
+  /* Low-strain Slate Headings */
+  --text-secondary: #94a3b8;
+  /* Slate Body Text */
+  --accent-color: #f43f5e;
+  /* Rose/Crimson Cinematic Accent */
   /* Netflix/Premium Red or keep blue/purple if preferred */
-  --neon-blue: #00f3ff;
-  --neon-purple: #bd00ff;
+  --neon-blue: #38bdf8;
+  /* Premium Sky Blue */
+  --neon-purple: #a855f7;
+  /* Vibrant Violet */
   --font-main: 'Inter', system-ui, -apple-system, sans-serif;
 }
+
+/* =====================================================================
+   SKELETON LOADING SYSTEM
+   Dark shimmer effect matching XORYA theme
+   ===================================================================== */
+
+@keyframes skeleton-shimmer {
+  0%   { background-position: -800px 0; }
+  100% { background-position: 800px 0; }
+}
+
+/* Base skeleton mixin — applied to all skeleton elements */
+.skeleton-base {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.04) 0px,
+    rgba(255, 255, 255, 0.09) 40px,
+    rgba(255, 255, 255, 0.04) 80px
+  );
+  background-size: 800px 100%;
+  animation: skeleton-shimmer 1.6s infinite linear;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+/* ── Card Skeleton: matches .interactive-movie-card size ── */
+.skeleton-card {
+  width: 380px;
+  min-width: 380px;
+  height: 214px;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.04) 0px,
+    rgba(255, 255, 255, 0.09) 40px,
+    rgba(255, 255, 255, 0.04) 80px
+  );
+  background-size: 800px 100%;
+  animation: skeleton-shimmer 1.6s infinite linear;
+  border-radius: 8px;
+  flex-shrink: 0;
+  border: 1.5px solid rgba(255, 255, 255, 0.06);
+}
+
+@media (max-width: 1400px) {
+  .skeleton-card {
+    width: 330px;
+    min-width: 330px;
+    height: 186px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .skeleton-card {
+    width: 270px;
+    min-width: 270px;
+    height: 152px;
+  }
+}
+
+@media (max-width: 640px) {
+  .skeleton-card {
+    width: 72vw;
+    min-width: 72vw;
+    height: calc(72vw * 9 / 16);
+  }
+}
+
+/* ── Skeleton Row: horizontal flex of card skeletons ── */
+.skeleton-row {
+  display: flex;
+  gap: 1rem;
+  padding: 3rem 2rem;
+  overflow: hidden;
+}
+
+/* ── Hero Skeleton ── */
+.skeleton-hero {
+  width: 100%;
+  height: 85vh;
+  min-height: 480px;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.03) 0px,
+    rgba(255, 255, 255, 0.07) 80px,
+    rgba(255, 255, 255, 0.03) 160px
+  );
+  background-size: 800px 100%;
+  animation: skeleton-shimmer 2s infinite linear;
+  position: relative;
+  overflow: hidden;
+}
+
+.skeleton-hero::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 50%;
+  background: linear-gradient(to top, #000 0%, transparent 100%);
+}
+
+/* ── Skeleton text lines ── */
+.skeleton-text {
+  height: 14px;
+  border-radius: 4px;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.04) 0px,
+    rgba(255, 255, 255, 0.09) 40px,
+    rgba(255, 255, 255, 0.04) 80px
+  );
+  background-size: 800px 100%;
+  animation: skeleton-shimmer 1.6s infinite linear;
+}
+
+/* ── Section lazy placeholder: holds height before section loads ── */
+.section-lazy-placeholder {
+  min-height: 320px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+/* ── Section fade-in when it loads ── */
+.section-loaded {
+  animation: sectionFadeIn 0.4s ease forwards;
+}
+
+@keyframes sectionFadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 
 /* Bulletproof utility to freeze background viewport scrolling completely and disengage global scroller */
 .no-scroll {
@@ -130,6 +270,130 @@ body::before {
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.hero-glass-btn {
+  padding: 0.6rem 1.4rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 50px;
+  font-weight: 700;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.28);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  font-size: 0.85rem;
+  height: 38px;
+}
+
+.hero-glass-btn:hover {
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.25);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3), 0 0 15px rgba(255, 255, 255, 0.08);
+}
+
+.hero-glass-btn:active {
+  transform: translateY(0);
+}
+
+.hero-glass-btn:focus-visible {
+  outline: 2px solid #38bdf8;
+  outline-offset: 2px;
+}
+
+/* Mute button wrapper — holds the icon + the SVG countdown ring */
+.hero-mute-wrapper {
+  position: relative;
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* The circular SVG countdown ring */
+.hero-mute-ring {
+  position: absolute;
+  inset: 0;
+  width: 42px;
+  height: 42px;
+  pointer-events: none;
+  transform: rotate(-90deg);
+  /* Start from top */
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.hero-mute-ring.visible {
+  opacity: 1;
+}
+
+.hero-mute-ring-track {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.12);
+  stroke-width: 2;
+}
+
+.hero-mute-ring-progress {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.8);
+  stroke-width: 2;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.25s linear;
+}
+
+@keyframes hero-ring-pulse {
+
+  0%,
+  100% {
+    stroke: rgba(255, 255, 255, 0.75);
+  }
+
+  50% {
+    stroke: rgba(244, 63, 94, 0.9);
+  }
+}
+
+.hero-mute-ring-progress.pulsing {
+  animation: hero-ring-pulse 1.2s ease-in-out infinite;
+}
+
+.hero-mute-btn {
+  position: relative;
+  z-index: 1;
+  padding: 0;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: white;
+  cursor: pointer;
+  height: 34px;
+  width: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease, opacity 0.8s ease;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(8px);
+}
+
+.hero-mute-btn:hover {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.35);
+  transform: scale(1.08);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+}
+
+.hero-mute-btn:focus-visible {
+  outline: 2px solid #38bdf8;
+  outline-offset: 2px;
 }
 
 /* Navbar - Ghost Style */
@@ -519,11 +783,11 @@ body::before {
   border-radius: 50px;
   font-weight: 600;
   cursor: pointer;
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.22);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   color: white;
-  border: none;
+  border: 1px solid rgba(255, 255, 255, 0.3);
   font-size: 0.85rem;
   height: 38px;
   min-width: 140px;
@@ -607,26 +871,31 @@ body::before {
   position: fixed;
   z-index: 1000;
   display: flex;
-  gap: 0.5rem;
-  padding: 0.5rem;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.5rem;
   border-radius: 50px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  top: 2rem;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  top: 1.8rem;
   right: 1.8rem;
-  background: rgba(0, 0, 0, 0.2);
+  background: rgba(10, 14, 23, 0.65);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
 }
 
 .nav-link-pill {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.7rem 1.2rem;
+  gap: 0.4rem;
+  padding: 0.55rem 0.95rem;
   border-radius: 30px;
   text-decoration: none;
-  transition: all 0.3s ease;
   position: relative;
-  overflow: hidden;
+  overflow: visible;
+  transition: color 0.25s ease;
 }
+
 
 .nav-label {
   display: inline;
@@ -640,25 +909,111 @@ body::before {
 }
 
 /* MovieRow */
+/* === Newspaper Cutout Section Title === */
 .movie-row-title {
   margin-left: 2rem;
   margin-bottom: 1rem;
-  font-size: 1.5rem;
-  font-weight: 600;
   margin-top: 0;
+  /* Reset text so each .nw-word controls its own size */
+  font-size: 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  line-height: 1;
+}
+
+/* Each word chip */
+.nw-word {
+  display: inline-block;
+  position: relative;
+  z-index: 0;
+  padding: 0.12em 0.3em 0.1em;
+  line-height: 1.15;
+  transform: rotate(var(--nw-rotate, 0deg));
+  /* Very subtle drop-shadow to sell the "cut out of paper" look */
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.55));
+}
+
+/* The paper/background chip behind each word */
+.nw-word::before {
+  content: '';
+  position: absolute;
+  top: -0.18em;
+  left: -0.12em;
+  right: -0.12em;
+  bottom: -0.18em;
+  background: var(--nw-bg, #e8d5a3);
+  clip-path: var(--nw-clip, none);
+  z-index: -1;
+}
+
+/* ── Variant 1: Serif italic on aged paper (editorial feel) ── */
+.nw-word.nw-1 {
+  font-family: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  font-size: 1rem;
+  font-weight: 800;
+  font-style: italic;
+  color: #1c1005;
+  --nw-bg: #e0c98a;
+  --nw-clip: polygon(0 0, 100% 0%, 98% 100%, 2% 100%);
+  --nw-rotate: -1.4deg;
+  text-shadow: 0.025em 0.025em 0 rgba(160, 90, 30, 0.35);
+  letter-spacing: 0.01em;
+}
+
+/* ── Variant 2: Condensed bold on dark newsprint ── */
+.nw-word.nw-2 {
+  font-family: 'Oswald', 'Arial Narrow', Arial, sans-serif;
+  font-size: 0.92rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #ede5cc;
+  --nw-bg: #1a1710;
+  --nw-clip: polygon(3% 0%, 100% 0, 97% 100%, 0% 100%);
+  --nw-rotate: 0.9deg;
+  letter-spacing: 0.06em;
+}
+
+/* ── Variant 3: Serif on warm brown ── */
+.nw-word.nw-3 {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fff8ec;
+  --nw-bg: #7c3b1e;
+  --nw-clip: polygon(0 5%, 100% 0%, 100% 95%, 0 100%);
+  --nw-rotate: -0.7deg;
+  letter-spacing: 0.02em;
+}
+
+/* ── Variant 4: Condensed on mid-tone paper ── */
+.nw-word.nw-4 {
+  font-family: 'Oswald', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #120d06;
+  --nw-bg: #c9a96e;
+  --nw-clip: polygon(2% 0%, 100% 0, 100% 96%, 0 100%);
+  --nw-rotate: 1.1deg;
+  letter-spacing: 0.05em;
 }
 
 .movie-row-container {
   display: flex;
   gap: 1rem;
-  padding: 1.5rem 0;
-  margin: 0 2rem;
+  padding: 3rem 2rem;       /* tall vertical padding so 1.4x scaled cards aren't clipped */
+  margin: 0;
   overflow-x: auto;
+  overflow-y: visible;      /* let expanded cards breathe vertically */
   scroll-behavior: smooth;
   scrollbar-width: none;
   -ms-overflow-style: none;
-  --gap: 1rem;
-  --visible-cards: 5;
+  --gap: 1.1rem;
+  --visible-cards: 4.2;
+  transform: translateZ(0);
+  /* Promote to its own GPU compositing layer */
 }
 
 .movie-row-arrow {
@@ -726,43 +1081,280 @@ body::before {
 /* Responsive card visible counts */
 @media (max-width: 1500px) {
   .movie-row-container {
-    --visible-cards: 4;
+    --visible-cards: 3.4;
   }
 }
 
 @media (max-width: 1200px) {
   .movie-row-container {
-    --visible-cards: 3;
+    --visible-cards: 2.6;
   }
 }
 
-/* InteractiveMovieCard */
+/* =====================================================================
+   Netflix-Style Card System — Landscape 16:9 Cards
+   Matches: Netflix cards hover effect reference
+   ===================================================================== */
+
+/* Outer wrapper: handles scale expansion + neighbor push + sibling dimming */
+.netflix-card-item {
+  display: inline-block;
+  position: relative;
+  height: auto;
+  overflow: visible;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.4s ease;
+  will-change: transform, opacity;
+}
+
+/* Sibling cards dim when any card in the row is hovered */
+.netflix-row-container:hover .netflix-card-item:not(:hover) {
+  opacity: 0.35;
+}
+
+.netflix-card-item:hover {
+  z-index: 50 !important;
+}
+
+/* ---- Inner Card: Landscape 16:9 widescreen ---- */
 .interactive-movie-card {
-  width: calc((100% - (var(--visible-cards) - 1) * var(--gap)) / var(--visible-cards));
-  min-width: calc((100% - (var(--visible-cards) - 1) * var(--gap)) / var(--visible-cards));
-  height: 170px;
+  width: 380px;
+  min-width: 380px;
+  height: 214px;
+  aspect-ratio: 16 / 9;
   position: relative;
   cursor: pointer;
   border-radius: 8px;
   overflow: hidden;
-  background-color: #1a1a1a;
+  background-color: #141414;
   flex-shrink: 0;
-  transition: transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 0.35s ease;
   will-change: transform;
+  user-select: none;
+  /* Premium border frame */
+  border: 1.5px solid rgba(255, 255, 255, 0.12);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.04) inset,
+    0 6px 24px rgba(0, 0, 0, 0.55),
+    0 2px 8px rgba(0, 0, 0, 0.4);
+  transition: border-color 0.35s ease, box-shadow 0.35s ease;
 }
 
-@media (min-width: 769px) {
-  .interactive-movie-card:hover {
-    transform: scale(1.03);
-    z-index: 10;
-    box-shadow: 0 0 25px rgba(0, 170, 255, 0.25);
+/* Border brightens on hover for a premium glow-frame effect */
+.interactive-movie-card:hover,
+.interactive-movie-card.hovered {
+  border-color: rgba(255, 255, 255, 0.28);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.10) inset,
+    0 10px 36px rgba(0, 0, 0, 0.7),
+    0 0 20px rgba(255, 255, 255, 0.06);
+}
+
+
+@media (max-width: 1400px) {
+  .interactive-movie-card {
+    width: 330px;
+    min-width: 330px;
+    height: 186px;
   }
 }
 
-.interactive-movie-card.hovered {
-  box-shadow: 0 0 25px rgba(0, 170, 255, 0.25);
-  z-index: 10;
+@media (max-width: 1024px) {
+  .interactive-movie-card {
+    width: 270px;
+    min-width: 270px;
+    height: 152px;
+  }
 }
+
+@media (max-width: 640px) {
+  .interactive-movie-card {
+    width: 72vw;
+    min-width: 72vw;
+    height: calc(72vw * 9 / 16);
+  }
+}
+
+/* ---- Thumbnail: landscape backdrop always visible ---- */
+.imc-thumb {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  border-radius: inherit;
+  display: block;
+  transition: opacity 0.4s ease;
+}
+
+/* ---- Backdrop: widescreen image fades in on hover ---- */
+.imc-backdrop {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  border-radius: inherit;
+  display: block;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  z-index: 1;
+}
+
+/* ---- Base gradient: always present so title/logo text is crisp and legible ---- */
+.imc-thumb-gradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.35) 45%, transparent 75%);
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* ---- Gradient: dark bottom gradient fades in on hover ---- */
+.imc-gradient {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(to bottom, rgba(20, 20, 20, 0) 0%, rgba(20, 20, 20, 0.95) 100%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* ---- Info overlay: title + match + year fades in on hover ---- */
+.imc-info {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 12px 14px;
+  z-index: 3;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+  pointer-events: none;
+}
+
+.imc-info h3 {
+  color: #ffffff;
+  font-size: 0.92rem;
+  font-weight: 700;
+  margin: 0 0 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.9);
+}
+
+.imc-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.imc-match {
+  color: #46D369;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.imc-year {
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 0.72rem;
+}
+
+/* ---- Rating badge: top-left, always visible ---- */
+.imc-rating {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  padding: 3px 7px;
+  border-radius: 5px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  z-index: 4;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  transition: opacity 0.3s ease;
+}
+
+/* Rating badge fades out on hover so info overlay shows cleanly */
+.interactive-movie-card:hover .imc-rating,
+.interactive-movie-card.hovered .imc-rating {
+  opacity: 0;
+}
+
+/* ---- Logo at bottom: always visible (hides when info shows) ---- */
+.imc-logo-wrap {
+  position: absolute;
+  bottom: 14px;
+  left: 12px;
+  right: 12px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  max-height: 44px;
+  z-index: 3;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.imc-logo {
+  max-height: 36px;
+  max-width: 80%;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.95));
+  display: block;
+}
+
+.imc-title-fallback {
+  color: #ffffff;
+  font-size: 0.82rem;
+  font-weight: 700;
+  margin: 0;
+  line-height: 1.25;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.95);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-align: center;
+  padding: 2px 4px;
+}
+
+/* Logo/title fades out when hover info appears */
+.interactive-movie-card:hover .imc-logo-wrap,
+.interactive-movie-card.hovered .imc-logo-wrap {
+  opacity: 0;
+}
+
+/* ---- Hover triggers: backdrop + gradient + info fade in ---- */
+.interactive-movie-card:hover .imc-backdrop,
+.interactive-movie-card.hovered .imc-backdrop {
+  opacity: 1;
+}
+
+.interactive-movie-card:hover .imc-gradient,
+.interactive-movie-card.hovered .imc-gradient {
+  opacity: 1;
+}
+
+.interactive-movie-card:hover .imc-info,
+.interactive-movie-card.hovered .imc-info {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Page-level dimming removed — Netflix effect only dims siblings in the same row. */
 
 .gradient-overlay {
   position: absolute;
@@ -788,75 +1380,118 @@ body::before {
 }
 
 /* Top10 Section */
+.top10-grid-container {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 2rem;
+  align-items: center;
+  position: relative;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 2rem 4% 2.5rem 4%;
+  overflow: hidden;
+}
+
+.top10-header-column {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 100%;
+}
+
+.top10-carousel-column {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  overflow: visible;
+  min-width: 0;
+}
+
 .top10-rank-number {
   position: relative;
   flex-shrink: 0;
-  font-size: 7rem;
+  font-size: 9rem;
   font-weight: 900;
-  line-height: 1;
+  line-height: 0.8;
   z-index: 1;
   pointer-events: none;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   color: transparent;
-  -webkit-text-stroke: 3px #555;
+  -webkit-text-stroke: 2.5px rgba(255, 255, 255, 0.25);
+  margin-right: -25px;
   margin-bottom: -10px;
-  padding-left: 4px;
   user-select: none;
+  letter-spacing: -8px;
+}
+
+.top10-rank-number.rank-10 {
+  letter-spacing: -12px;
+  margin-right: -35px;
 }
 
 .top10-rank-number.hovered {
-  -webkit-text-stroke: 3px #dc2626;
-  transform: scale(1.05);
+  -webkit-text-stroke: 2.5px #dc2626;
+  filter: drop-shadow(0 0 15px rgba(220, 38, 38, 0.5));
+  transform: scale(1.08) translateY(-4px);
 }
 
 .top10-header-box {
   display: inline-block;
-  padding: 1rem 1.5rem 1.25rem;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 0.9rem 1.35rem 1rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(220, 38, 38, 0.2);
   border-radius: 16px;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 .top10-header-title {
-  font-size: 2.5rem;
+  font-size: 2.2rem;
   font-weight: 900;
   color: transparent;
   -webkit-text-stroke: 2px #dc2626;
   letter-spacing: -0.05em;
   margin: 0;
   line-height: 1;
+  white-space: nowrap;
 }
 
 .top10-nav-arrow {
   position: absolute;
-  top: 60%;
+  top: 50%;
   transform: translateY(-50%);
   z-index: 10;
-  background: rgba(0, 0, 0, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(0, 0, 0, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 50%;
-  width: 50px;
-  height: 50px;
+  width: 44px;
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   color: #fff;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 .top10-nav-arrow.left {
-  left: 1%;
+  left: -12px;
 }
 
 .top10-nav-arrow.right {
-  right: 1%;
+  right: -12px;
 }
 
 .top10-nav-arrow:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(220, 38, 38, 0.85);
+  border-color: #dc2626;
   transform: translateY(-50%) scale(1.1);
+  box-shadow: 0 0 15px rgba(220, 38, 38, 0.4);
 }
 
 /* ProvidersSection */
@@ -1001,12 +1636,23 @@ body::before {
   /* Movie Row */
   .movie-row-title {
     margin-left: 1rem;
-    font-size: 1.25rem;
+    font-size: 0;
+    /* newspaper words control their own sizes */
+  }
+
+  .nw-word.nw-1,
+  .nw-word.nw-3 {
+    font-size: 0.85rem;
+  }
+
+  .nw-word.nw-2,
+  .nw-word.nw-4 {
+    font-size: 0.8rem;
   }
 
   .movie-row-container {
-    padding: 1rem 0;
-    margin: 0 1rem;
+    padding: 1rem 1rem;
+    margin: 0;
     gap: 0.75rem;
     --gap: 0.75rem;
     --visible-cards: 2;
@@ -1027,24 +1673,42 @@ body::before {
   }
 
   /* Top 10 */
+  .top10-grid-container {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    padding: 1.5rem 1rem 2rem 1rem;
+  }
+
+  .top10-header-column {
+    align-items: flex-start;
+  }
+
   .top10-rank-number {
-    font-size: 4rem;
-    bottom: -8px;
-    left: -4px;
-    -webkit-text-stroke: 1px #dc2626;
+    font-size: 7.5rem;
+    margin-right: -20px;
+    margin-bottom: -8px;
+    -webkit-text-stroke: 1.5px rgba(255, 255, 255, 0.35);
+  }
+
+  .top10-rank-number.rank-10 {
+    letter-spacing: -10px;
+    margin-right: -25px;
   }
 
   .top10-rank-number.hovered {
-    transform: scale(1.1) translateX(-4px);
+    transform: scale(1.05) translateY(-2px);
+    -webkit-text-stroke: 1.5px #dc2626;
   }
 
   .top10-header-box {
     padding: 0.75rem 1rem 1rem;
+    width: 100%;
+    box-sizing: border-box;
   }
 
   .top10-header-title {
-    font-size: 1.8rem;
-    -webkit-text-stroke: 1px #dc2626;
+    font-size: 2rem;
+    -webkit-text-stroke: 1.5px #dc2626;
   }
 
   .top10-nav-arrow {
@@ -1164,8 +1828,8 @@ body::before {
   .movie-row-container {
     scroll-snap-type: x mandatory !important;
     -webkit-overflow-scrolling: touch !important;
-    padding: 0.75rem 0 !important;
-    margin: 0 1rem !important;
+    padding: 0.75rem 1rem !important;
+    margin: 0 !important;
     gap: 0.75rem !important;
     --gap: 0.75rem;
     --visible-cards: 2;
@@ -1205,8 +1869,9 @@ body::before {
 
   .movie-row-title {
     margin-left: 1rem !important;
-    font-size: 1.1rem !important;
+    font-size: 0.9rem !important;
     font-weight: 700 !important;
+    letter-spacing: 0.11em !important;
   }
 
   /* ── Top 10 Section — Reduce heavy styling ──────────────────── */
@@ -2421,12 +3086,18 @@ body::before {
   gap: 0.5rem;
   width: 100%;
   height: 260px;
-  transition: grid-template-columns 0.5s cubic-bezier(0.4, 0, 0.2, 1),
-    grid-template-rows 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: grid-template-columns 0.5s cubic-bezier(0.4, 0, 0.2, 1);
   margin-bottom: 0.5rem;
   /* Reduced from 2rem */
   list-style: none;
   padding: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.expanding-cards-container::-webkit-scrollbar {
+  display: none;
 }
 
 .ec-card {
@@ -2535,7 +3206,7 @@ body::before {
 }
 
 .ec-title-collapsed {
-  display: none;
+  display: block;
   transform: rotate(90deg);
   transform-origin: left bottom;
   font-size: 0.75rem;
@@ -2549,15 +3220,9 @@ body::before {
   transition: opacity 0.3s ease;
 }
 
-@media (min-width: 768px) {
-  .ec-title-collapsed {
-    display: block;
-  }
-
-  .ec-card[data-active="true"] .ec-title-collapsed {
-    opacity: 0;
-    pointer-events: none;
-  }
+.ec-card[data-active="true"] .ec-title-collapsed {
+  opacity: 0;
+  pointer-events: none;
 }
 
 .ec-content {
@@ -3766,69 +4431,104 @@ body::before {
 /* --- Concept 5 — Gradient Big Type Header (XORYA Version) --- */
 .premium-section-container {
   position: relative;
-  margin: 0 2% 1.25rem;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  margin: 0 2% 5rem;
+  clear: both;
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 20px;
-  background: #000;
+  /* Rounded card sections matching examples */
+  background: rgba(10, 14, 23, 0.45);
+  /* Rich dark card background */
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
   overflow: visible;
-  padding-bottom: -1.99px;
-  zoom: 0.88;
 }
 
-.premium-section-container.scaled-down {
-  zoom: 0.88;
+/* Subtle separator boundary line under every shelf section */
+.premium-section-container::after {
+  content: '';
+  position: absolute;
+  bottom: -2rem;
+  left: 5%;
+  right: 5%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.12) 50%, transparent 100%);
+  pointer-events: none;
 }
+
+
+.premium-section-container.scaled-down {
+  /* Zoom removed to prevent layout metrics collapse */
+}
+
 
 .premium-section-container.dropdown-open {
   z-index: 150;
 }
 
 .premium-section-container:hover {
-  border-color: rgba(var(--section-color-rgb), 0.25);
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5), inset 0 0 30px rgba(var(--section-color-rgb), 0.02);
+  border-color: rgba(255, 255, 255, 0.15);
+  /* Single neutral border color across all sections */
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.7);
 }
 
 .premium-section-header {
   position: relative;
-  padding: 24px 2rem 16px 2rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  z-index: 100;
+  /* Stacks header and opened dropdowns above card rows */
+  display: grid;
+  grid-template-columns: minmax(220px, max-content) 1fr auto;
+  align-items: stretch;
   min-height: 110px;
-  background: radial-gradient(circle at 10% 50%, rgba(var(--section-color-rgb), 0.12), transparent 70%);
+  background: transparent;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  /* Horizontal grid line */
   transition: all 0.3s ease;
+  border-top-left-radius: 19px;
+  /* Inherit rounded corners from container */
+  border-top-right-radius: 19px;
 }
 
 .premium-section-header-bg {
-  position: absolute;
-  left: 2rem;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 140px;
+  position: static;
+  transform: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(1.3rem, 2.5vw, 1.85rem);
+  /* Response font that fits long words like UPCOMING */
   font-weight: 900;
-  line-height: 1;
-  pointer-events: none;
+  height: 100%;
+  width: 100%;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  /* Vertical grid line */
   background: linear-gradient(180deg, var(--section-color-start) 0%, var(--section-color-end) 100%);
   -webkit-background-clip: text;
   color: transparent;
-  opacity: 0.15;
-  letter-spacing: -4px;
+  opacity: 0.85;
+  /* Solid, structured */
+  letter-spacing: 1.5px;
   user-select: none;
-  z-index: 0;
-  text-shadow: 0 0 30px rgba(var(--section-color-rgb), 0.25);
+  z-index: 1;
+  border-top-left-radius: 19px;
+  /* Round background top-left corner */
+  text-shadow: 0 0 20px rgba(var(--section-color-rgb), 0.2);
   transition: opacity 0.3s ease, text-shadow 0.3s ease;
 }
 
 .premium-section-container:hover .premium-section-header-bg {
-  opacity: 0.22;
-  text-shadow: 0 0 40px rgba(var(--section-color-rgb), 0.4);
+  opacity: 1.0;
+  text-shadow: 0 0 30px rgba(var(--section-color-rgb), 0.35);
 }
 
 .premium-section-content {
   position: relative;
   z-index: 1;
-  margin-left: 200px;
+  margin-left: 0;
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .premium-section-content .anchor-label {
@@ -3946,6 +4646,44 @@ body::before {
   z-index: 100;
 }
 
+.premium-section-header .premium-dropdown {
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  /* Vertical grid line */
+  height: 100%;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* MovieRow alignment inside grid container */
+.premium-section-container .movie-row-container {
+  margin: 0;
+  padding: 4rem 28px;      /* ample vertical padding for hover expansion */
+  gap: 12px;
+}
+
+
+
+/* Premium section cards — let the global .interactive-movie-card handle size/shape.
+   Only override aesthetics specific to this container. */
+.premium-section-container .interactive-movie-card {
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  /* NO overflow:visible, NO scale, NO conflicting transforms */
+}
+
+
+
+/* Align navigation arrows inside premium shelves */
+.premium-section-container .movie-row-arrow.left {
+  left: 12px;
+}
+
+.premium-section-container .movie-row-arrow.right {
+  right: 12px;
+}
+
 .premium-dropdown-btn {
   font-size: 0.9rem;
   color: #ffffff;
@@ -3953,21 +4691,25 @@ body::before {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: rgba(10, 11, 15, 0.8);
+  background: rgba(10, 11, 15, 0.7);
   border: 1px solid rgba(255, 255, 255, 0.08);
+  /* Single neutral border color across all sections */
   padding: 8px 18px;
-  border-radius: 10px;
+  border-radius: 12px;
+  /* Rounded button corners */
   backdrop-filter: blur(15px);
   -webkit-backdrop-filter: blur(15px);
   transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4), 0 0 10px rgba(255, 255, 255, 0.04);
 }
 
 .premium-dropdown-btn:hover,
 .premium-dropdown-btn.active {
   background: rgba(10, 11, 15, 0.95);
-  border-color: rgba(var(--section-color-rgb), 0.5);
-  box-shadow: 0 0 15px rgba(var(--section-color-rgb), 0.3);
+  border-color: rgba(255, 255, 255, 0.25);
+  /* Single neutral border color across all sections */
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5), 0 0 15px rgba(255, 255, 255, 0.08);
 }
 
 .premium-dropdown-chevron {
@@ -3981,16 +4723,19 @@ body::before {
 .premium-dropdown-menu {
   position: absolute;
   top: calc(100% + 8px);
-  right: 0;
+  right: 24px;
+  /* Align with dropdown button right edge */
   width: 250px;
   max-height: 400px;
   overflow-y: auto;
-  background: rgba(13, 14, 18, 0.95);
-  backdrop-filter: blur(25px);
-  -webkit-backdrop-filter: blur(25px);
+  background: rgba(13, 17, 28, 0.75);
+  /* Translucent Slate Navy background */
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 14px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.85), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  /* Rounded menu corners */
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.75), inset 0 1px 0 rgba(255, 255, 255, 0.05);
   padding: 12px 6px;
   display: flex;
   flex-direction: column;
@@ -4047,7 +4792,8 @@ body::before {
   font-size: 0.85rem;
   font-weight: 500;
   color: #c0c6d0;
-  border-radius: 8px;
+  border-radius: 10px;
+  /* Rounded item corners */
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
@@ -4070,13 +4816,15 @@ body::before {
 }
 
 .premium-dropdown-item:hover {
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(var(--section-color-rgb), 0.08);
+  /* Theme-colored hover background */
   color: #ffffff;
   transform: translateX(2px);
 }
 
 .premium-dropdown-item.selected {
-  background: rgba(var(--section-color-rgb), 0.12);
+  background: rgba(var(--section-color-rgb), 0.15);
+  /* More vibrant theme selected background */
   color: var(--section-color-start);
   font-weight: 600;
 }
@@ -4098,20 +4846,8 @@ body::before {
   transition: color 0.4s ease, text-shadow 0.4s ease;
 }
 
-}
-
 /* --- Concept 6 — Dynamic Section Colors overrides --- */
-.upcoming-amber .interactive-movie-card:hover,
-.upcoming-amber .interactive-movie-card.hovered {
-  border: 1px solid rgba(255, 138, 0, 0.5) !important;
-  box-shadow: 0 0 25px rgba(255, 138, 0, 0.45) !important;
-}
-
-.upcoming-red .interactive-movie-card:hover,
-.upcoming-red .interactive-movie-card.hovered {
-  border: 1px solid rgba(255, 77, 77, 0.5) !important;
-  box-shadow: 0 0 25px rgba(255, 77, 77, 0.45) !important;
-}
+/* (Borders and box-shadow glows are now dynamically handled via CSS variables on .interactive-movie-card::after) */
 
 .premium-section-container .movie-row-arrow:hover {
   border-color: rgba(var(--section-color-rgb), 0.5) !important;
@@ -4120,4 +4856,675 @@ body::before {
     0 12px 32px rgba(0, 0, 0, 0.65),
     inset 0 1.5px 1.5px rgba(255, 255, 255, 0.4),
     inset 0 -1.5px 0.5px rgba(0, 0, 0, 0.8) !important;
+}
+
+/* XORYA watch page premium pass */
+.watch-page-active .navbar-container-glass {
+  top: 1.25rem !important;
+  right: 2rem !important;
+  background: rgba(10, 14, 23, 0.75) !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5) !important;
+  opacity: 1 !important;
+  z-index: 1000 !important;
+}
+
+.watch-page-active .navbar-container-glass:hover {
+  opacity: 1 !important;
+}
+
+
+.xorya-watch-page {
+  padding-top: 0 !important;
+  background:
+    radial-gradient(circle at 68% 12%, rgba(var(--theme-accent-rgb), 0.18), transparent 38%),
+    linear-gradient(135deg, #02060d 0%, #070a11 46%, #020204 100%) !important;
+  overflow: visible !important;
+}
+
+.xorya-watch-shell {
+  zoom: 0.8 !important;
+  padding: 0 0 4rem;
+}
+
+@supports not (zoom: 1) {
+  @media (min-width: 769px) {
+    .xorya-watch-shell {
+      transform: scale(0.8) !important;
+      transform-origin: top center !important;
+      width: 125% !important;
+      margin-left: -12.5% !important;
+    }
+  }
+}
+
+.watch-floating-title {
+  opacity: 0.25 !important;
+  transform: scale(0.92);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.watch-floating-title:hover {
+  opacity: 0.95 !important;
+  transform: scale(1);
+}
+
+.watch-layout-outer {
+  max-width: 100% !important;
+  padding: 0 !important;
+}
+
+.watch-layout {
+  position: relative !important;
+  isolation: isolate;
+  min-height: auto !important;
+  padding: 1.2rem 3rem 3.2rem !important;
+  gap: 1.45rem !important;
+  background: rgba(4, 6, 12, 0.35) !important;
+  backdrop-filter: blur(24px) !important;
+  WebkitBackdropFilter: blur(24px) !important;
+  border-left: none !important;
+  border-right: none !important;
+  border-top: 1px solid rgba(var(--theme-accent-rgb), 0.22) !important;
+  border-bottom: 1px solid rgba(var(--theme-accent-rgb), 0.22) !important;
+  border-radius: 0 !important;
+  box-shadow:
+    0 35px 120px rgba(0, 0, 0, 0.78),
+    0 0 90px rgba(var(--theme-accent-rgb), 0.11),
+    inset 0 1px 0 rgba(255, 255, 255, 0.055) !important;
+  overflow: hidden;
+}
+
+.watch-layout::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 260px;
+  background:
+    linear-gradient(90deg, rgba(5, 9, 15, 0.18) 0%, rgba(5, 9, 15, 0.72) 48%, rgba(5, 9, 15, 0.95) 100%),
+    linear-gradient(180deg, rgba(3, 6, 10, 0.1) 0%, rgba(3, 6, 10, 0.94) 100%),
+    var(--watch-backdrop);
+  background-size: cover;
+  background-position: center 22%;
+  opacity: 0.48;
+  filter: saturate(1.08);
+  z-index: -1;
+}
+
+.watch-layout::after {
+  content: "";
+  position: absolute;
+  inset: -20% -10% auto auto;
+  width: 58%;
+  height: 440px;
+  background: radial-gradient(circle, rgba(var(--theme-accent-rgb), 0.18), transparent 62%);
+  opacity: 0.82;
+  z-index: -1;
+}
+
+.watch-layout>div:first-child {
+  min-height: auto;
+  justify-content: flex-start;
+  border-bottom-color: rgba(var(--theme-accent-rgb), 0.16);
+  padding-bottom: 0;
+  margin-bottom: 0;
+}
+
+.watch-layout>div:first-child img {
+  max-height: 92px !important;
+  max-width: min(620px, 78vw) !important;
+  filter: drop-shadow(0 12px 28px rgba(0, 0, 0, 0.58));
+}
+
+.watch-layout>div:first-child h1 {
+  font-size: clamp(3rem, 5.6vw, 5.8rem) !important;
+  line-height: 0.9 !important;
+  letter-spacing: 0 !important;
+  text-transform: uppercase;
+  max-width: 880px;
+}
+
+.watch-hero-tagline {
+  text-shadow: 0 0 24px rgba(var(--theme-accent-rgb), 0.28);
+}
+
+.watch-columns {
+  gap: 2.1rem !important;
+  align-items: flex-start;
+}
+
+.watch-main {
+  max-width: 1180px;
+}
+
+.watch-player-frame {
+  max-width: none !important;
+  border-radius: 16px !important;
+  border-color: rgba(var(--theme-accent-rgb), 0.55) !important;
+  background:
+    linear-gradient(180deg, rgba(8, 15, 23, 0.96), rgba(0, 0, 0, 0.98)) !important;
+  box-shadow:
+    0 24px 95px rgba(0, 0, 0, 0.85),
+    0 0 0 1px rgba(255, 255, 255, 0.04),
+    0 0 50px rgba(var(--theme-accent-rgb), 0.24) !important;
+}
+
+.watch-player-status {
+  background:
+    linear-gradient(90deg, rgba(var(--theme-accent-rgb), 0.12), rgba(12, 15, 20, 0.86)) !important;
+}
+
+.watch-action-bar {
+  max-width: none !important;
+  padding: 0 !important;
+}
+
+.watch-action-bar button {
+  min-height: 44px;
+  border-radius: 9px !important;
+  background: rgba(255, 255, 255, 0.045) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+.watch-action-bar button:hover {
+  border-color: rgba(var(--theme-accent-rgb), 0.38) !important;
+  background: rgba(var(--theme-accent-rgb), 0.1) !important;
+}
+
+.watch-action-bar .watch-next-button {
+  background: linear-gradient(135deg, rgb(var(--theme-accent-rgb)), rgba(var(--theme-accent-rgb), 0.62)) !important;
+  border-color: rgba(var(--theme-accent-rgb), 0.75) !important;
+}
+
+.watch-details-wrap {
+  max-width: none !important;
+}
+
+.watch-details-container {
+  min-height: 245px;
+  border-radius: 16px !important;
+  padding: 1.55rem !important;
+  background:
+    linear-gradient(135deg, rgba(var(--theme-accent-rgb), 0.085), rgba(8, 12, 19, 0.72) 45%, rgba(5, 6, 11, 0.82)),
+    rgba(8, 10, 16, 0.72) !important;
+  border-color: rgba(var(--theme-accent-rgb), 0.2) !important;
+  box-shadow:
+    0 18px 55px rgba(0, 0, 0, 0.58),
+    inset 0 1px 0 rgba(255, 255, 255, 0.055) !important;
+}
+
+.watch-details-container>div:first-of-type button {
+  padding-inline: 0 !important;
+  margin-right: 1.6rem;
+}
+
+.watch-episode-panel {
+  box-sizing: border-box !important;
+  height: 680px !important;
+  max-height: none !important;
+  padding: 1.35rem;
+  border-radius: 16px;
+  border: 1px solid rgba(var(--theme-accent-rgb), 0.16);
+  background:
+    linear-gradient(145deg, rgba(8, 14, 23, 0.76), rgba(3, 5, 9, 0.72)),
+    rgba(4, 6, 10, 0.72);
+  box-shadow:
+    0 24px 80px rgba(0, 0, 0, 0.58),
+    inset 0 1px 0 rgba(255, 255, 255, 0.045);
+}
+
+.watch-episode-panel>div:first-child {
+  justify-content: space-between;
+  gap: 1rem !important;
+  margin-bottom: 1.35rem !important;
+  padding-bottom: 0.95rem !important;
+  border-bottom-color: rgba(var(--theme-accent-rgb), 0.18) !important;
+}
+
+.watch-episode-panel>div:first-child button {
+  font-size: 0.96rem !important;
+  color: rgba(255, 255, 255, 0.72) !important;
+}
+
+.watch-episode-panel>div:first-child button:hover,
+.watch-episode-panel>div:first-child button[style*="var(--theme-accent)"] {
+  color: #fff !important;
+}
+
+.watch-season-row {
+  grid-template-columns: minmax(0, 1fr) auto !important;
+}
+
+.watch-episode-card {
+  min-height: 86px;
+  border-radius: 12px !important;
+  background: rgba(5, 7, 12, 0.72) !important;
+  border-color: rgba(255, 255, 255, 0.07) !important;
+}
+
+.watch-episode-card:hover {
+  border-color: rgba(var(--theme-accent-rgb), 0.35) !important;
+  background: rgba(var(--theme-accent-rgb), 0.06) !important;
+}
+
+.watch-episode-card.active {
+  padding: 1rem !important;
+  min-height: 154px;
+  border-color: rgba(var(--theme-accent-rgb), 0.85) !important;
+  background:
+    linear-gradient(135deg, rgba(var(--theme-accent-rgb), 0.16), rgba(7, 12, 19, 0.88)) !important;
+  box-shadow:
+    0 0 0 1px rgba(var(--theme-accent-rgb), 0.1),
+    0 14px 42px rgba(var(--theme-accent-rgb), 0.18) !important;
+}
+
+.watch-view-all-episodes:hover {
+  border-color: rgba(var(--theme-accent-rgb), 0.35) !important;
+  background: rgba(var(--theme-accent-rgb), 0.09) !important;
+}
+
+.watch-episode-panel [style*="Up Next"]+div,
+.watch-episode-panel div:has(> h5) {
+  border-color: rgba(var(--theme-accent-rgb), 0.18) !important;
+}
+
+.watch-recommendations-row {
+  border-radius: 18px !important;
+  border-color: rgba(var(--theme-accent-rgb), 0.16) !important;
+  background:
+    linear-gradient(135deg, rgba(var(--theme-accent-rgb), 0.07), rgba(4, 6, 10, 0.86) 42%, rgba(2, 3, 6, 0.94)) !important;
+  box-shadow:
+    0 26px 82px rgba(0, 0, 0, 0.72),
+    0 0 70px rgba(var(--theme-accent-rgb), 0.1) !important;
+}
+
+.watch-recommendations-row .movie-row-title {
+  margin-left: 0 !important;
+  font-size: 1.45rem !important;
+  color: #fff;
+}
+
+@media (max-width: 1200px) {
+  .xorya-watch-shell {
+    padding-inline: 0 !important;
+  }
+
+  .watch-main {
+    max-width: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .watch-page-active .navbar-container-glass {
+    opacity: 1;
+  }
+
+  .xorya-watch-shell {
+    zoom: 1 !important;
+    padding: 0 0 5.5rem !important;
+  }
+
+  .watch-layout {
+    padding: 1.2rem !important;
+  }
+
+  .watch-layout>div:first-child {
+    min-height: 112px;
+  }
+
+  .watch-layout>div:first-child img {
+    max-height: 58px !important;
+  }
+
+  .watch-action-bar,
+  .watch-action-bar>div {
+    width: 100%;
+  }
+
+  .watch-action-bar button {
+    flex: 1 1 calc(50% - 0.5rem);
+    justify-content: center;
+  }
+
+  .watch-season-row {
+    grid-template-columns: 1fr !important;
+  }
+
+  .watch-episode-panel {
+    padding: 1rem;
+    height: auto !important;
+  }
+}
+
+/* Trending Flux Card Styling (Vibrant Poster Card Overlay) */
+.trending-flux-card {
+  height: 210px !important;
+  /* Matches standard 16:9 widescreen aspect ratio (375px x 210px) */
+  border-radius: 12px !important;
+  background-color: #121829 !important;
+  /* Slate navy card surface */
+  border: none !important;
+  /* Remove static border on outer container */
+  overflow: visible !important;
+}
+
+.trending-flux-card-inner {
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  background: #121829;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  transition: all 0.4s ease;
+}
+
+/* Custom Amber/Gold flashlight border glow for Trending Cards */
+.trending-flux-card-inner .flashlight-border-glow {
+  padding: 1.2px;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  background: conic-gradient(from var(--cursor-angle, 0deg), #ff9f0a, transparent 15deg, transparent 345deg, #ff9f0a) !important;
+}
+
+/* Custom Amber/Gold ambient aura glow for Trending Cards */
+.trending-flux-card .flashlight-ambient-glow {
+  background: conic-gradient(from var(--cursor-angle, 0deg), rgba(255, 159, 10, 0.45), transparent 15deg, transparent 345deg, rgba(255, 159, 10, 0.45)) !important;
+}
+
+.trending-card-logo-img {
+  max-height: 52px;
+  max-width: 85%;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.7));
+}
+
+.trending-card-fallback-title {
+  color: #fff;
+  font-size: 1rem;
+  font-weight: bold;
+  margin: 0;
+  text-align: center;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9);
+  line-height: 1.2;
+}
+
+/* Ensure spotlight sibling dimming targets the Flux card as well */
+.movie-row-container:hover .trending-flux-card {
+  opacity: 0.45;
+  filter: brightness(0.65) grayscale(0.1);
+}
+
+.movie-row-container .trending-flux-card:hover,
+.movie-row-container .trending-flux-card.hovered {
+  opacity: 1 !important;
+  filter: brightness(1.22) contrast(1.05) !important;
+  transform: scale(1.04) !important;
+  z-index: 12 !important;
+}
+
+.movie-row-container .trending-flux-card:hover .trending-flux-card-inner,
+.movie-row-container .trending-flux-card.hovered .trending-flux-card-inner {
+  border-color: transparent !important;
+  /* Hide border to show flashlight conic glow */
+  box-shadow: 0 12px 32px rgba(255, 159, 10, 0.15), 0 0 15px rgba(255, 159, 10, 0.08) !important;
+}
+
+.trending-flux-card img {
+  transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94), filter 0.5s ease !important;
+}
+
+.trending-flux-card:hover img {
+  transform: scale(1.08) !important;
+}
+
+/* Responsive adjustment for Trending Flux Card on Mobile */
+@media (max-width: 768px) {
+  .trending-flux-card {
+    height: 140px !important;
+  }
+
+  .trending-card-logo-img {
+    max-height: 32px;
+  }
+
+  .trending-card-fallback-title {
+    font-size: 0.85rem;
+  }
+}
+
+/* ── Watchlist Sort Menu & Watched faded state ── */
+.wl-sort-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 6px;
+  background: rgba(18, 18, 18, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 4px;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(8px);
+  min-width: 110px;
+}
+
+.wl-sort-menu-item {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  padding: 6px 12px;
+  font-size: 0.75rem;
+  text-align: left;
+  border-radius: 4px;
+  cursor: pointer;
+  width: 100%;
+  transition: all 0.2s ease;
+}
+
+.wl-sort-menu-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+.wl-sort-menu-item.active {
+  background: var(--tier-color, #70a1ff);
+  color: #000;
+  font-weight: 600;
+}
+
+/* Faded state for watched entries */
+.wl-card.completed {
+  opacity: 0.45;
+  filter: grayscale(85%);
+  transition: opacity 0.3s ease, filter 0.3s ease;
+}
+
+.wl-card.completed:hover {
+  opacity: 0.85;
+  filter: grayscale(20%);
+}
+
+.wl-progress-quick-btn {
+  transition: all 0.2s ease;
+}
+
+.wl-progress-quick-btn:hover:not(.active) {
+  background: rgba(255, 255, 255, 0.12) !important;
+  color: #fff !important;
+}
+
+/* ── Watchlist Carousel Navigation Arrows ── */
+.wl-carousel-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  background: rgba(0, 0, 0, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #fff;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.wl-carousel-arrow.left {
+  left: -12px;
+}
+
+.wl-carousel-arrow.right {
+  right: -12px;
+}
+
+.wl-carousel-arrow:hover {
+  background: var(--tier-color, #70a1ff);
+  color: #000;
+  border-color: transparent;
+  transform: translateY(-50%) scale(1.1);
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.2);
+}
+
+/* Hide watchlist carousel arrows on mobile */
+@media (max-width: 768px) {
+  .wl-carousel-arrow {
+    display: none;
+  }
+}
+
+/* ── Watch Page Structural Blueprint Grid & Guide Lines ── */
+.watch-structural-grid {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+  overflow: hidden;
+}
+
+.watch-grid-pattern {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.065) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.065) 1px, transparent 1px);
+  background-size: 180px 180px;
+  mask-image: radial-gradient(ellipse 90% 80% at 50% 30%, rgba(0, 0, 0, 1) 30%, rgba(0, 0, 0, 0.25) 75%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 90% 80% at 50% 30%, rgba(0, 0, 0, 1) 30%, rgba(0, 0, 0, 0.25) 75%, transparent 100%);
+}
+
+.watch-vert-line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: linear-gradient(to bottom,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.065) 15%,
+      rgba(255, 255, 255, 0.065) 85%,
+      rgba(255, 255, 255, 0) 100%);
+}
+
+.watch-vert-line.line-left {
+  left: 3rem;
+  /* Align exactly with the edge of watch-layout's content padding */
+}
+
+.watch-vert-line.line-right {
+  right: 3rem;
+  /* Align exactly with the edge of watch-layout's content padding */
+}
+
+@media (max-width: 768px) {
+  .watch-vert-line.line-left {
+    left: 1.2rem;
+    /* Align with mobile padding */
+  }
+
+  .watch-vert-line.line-right {
+    right: 1.2rem;
+    /* Align with mobile padding */
+  }
+}
+
+/* Hide navbar brand logo on watch page to prevent overlapping with title logo */
+.watch-page-active .navbar-logo-container {
+  display: none !important;
+}
+
+
+/* Floating Glass Back Button for Watch Page */
+.watch-floating-back-btn {
+  position: fixed;
+  top: 1.25rem;
+  left: 2rem;
+  z-index: 1000;
+  height: 42px;
+  padding: 0 16px;
+  border-radius: 30px;
+  background: rgba(10, 14, 23, 0.75);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.watch-floating-back-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.35);
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+
+.watch-floating-back-btn:hover {
+  background: var(--theme-accent, #00bcd4);
+  color: #000;
+  border-color: transparent;
+  transform: scale(1.08);
+  box-shadow: 0 0 15px rgba(var(--theme-accent-rgb), 0.35);
+}
+
+@media (max-width: 768px) {
+  .watch-floating-back-btn {
+    top: 1rem;
+    left: 1.2rem;
+    /* Align with mobile padding */
+  }
+}
+
+/* YouTube Background Player Lockdown Styles - Ensures trailer video stays 100% locked & centered on browser zoom (120%, 130%, etc.) */
+.yt-player-container {
+  position: absolute !important;
+  overflow: hidden !important;
+}
+
+.yt-player-container iframe,
+.yt-player-target,
+iframe[id^="yt-player-"] {
+  width: 100% !important;
+  height: 100% !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  border: none !important;
+  pointer-events: none !important;
+  object-fit: cover !important;
 }

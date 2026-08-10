@@ -85,6 +85,79 @@ const ProgressStepper = ({ entry, onProgress }) => {
   );
 };
 
+// ── Compact movie progress stepper shown on movie cards ─────────────────────────
+const MovieProgressStepper = ({ entry, onProgress }) => {
+  const [open, setOpen] = useState(false);
+  const pct = entry.progress?.percent ?? 0;
+
+  const setPct = (newPct, ev) => {
+    ev.stopPropagation();
+    const clamped = Math.max(0, Math.min(100, newPct));
+    onProgress(entry.id, undefined, undefined, clamped);
+  };
+
+  return (
+    <div className="wl-progress-wrap">
+      <button
+        className="wl-progress-badge"
+        onClick={(ev) => { ev.stopPropagation(); setOpen(v => !v); }}
+        title="Track movie progress"
+      >
+        <Clapperboard size={9} />
+        <span>{pct === 0 ? 'Not Started' : `${pct}%`}</span>
+      </button>
+
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.88, y: 4 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.88, y: 4 }}
+            transition={{ duration: 0.15 }}
+            className="wl-progress-popover"
+            onClick={ev => ev.stopPropagation()}
+            style={{ width: '180px' }}
+          >
+            <div className="wl-progress-row" style={{ flexDirection: 'column', gap: '8px' }}>
+              <span className="wl-progress-row-label" style={{ alignSelf: 'flex-start' }}>Progress</span>
+              <div className="wl-progress-controls" style={{ width: '100%', justifyContent: 'space-between' }}>
+                <button className="wl-progress-btn" onClick={ev => setPct(pct - 10, ev)} disabled={pct <= 0}>
+                  -10%
+                </button>
+                <span className="wl-progress-val">{pct}%</span>
+                <button className="wl-progress-btn" onClick={ev => setPct(pct + 10, ev)} disabled={pct >= 100}>
+                  +10%
+                </button>
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: '4px', marginTop: '8px', width: '100%', justifyContent: 'center' }}>
+              {[25, 50, 75].map(p => (
+                <button
+                  key={p}
+                  className={`wl-progress-quick-btn ${pct === p ? 'active' : ''}`}
+                  onClick={ev => setPct(p, ev)}
+                  style={{
+                    fontSize: '0.65rem',
+                    padding: '2px 6px',
+                    borderRadius: '4px',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    background: pct === p ? 'var(--tier-color, #70a1ff)' : 'rgba(255,255,255,0.05)',
+                    color: pct === p ? '#000' : '#fff',
+                    cursor: 'pointer'
+                  }}
+                >
+                  {p}%
+                </button>
+              ))}
+            </div>
+            <div className="wl-progress-popover-label" style={{ marginTop: '8px' }}>click to set progress</div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
+
 // ── Main card ──────────────────────────────────────────────────────────────────
 const WatchlistCard = ({ entry, tierColor, onRemove, onStatusChange, onMove, onProgress, tiers }) => {
   const [showMenu, setShowMenu]     = useState(false);
@@ -114,7 +187,7 @@ const WatchlistCard = ({ entry, tierColor, onRemove, onStatusChange, onMove, onP
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.85 }}
       whileHover={{ y: -4, transition: { duration: 0.2 } }}
-      className="wl-card"
+      className={`wl-card ${entry.status === 'watched' ? 'completed' : ''}`}
       style={{ '--tier-color': tierColor, cursor: 'pointer' }}
       onClick={handleCardClick}
     >
@@ -173,9 +246,13 @@ const WatchlistCard = ({ entry, tierColor, onRemove, onStatusChange, onMove, onP
           <span>{status.label}</span>
         </div>
 
-        {/* TV Progress stepper — only for TV shows */}
-        {entry.type === 'tv' && (
+        {/* TV or Movie progress stepper */}
+        {entry.type === 'tv' ? (
           <ProgressStepper entry={entry} onProgress={onProgress} />
+        ) : (
+          entry.status === 'watching' && (
+            <MovieProgressStepper entry={entry} onProgress={onProgress} />
+          )
         )}
       </div>
 

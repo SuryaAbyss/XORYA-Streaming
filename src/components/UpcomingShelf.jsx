@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import MovieRow from './MovieRow';
 import { getUpcomingMovies } from '../api/tmdb';
+import GridPattern from './ui/GridPattern';
 
 const THEMES = {
     amber: {
@@ -77,6 +78,23 @@ const UpcomingShelf = ({
                 marginBottom: '2.5rem'
             }}
         >
+            <GridPattern
+                width={30}
+                height={30}
+                strokeDasharray="2 2"
+                style={{
+                    position: 'absolute',
+                    inset: 0,
+                    width: '100%',
+                    height: '100%',
+                    opacity: 0.12,
+                    pointerEvents: 'none',
+                    zIndex: 0,
+                    stroke: 'rgba(255, 255, 255, 0.05)',
+                    maskImage: 'radial-gradient(ellipse 60% 50% at 50% 50%, #000 30%, transparent 100%)',
+                    WebkitMaskImage: 'radial-gradient(ellipse 60% 50% at 50% 50%, #000 30%, transparent 100%)'
+                }}
+            />
             <div
                 className="premium-section-header"
                 style={{
@@ -84,7 +102,7 @@ const UpcomingShelf = ({
                 }}
             >
                 <span className="premium-section-header-bg">{anchorLabel}</span>
-                <div className="premium-section-content" style={{ marginLeft: '200px' }}>
+                <div className="premium-section-content">
                     <span className="anchor-label" style={{ color: selectedTheme.colorStart }}>
                         {categoryText}
                     </span>

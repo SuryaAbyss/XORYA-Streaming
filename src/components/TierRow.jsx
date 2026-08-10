@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Plus, Pencil, Trash2, Check, X, ChevronUp, ChevronDown } from 'lucide-react';
+import { Plus, Pencil, Trash2, Check, X, ChevronUp, ChevronDown, Eye, EyeOff, ArrowUpDown, CheckCircle2 } from 'lucide-react';
 import WatchlistCard from './WatchlistCard';
 import WatchlistSearchModal from './WatchlistSearchModal';
 import { ExpandingCards } from './ui/expanding-cards';
@@ -33,6 +33,7 @@ const TierRow = ({
   totalTiers,
   onMoveUp,
   onMoveDown,
+  isSearching,
 }) => {
   const { openModal } = useMovieModal();
   const [isEditing, setIsEditing] = useState(false);
@@ -40,6 +41,9 @@ const TierRow = ({
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
+  const [showWatched, setShowWatched] = useState(false);
+  const [sortBy, setSortBy] = useState('date'); // 'date' | 'rating' | 'year' | 'alphabetical'
+  const [showSortMenu, setShowSortMenu] = useState(false);
   const inputRef = useRef(null);
 
   const rowRef = useRef(null);
@@ -70,9 +74,27 @@ const TierRow = ({
 
   const watched = entries.filter(e => e.status === 'watched').length;
   const pct = entries.length > 0 ? Math.round((watched / entries.length) * 100) : 0;
+  
   const visibleEntries = entries
-    .filter(e => e.status !== 'watched')
-    .sort((a, b) => (b.updatedAt || b.addedAt) - (a.updatedAt || a.addedAt));
+    .filter(e => showWatched || e.status !== 'watched')
+    .sort((a, b) => {
+      if (sortBy === 'rating') {
+        const rA = parseFloat(a.rating) || 0;
+        const rB = parseFloat(b.rating) || 0;
+        return rB - rA;
+      }
+      if (sortBy === 'year') {
+        const yA = parseInt(a.year) || 0;
+        const yB = parseInt(b.year) || 0;
+        return yB - yA;
+      }
+      if (sortBy === 'alphabetical') {
+        return (a.title || '').localeCompare(b.title || '');
+      }
+      const tA = a.updatedAt || a.addedAt || 0;
+      const tB = b.updatedAt || b.addedAt || 0;
+      return tB - tA;
+    });
 
   return (
     <>
@@ -165,6 +187,49 @@ const TierRow = ({
 
             {/* Action buttons */}
             <div className="wl-tier-actions">
+              {/* Show/Hide Watched Toggle */}
+              <button
+                className={`wl-tier-icon-btn ${showWatched ? 'active' : ''}`}
+                style={showWatched ? { color: '#7bed9f' } : {}}
+                onClick={() => setShowWatched(v => !v)}
+                title={showWatched ? 'Hide Watched' : 'Show Watched'}
+              >
+                {showWatched ? <Eye size={14} /> : <EyeOff size={14} />}
+              </button>
+
+              {/* Sort Menu */}
+              <div style={{ position: 'relative' }}>
+                <button
+                  className={`wl-tier-icon-btn ${sortBy !== 'date' ? 'active' : ''}`}
+                  onClick={() => setShowSortMenu(v => !v)}
+                  title={`Sort by: ${sortBy}`}
+                >
+                  <ArrowUpDown size={14} />
+                </button>
+                {showSortMenu && (
+                  <div
+                    className="wl-sort-menu"
+                    onMouseLeave={() => setShowSortMenu(false)}
+                    style={{ '--tier-color': tier.color }}
+                  >
+                    {[
+                      { key: 'date', label: 'Date Added' },
+                      { key: 'rating', label: 'Rating' },
+                      { key: 'year', label: 'Year' },
+                      { key: 'alphabetical', label: 'Name' },
+                    ].map(opt => (
+                      <button
+                        key={opt.key}
+                        className={`wl-sort-menu-item ${sortBy === opt.key ? 'active' : ''}`}
+                        onClick={() => { setSortBy(opt.key); setShowSortMenu(false); }}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
               {/* Reorder */}
               {index > 0 && (
                 <button className="wl-tier-icon-btn" onClick={() => onMoveUp(index)} title="Move up">
@@ -221,14 +286,21 @@ const TierRow = ({
           }}
         >
           {entries.length === 0 ? (
-            <div
-              className="wl-tier-empty"
-              onClick={() => setShowSearch(true)}
-              style={{ cursor: 'pointer' }}
-            >
-              <p>This tier is empty</p>
-              <span className="wl-tier-empty-hint">Click <strong>Add</strong> to add movies or series</span>
-            </div>
+            isSearching ? (
+              <div className="wl-tier-empty">
+                <p>No matching titles</p>
+                <span className="wl-tier-empty-hint">Try searching for something else</span>
+              </div>
+            ) : (
+              <div
+                className="wl-tier-empty"
+                onClick={() => setShowSearch(true)}
+                style={{ cursor: 'pointer' }}
+              >
+                <p>This tier is empty</p>
+                <span className="wl-tier-empty-hint">Click <strong>Add</strong> to add movies or series</span>
+              </div>
+            )
           ) : visibleEntries.length === 0 ? (
             <div className="wl-tier-cards-new">
               <div
@@ -259,6 +331,7 @@ const TierRow = ({
             <div className="wl-tier-cards-new">
               {/* Expanding Cards Layout */}
               <ExpandingCards
+                tierColor={tier.color}
                 defaultActiveIndex={0}
                 items={visibleEntries.map(entry => ({
                   id: entry.id,
@@ -267,11 +340,11 @@ const TierRow = ({
                   imgSrc: imageUrl(entry.poster, 'w500'),
                   backdropSrc: entry.backdrop ? imageUrl(entry.backdrop, 'w1280') : imageUrl(entry.poster, 'w780'),
                   status: entry.status,
-                  progress: entry.type === 'tv' ? (entry.progress || { season: 1, episode: 1 }) : null,
+                  progress: entry.type === 'tv' ? (entry.progress || { season: 1, episode: 1 }) : (entry.progress && entry.progress.percent !== undefined ? entry.progress : null),
                   icon: entry.type === 'tv' ? <Tv size={16} /> : <Film size={16} />,
                   onViewDetails: () => openModal(entry.tmdbId, entry.type),
                   onStatusChange: (status) => onStatusChange(entry.id, status),
-                  onProgressChange: (s, e) => onProgress(entry.id, s, e),
+                  onProgressChange: (s, e, p) => onProgress(entry.id, s, e, p),
                   onDelete: () => onRemoveEntry(entry.id)
                 }))}
                 className="mb-4"

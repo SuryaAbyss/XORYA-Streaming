@@ -1,25 +1,27 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import Hero from '../components/Hero';
 import MovieRow from '../components/MovieRow';
 import Top10Section from '../components/Top10Section';
 import ProvidersSection from '../components/ProvidersSection';
-import SmokeBackground from '../components/SmokeBackground';
 import GridBackground from '../components/GridBackground';
 import SEO from '../components/SEO';
 import { imageUrl } from '../api/tmdb';
 import { loadYouTubeAPI } from '../hooks/useYouTubePlayer';
 import DynamicContentShelf from '../components/DynamicContentShelf';
-import UpcomingShelf from '../components/UpcomingShelf';
 import {
     getTrendingMovies,
     getTrendingMoviesWeek,
     getTrendingTVShows,
     getTrendingTVShowsWeek
 } from '../api/tmdb';
+import { getIMDbCuratedTVShows, getIMDbTop10MixedPool } from '../api/imdb';
+import { useLazySection } from '../hooks/useLazySection';
+
 
 const Home = ({ category = 'all' }) => {
     const [trending, setTrending] = useState([]);
     const [trendingTV, setTrendingTV] = useState([]);
+    const [top10Data, setTop10Data] = useState([]);
 
     // Detect mobile for layout adjustments
     const isMobileView = typeof window !== 'undefined' && navigator.maxTouchPoints > 0 && window.innerWidth <= 768;
@@ -87,7 +89,30 @@ const Home = ({ category = 'all' }) => {
                 filterAnimation(safe(trendingTVWeekRes2)),
                 filterAnimation(safe(trendingTVWeekRes3))
             );
-            if (trendingTVItems.length) setTrendingTV(trendingTVItems);
+
+            // Fetch IMDb curated list and place at the top of TV items
+            try {
+                const imdbShows = await getIMDbCuratedTVShows();
+                if (imdbShows && imdbShows.length > 0) {
+                    const existingIds = new Set(imdbShows.map(s => s.id));
+                    const remainingTMDB = trendingTVItems.filter(s => !existingIds.has(s.id));
+                    setTrendingTV([...imdbShows, ...remainingTMDB]);
+                } else if (trendingTVItems.length) {
+                    setTrendingTV(trendingTVItems);
+                }
+            } catch (err) {
+                if (trendingTVItems.length) setTrendingTV(trendingTVItems);
+            }
+
+            // Fetch Top 10 mixed genre pool
+            try {
+                const mixedTop10 = await getIMDbTop10MixedPool();
+                if (mixedTop10 && mixedTop10.length > 0) {
+                    setTop10Data(mixedTop10);
+                }
+            } catch (err) {
+                console.error("Top 10 fetch error:", err);
+            }
         };
 
         fetchPrimary();
@@ -99,6 +124,11 @@ const Home = ({ category = 'all' }) => {
     const showMovies = category === 'all' || category === 'movies';
     const showTV = category === 'all' || category === 'tv';
     const mainData = category === 'tv' ? trendingTV : trending;
+
+    // Lazy section refs for below-the-fold components
+    const { ref: top10Ref, isVisible: top10Visible }         = useLazySection('350px 0px');
+    const { ref: providersRef, isVisible: providersVisible } = useLazySection('300px 0px');
+
 
     // Re-randomize when trending data first loads
     useEffect(() => {
@@ -149,23 +179,30 @@ const Home = ({ category = 'all' }) => {
             />
             <h1 style={{ position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clip: 'rect(0, 0, 0, 0)', border: 0 }}>XORYA - Premium Streaming Platform</h1>
 
-            <GridBackground>
-                <Hero
-                    movie={heroMovie}
-                    onTrailerStart={handleTrailerStart}
-                    onTrailerEnd={handleTrailerEnd}
-                    isTrailerPlaying={isTrailerPlaying}
-                />
-            </GridBackground>
+            <Hero
+                movie={heroMovie}
+                onTrailerStart={handleTrailerStart}
+                onTrailerEnd={handleTrailerEnd}
+                isTrailerPlaying={isTrailerPlaying}
+            />
 
-            <div style={{ position: 'relative', zIndex: 20, pointerEvents: 'none' }}>
+            <div style={{
+                position: 'relative',
+                zIndex: 20,
+                pointerEvents: 'none',
+                transform: isTrailerPlaying ? 'translateY(36vh)' : 'translateY(0px)',
+                transition: 'transform 1.1s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+                willChange: 'transform'
+            }}>
                 <div style={{
                     position: 'relative',
-                    background: 'linear-gradient(to bottom, transparent 0%, #000 150px)',
-                    marginTop: isTrailerPlaying ? '-15vh' : (isMobileView ? '-2vh' : '-45vh'),
-                    paddingTop: isTrailerPlaying ? 'calc(6rem + 15vh)' : (isMobileView ? '2.5rem' : '6rem'),
+                    background: isTrailerPlaying
+                        ? 'linear-gradient(to bottom, transparent 88%, rgba(0,0,0,0.8) 100%)'
+                        : 'linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.15) 50%, rgba(0,0,0,0.85) 100%)',
+                    marginTop: isMobileView ? '-2vh' : '-43vh',
+                    paddingTop: isMobileView ? '2.5rem' : '6rem',
                     paddingBottom: '1rem',
-                    transition: 'margin-top 1s cubic-bezier(0.25, 0.46, 0.45, 0.94), padding-top 1s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+                    transition: 'background 1s ease',
                     pointerEvents: 'none'
                 }}>
                     <div style={{ pointerEvents: 'auto' }}>
@@ -178,89 +215,77 @@ const Home = ({ category = 'all' }) => {
                     marginTop: '-250px',
                     paddingTop: '250px',
                     overflow: 'visible',
-                    pointerEvents: 'auto'
+                    pointerEvents: 'none'
                 }}>
-                    <div style={{
-                        position: 'absolute',
-                        inset: 0,
-                        zIndex: 0
-                    }}>
-                        <SmokeBackground
-                            color="rgba(248,113,113,0.9)"
-                            backgroundColor="transparent"
-                            duration={160}
-                            blurIntensity="0.75em"
-                            density={1.1}
-                        />
-                    </div>
-
                     <div style={{ position: 'relative', zIndex: 1 }}>
-                        <div
-                            className="top10-outer-box"
-                            style={{
-                                position: 'relative',
-                                margin: isMobileView ? '0 2% 1.5rem' : '0 2% 2rem',
-                                padding: '0',
-                                border: isMobileView ? '1px solid rgba(220, 38, 38, 0.3)' : '2px solid rgba(220, 38, 38, 0.5)',
-                                borderRadius: isMobileView ? '12px' : '16px',
-                                background: 'linear-gradient(135deg, rgba(220, 38, 38, 0.12) 0%, rgba(0, 0, 0, 0.55) 35%, rgba(0, 0, 0, 0.5) 65%, rgba(220, 38, 38, 0.08) 100%)',
-                                backdropFilter: isMobileView ? 'blur(12px)' : 'blur(24px)',
-                                WebkitBackdropFilter: isMobileView ? 'blur(12px)' : 'blur(24px)',
-                                boxShadow: isMobileView
-                                    ? '0 0 16px rgba(220, 38, 38, 0.06), inset 0 0 30px rgba(220, 38, 38, 0.02)'
-                                    : '0 0 40px rgba(220, 38, 38, 0.15), inset 0 0 80px rgba(220, 38, 38, 0.04)',
-                                overflow: 'hidden',
-                            }}>
-                            <div style={{
-                                position: 'absolute',
-                                inset: 0,
-                                background: 'radial-gradient(ellipse 80% 50% at 20% 30%, rgba(220, 38, 38, 0.15) 0%, transparent 60%), radial-gradient(ellipse 60% 40% at 80% 70%, rgba(220, 38, 38, 0.08) 0%, transparent 50%)',
-                                pointerEvents: 'none',
-                                borderRadius: 'inherit',
-                            }} />
-                            <div style={{ position: 'relative', zIndex: 1 }}>
-                                <Top10Section movies={mainData} />
-                            </div>
+                        {/* Top10 — lazy: loads when user scrolls near it */}
+                        <div ref={top10Ref}>
+                            {top10Visible ? (
+                                <div
+                                    className="top10-outer-box section-loaded"
+                                    style={{
+                                        position: 'relative',
+                                        margin: isMobileView ? '0 2% 1.5rem' : '0 2% 2rem',
+                                        padding: '0',
+                                        border: isMobileView ? '1px solid rgba(220, 38, 38, 0.3)' : '2px solid rgba(220, 38, 38, 0.5)',
+                                        borderRadius: isMobileView ? '12px' : '16px',
+                                        background: 'linear-gradient(135deg, rgba(220, 38, 38, 0.12) 0%, rgba(0, 0, 0, 0.55) 35%, rgba(0, 0, 0, 0.5) 65%, rgba(220, 38, 38, 0.08) 100%)',
+                                        backdropFilter: isMobileView ? 'blur(12px)' : 'blur(24px)',
+                                        WebkitBackdropFilter: isMobileView ? 'blur(12px)' : 'blur(24px)',
+                                        boxShadow: isMobileView
+                                            ? '0 0 16px rgba(220, 38, 38, 0.06), inset 0 0 30px rgba(220, 38, 38, 0.02)'
+                                            : '0 0 40px rgba(220, 38, 38, 0.15), inset 0 0 80px rgba(220, 38, 38, 0.04)',
+                                        overflow: 'hidden',
+                                        pointerEvents: 'auto'
+                                    }}>
+                                    <div style={{
+                                        position: 'absolute', inset: 0,
+                                        background: 'radial-gradient(ellipse 80% 50% at 20% 30%, rgba(220, 38, 38, 0.15) 0%, transparent 60%), radial-gradient(ellipse 60% 40% at 80% 70%, rgba(220, 38, 38, 0.08) 0%, transparent 50%)',
+                                        pointerEvents: 'none', borderRadius: 'inherit',
+                                    }} />
+                                    <div style={{ position: 'relative', zIndex: 1 }}>
+                                        <Top10Section movies={top10Data} />
+                                    </div>
+                                </div>
+                            ) : (
+                                /* Skeleton placeholder while Top10 is off-screen */
+                                <div className="section-lazy-placeholder" aria-hidden="true">
+                                    <div className="skeleton-row">
+                                        {[...Array(5)].map((_, i) => (
+                                            <div key={i} className="skeleton-card" style={{ animationDelay: `${i * 0.08}s` }} />
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
                         <div style={{
                             paddingTop: '2rem',
-                            paddingBottom: '0',
+                            paddingBottom: '8rem',
+                            pointerEvents: 'auto'
                         }}>
-                            {category === 'all' && <ProvidersSection />}
+                            {/* Providers — lazy */}
+                            {category === 'all' && (
+                                <div ref={providersRef}>
+                                    {providersVisible && <ProvidersSection />}
+                                </div>
+                            )}
 
-                            {/* Dynamic Content Shelf System */}
-                            <DynamicContentShelf shelfType="tv" show={showTV} />
+                            {/* Dynamic Content Shelves — each handles its own lazy loading internally */}
+                            {/* 1. Popular Right Now - Movies */}
                             <DynamicContentShelf shelfType="movie" show={showMovies} />
+                            {/* 2. Popular Right Now - TV Shows */}
+                            <DynamicContentShelf shelfType="tv" show={showTV} />
+                            {/* 3. Top Rated Movies */}
+                            <DynamicContentShelf shelfType="topRatedMovies" show={showMovies} />
+                            {/* 4. Top Rated Series */}
+                            <DynamicContentShelf shelfType="topRatedSeries" show={showTV} />
+                            {/* 5. Anime */}
                             <DynamicContentShelf shelfType="anime" show={category === 'all' || category === 'tv' || category === 'movies'} />
+                            {/* 6. Film & Documentary */}
                             <DynamicContentShelf shelfType="docs" show={category === 'all' || category === 'movies' || category === 'tv'} />
-
-                            {/* Concept 6 - Dynamic Upcoming Shelves */}
-                            <UpcomingShelf
-                                title="Upcoming Movies"
-                                subtitle="Exciting new releases coming soon."
-                                theme="amber"
-                                sliceRange={[0, 10]}
-                                show={category === 'all' || category === 'movies'}
-                            />
-                            <UpcomingShelf
-                                title="Coming Soon"
-                                subtitle="Upcoming next on XORYA."
-                                theme="red"
-                                sliceRange={[10, 20]}
-                                show={category === 'all' || category === 'movies'}
-                            />
                         </div>
                     </div>
-
-                    <div style={{
-                        position: 'relative',
-                        height: '180px',
-                        marginTop: '-180px',
-                        pointerEvents: 'none',
-                        background: 'linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.6) 40%, #000 100%)',
-                        zIndex: 5,
-                    }} />
                 </div>
             </div>
         </div>

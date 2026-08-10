@@ -1,0 +1,45 @@
+/*Center SVG*/
+
+svg {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    right: 0%;
+    left: 50%;
+    transform: translate(-50%, 0);
+}
+
+
+/*Fill Animation*/
+
+#svgH,
+#svgE,
+#svgN,
+#svgD,
+#svgY {
+    fill: rgba(0, 0, 0, 0);
+    -webkit-animation: fill 1s ease forwards;
+    -webkit-animation-delay: 2s;
+    animation: fill 1s forwards;
+    animation-delay: 2s;
+}
+
+@-webkit-keyframes fill {
+    0% {
+        fill: rgba(0, 0, 0, 0);
+    }
+
+    100% {
+        fill: rgba(0, 0, 0, 1);
+    }
+}
+
+@keyframes fill {
+    0% {
+        fill: rgba(0, 0, 0, 0);
+    }
+
+    100% {
+        fill: rgba(0, 0, 0, 1);
+    }
+}

@@ -1,0 +1,308 @@
+Installation
+From NPM
+Anime.js can be installed via the 
+animejs
+ package.
+
+npm install animejs
+
+Then you can import the Anime.js methods directly into your JavaScript with a bundler like Vite or esbuild.
+
+ES Modules
+import { animate } from 'animejs';
+
+CommonJS
+const { animate } = require('animejs');
+
+From a CDN
+ES Modules
+CDN Name	URL
+esm.sh	esm.sh/animejs
+JsDelivr	cdn.jsdelivr.net/npm/animejs/+esm
+import { animate } from 'https://esm.sh/animejs';
+
+UMD Global object
+CDN Name	URL
+JsDelivr	cdn.jsdelivr.net/npm/animejs/dist/bundles/anime.umd.min.js
+<script src="https://cdn.jsdelivr.net/npm/animejs/dist/bundles/anime.umd.min.js"></script>
+<script>
+  const { animate } = anime;
+</script>
+
+Direct download
+Download from the library directly from the GitHub repository.
+
+Available Files
+File Name	Type
+dist/modules/index.js	ES modules entry point
+dist/modules/index.cjs	CommonJS modules entry point
+dist/bundles/anime.esm.js	Bundled ES modules
+dist/bundles/anime.esm.min.js	Bundled and minified ES modules
+dist/bundles/anime.umd.js	Bundled UMD (universal modules definition)
+dist/bundles/anime.umd.min.js	Bundled and minified UMD
+ES Modules
+import { animate } from './animejs/dist/bundles/anime.esm.min.js';
+
+UMD Global object
+<script src="animejs/dist/bundles/anime.umd.min.js"></script>
+<script>
+  const { animate } = anime;
+</script>
+Getting started
+
+Since 4.0.0
+
+Module imports
+Anime.js has a very flexible modules-first API and excellent tree shaking support, making it one of the most lightweight JavaScript animation libraries.
+
+Anime.js modules can be imported straight from the main 'animejs' module, or more granularly from specific subpaths, either by using a bundler like Vite or esbuild, or natively without a build step using importmap.
+
+Importing from the main module
+Every Anime.js module can be directly imported from the main module 'animejs':
+
+import { animate, splitText, stagger, random, globals } from 'animejs';
+
+const split = splitText('p');
+
+animate(split.words, {
+  opacity: () => random(0, 1, 2),
+  delay: stagger(50),
+});
+
+Importing from subpaths
+When not using a bundler, or when tree shaking cannot be activated in a project, the entire library needs to be imported even when only using one module.
+To solve this, Anime.js allows importing specific functionality from a subpath, without having to load the entire library at any point during development.
+Each function can be imported directly from its subpath:
+
+import { animate } from 'animejs/animation';
+import { splitText } from 'animejs/text';
+import { stagger, random } from 'animejs/utils';
+
+const split = splitText('p');
+
+animate(split.words, {
+  opacity: () => random(0, 1, 2),
+  delay: stagger(50),
+});
+
+This approach ensures that only the code required for the specified functionality is loaded.
+
+List of available subpaths
+import { animate } from 'animejs/animation';
+import { createTimer } from 'animejs/timer';
+import { createTimeline } from 'animejs/timeline';
+import { createAnimatable } from 'animejs/animatable';
+import { createDraggable } from 'animejs/draggable';
+import { createLayout } from 'animejs/layout';
+import { createScope } from 'animejs/scope';
+import { engine } from 'animejs/engine';
+import * as events from 'animejs/events';
+import * as easings from 'animejs/easings';
+import * as utils from 'animejs/utils';
+import * as svg from 'animejs/svg';
+import * as text from 'animejs/text';
+import * as waapi from 'animejs/waapi';
+
+Importing ES modules without a bundler
+With 
+importmap
+, the main module and any of the subpath modules can be imported just like with a bundler, but without a build step:
+
+<script type="importmap">
+{
+  "imports": {
+    "animejs": "/node_modules/animejs/dist/modules/index.js",
+    "animejs/animation": "/node_modules/animejs/dist/modules/animation/index.js",
+    "animejs/timer": "/node_modules/animejs/dist/modules/timer/index.js",
+    "animejs/timeline": "/node_modules/animejs/dist/modules/timeline/index.js",
+    "animejs/animatable": "/node_modules/animejs/dist/modules/animatable/index.js",
+    "animejs/draggable": "/node_modules/animejs/dist/modules/draggable/index.js",
+    "animejs/layout": "/node_modules/animejs/dist/modules/layout/index.js",
+    "animejs/scope": "/node_modules/animejs/dist/modules/scope/index.js",
+    "animejs/engine": "/node_modules/animejs/dist/modules/engine/index.js",
+    "animejs/events": "/node_modules/animejs/dist/modules/events/index.js",
+    "animejs/easings": "/node_modules/animejs/dist/modules/easings/index.js",
+    "animejs/utils": "/node_modules/animejs/dist/modules/utils/index.js",
+    "animejs/svg": "/node_modules/animejs/dist/modules/svg/index.js",
+    "animejs/text": "/node_modules/animejs/dist/modules/text/index.js",
+    "animejs/waapi": "/node_modules/animejs/dist/modules/waapi/index.js"
+  }
+}
+</script>
+
+<script type="module">
+  import { animate } from 'animejs/animation';
+  import { splitText } from 'animejs/text';
+  import { stagger, random } from 'animejs/utils';
+
+  const split = splitText('p');
+
+  animate(split.words, {
+    opacity: () => random(0, 1, 2),
+    delay: stagger(50),
+  });
+</script>
+
+Previous
+Next
+Installation
+
+Using with vanilla JS
+Platinum sponsors
+Getting started
+
+Since 4.0.0
+
+Using with vanilla JS
+Using Anime.js in vanilla JavaScript is pretty straightforward, simply import the modules you need and start animating.
+
+The following example showcase how to uses Anime.js methods with a vanilla JS code base.
+
+Using with vanilla JS code example
+J
+ava
+S
+cript
+HTML
+CSS
+
+import { animate, utils, createDraggable, spring } from 'animejs';
+
+const [ $logo ] = utils.$('.logo.js');
+const [ $button ] = utils.$('button');
+let rotations = 0;
+
+// Created a bounce animation loop
+animate('.logo.js', {
+  scale: [
+    { to: 1.25, ease: 'inOut(3)', duration: 200 },
+    { to: 1, ease: spring({ bounce: .7 }) }
+  ],
+  loop: true,
+  loopDelay: 250,
+});
+
+// Make the logo draggable around its center
+createDraggable('.logo.js', {
+  container: [0, 0, 0, 0],
+  releaseEase: spring({ bounce: .7 })
+});
+
+// Animate logo rotation on click
+const rotateLogo = () => {
+  rotations++;
+  $button.innerText = `rotations: ${rotations}`;
+  animate($logo, {
+    rotate: rotations * 360,
+    ease: 'out(4)',
+    duration: 1500,
+  });
+}
+
+$button.addEventListener('click', rotateLogo);
+html
+<div class="large centered row">
+  <svg class="logo js" preserveAspectRatio="xMidYMid meet" viewBox="0 0 630 630"><path fill="currentColor" d="M577,0 C606.271092,0 630,23.7289083 630,53 L630,577 C630,606.271092 606.271092,630 577,630 L53,630 C23.7289083,630 0,606.271092 0,577 L0,53 C0,23.7289083 23.7289083,0 53,0 L577,0 Z M479.5,285.89 C426.63,285.89 392.8,319.69 392.8,364.09 C392.8,411.808 420.615238,434.63146 462.622716,452.742599 L478.7,459.64 L483.441157,461.719734 C507.57404,472.359996 521.8,479.858 521.8,498.94 C521.8,515.88 506.13,528.14 481.6,528.14 C452.4,528.14 435.89,512.91 423.2,492.19 L375.09,520.14 C392.47,554.48 427.99,580.68 482.97,580.68 C539.2,580.68 581.07,551.48 581.07,498.18 C581.07,448.74 552.67,426.75 502.37,405.18 L487.57,398.84 L485.322788,397.859899 C461.5199,387.399087 451.17,380.1172 451.17,362.89 C451.17,348.52 462.16,337.52 479.5,337.52 C496.5,337.52 507.45,344.69 517.6,362.89 L563.7,333.29 C544.2,298.99 517.14,285.89 479.5,285.89 Z M343.09,289.27 L283.89,289.27 L283.89,490.57 C283.89,520.16 271.62,527.77 252.17,527.77 C231.83,527.77 223.37,513.82 214.07,497.32 L165.88,526.495 C179.84,556.04 207.29,580.57 254.69,580.57 C307.15,580.57 343.09,552.67 343.09,491.37 L343.09,289.27 Z"/></svg>
+</div>
+<div class="medium row">
+  <fieldset class="controls">
+    <button>rotations: 0</button>
+  </fieldset>
+</div>
+css
+.logo.js {
+  width: 150%;
+  height: 150%;
+}
+Using with React
+Anime.js can be used with React by combining React's useEffect() and Anime.js createScope() methods.
+
+The following example showcase how to uses Anime.js methods straight into React code.
+
+Using with React code example
+J
+ava
+S
+cript
+HTML
+CSS
+
+import { animate, createScope, spring, createDraggable } from 'animejs';
+import { useEffect, useRef, useState } from 'react';
+import reactLogo from './assets/react.svg';
+import './App.css';
+
+function App() {
+  const root = useRef(null);
+  const scope = useRef(null);
+  const [ rotations, setRotations ] = useState(0);
+
+  useEffect(() => {
+  
+    scope.current = createScope({ root }).add( self => {
+    
+      // Every Anime.js instance declared here is now scoped to <div ref={root}>
+
+      // Created a bounce animation loop
+      animate('.logo', {
+        scale: [
+          { to: 1.25, ease: 'inOut(3)', duration: 200 },
+          { to: 1, ease: spring({ bounce: .7 }) }
+        ],
+        loop: true,
+        loopDelay: 250,
+      });
+      
+      // Make the logo draggable around its center
+      createDraggable('.logo', {
+        container: [0, 0, 0, 0],
+        releaseEase: spring({ bounce: .7 })
+      });
+
+      // Register function methods to be used outside the useEffect
+      self.add('rotateLogo', (i) => {
+        animate('.logo', {
+          rotate: i * 360,
+          ease: 'out(4)',
+          duration: 1500,
+        });
+      });
+
+    });
+
+    // Properly cleanup all Anime.js instances declared inside the scope
+    return () => scope.current.revert()
+
+  }, []);
+
+  const handleClick = () => {
+    setRotations(prev => {
+      const newRotations = prev + 1;
+      // Animate logo rotation on click using the method declared inside the scope
+      scope.current.methods.rotateLogo(newRotations);
+      return newRotations;
+    });
+  };
+
+  return (
+    <div ref={root}>
+      <div className="large centered row">
+        <img src={reactLogo} className="logo react" alt="React logo" />
+      </div>
+      <div className="medium row">
+        <fieldset className="controls">
+        <button onClick={handleClick}>rotations: {rotations}</button>
+        </fieldset>
+      </div>
+    </div>
+  )
+}
+
+export default App;
+
+CSS
+.logo.react {
+  width: 150%;
+  height: 150%;
+}
+Previous

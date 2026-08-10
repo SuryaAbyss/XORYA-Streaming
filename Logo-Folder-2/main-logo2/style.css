@@ -1,0 +1,53 @@
+/* Center SVG */
+svg {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  right: 0%;
+  left: 50%;
+  transform: translate(-50%, 0);
+}
+
+/* Letter paths — fill stays hidden until stroke finishes */
+#svgX1,
+#svgX2,
+#svgO,
+#svgR,
+#svgA1,
+#svgY,
+#svgA2 {
+  fill: rgba(0, 0, 0, 0);
+  stroke: #000000;
+  stroke-width: 10px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: fill 2s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+/* Gentle, staggered fill for each letter for a smooth organic flow */
+body.stroke-complete #svgX1 { animation: fill 2.2s cubic-bezier(0.25, 1, 0.5, 1) 0ms forwards; }
+body.stroke-complete #svgX2 { animation: fill 2.2s cubic-bezier(0.25, 1, 0.5, 1) 120ms forwards; }
+body.stroke-complete #svgO  { animation: fill 2.2s cubic-bezier(0.25, 1, 0.5, 1) 240ms forwards; }
+body.stroke-complete #svgR  { animation: fill 2.2s cubic-bezier(0.25, 1, 0.5, 1) 360ms forwards; }
+body.stroke-complete #svgA1 { animation: fill 2.2s cubic-bezier(0.25, 1, 0.5, 1) 480ms forwards; }
+body.stroke-complete #svgY  { animation: fill 2.2s cubic-bezier(0.25, 1, 0.5, 1) 600ms forwards; }
+body.stroke-complete #svgA2 { animation: fill 2.2s cubic-bezier(0.25, 1, 0.5, 1) 720ms forwards; }
+
+@-webkit-keyframes fill {
+  0% {
+    fill: rgba(0, 0, 0, 0);
+  }
+  100% {
+    fill: rgba(0, 0, 0, 1);
+  }
+}
+
+@keyframes fill {
+  0% {
+    fill: rgba(0, 0, 0, 0);
+  }
+  100% {
+    fill: rgba(0, 0, 0, 1);
+  }
+}
+

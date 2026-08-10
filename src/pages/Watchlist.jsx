@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import './WatchlistCard.css';
 import Lenis from 'lenis';
 import {
-  Plus, Download, Upload, Trash2, X,
+  Plus, Download, Upload, Trash2, X, Search,
   Eye, Clock, CheckCircle2, LayoutList, Film, Tv
 } from 'lucide-react';
 import { useWatchlist } from '../hooks/useWatchlist';
@@ -505,6 +505,7 @@ const Watchlist = () => {
   const [showNewTier, setShowNewTier] = useState(false);
   const [importError, setImportError] = useState('');
   const [activeFilter, setActiveFilter] = useState(null); // null | 'all' | 'watched' | 'watching' | 'pending'
+  const [searchQuery, setSearchQuery] = useState('');
   const fileInputRef = useRef(null);
 
   const allEntryIds = entries.map(e => e.tmdbId);
@@ -593,15 +594,49 @@ const Watchlist = () => {
 
       {/* ── Toolbar ── */}
       <div className="wl-toolbar">
-        <button
-          className="wl-btn wl-btn-primary"
-          onClick={() => setShowNewTier(true)}
-          style={{ transition: 'transform 0.2s' }}
-          onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.04)'}
-          onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
-        >
-          <Plus size={16} /> New Tier
-        </button>
+        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap', flex: 1 }}>
+          <button
+            className="wl-btn wl-btn-primary"
+            onClick={() => setShowNewTier(true)}
+            style={{ transition: 'transform 0.2s' }}
+            onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.04)'}
+            onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+          >
+            <Plus size={16} /> New Tier
+          </button>
+
+          <div className="wl-search-local-container" style={{ position: 'relative', display: 'flex', alignItems: 'center', width: '250px' }}>
+            <Search size={14} style={{ position: 'absolute', left: '12px', color: 'rgba(255,255,255,0.4)', pointerEvents: 'none' }} />
+            <input
+              type="text"
+              className="wl-local-search-input"
+              placeholder="Search in watchlist..."
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '8px 12px 8px 34px',
+                background: 'rgba(255,255,255,0.05)',
+                border: '1px solid rgba(255,255,255,0.1)',
+                borderRadius: '24px',
+                color: '#fff',
+                fontSize: '0.8rem',
+                outline: 'none',
+                transition: 'all 0.3s ease'
+              }}
+              onFocus={e => { e.target.style.borderColor = '#dc2626'; e.target.style.boxShadow = '0 0 8px rgba(220,38,38,0.2)'; }}
+              onBlur={e => { e.target.style.borderColor = 'rgba(255,255,255,0.1)'; e.target.style.boxShadow = 'none'; }}
+            />
+            {searchQuery && (
+              <button 
+                onClick={() => setSearchQuery('')}
+                style={{ position: 'absolute', right: '12px', background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', padding: 0 }}
+              >
+                <X size={12} />
+              </button>
+            )}
+          </div>
+        </div>
 
         <div className="wl-toolbar-group">
           <button className="wl-btn-tool" onClick={exportData}>
@@ -636,27 +671,35 @@ const Watchlist = () => {
             </button>
           </div>
         ) : (
-          sortedTiers.map((tier, index) => (
-            <TierRow
-              key={tier.id}
-              tier={tier}
-              entries={entriesForTier(tier.id)}
-              allTiers={sortedTiers}
-              allEntryIds={allEntryIds}
-              index={index}
-              totalTiers={sortedTiers.length}
-              onRename={renameTier}
-              onRecolor={recolorTier}
-              onDelete={deleteTier}
-              onAddEntry={addEntry}
-              onRemoveEntry={removeEntry}
-              onStatusChange={setStatus}
-              onMoveEntry={moveEntry}
-              onProgress={setProgress}
-              onMoveUp={(i) => reorderTiers(i, i - 1)}
-              onMoveDown={(i) => reorderTiers(i, i + 1)}
-            />
-          ))
+          sortedTiers.map((tier, index) => {
+            let tierEntries = entriesForTier(tier.id);
+            if (searchQuery.trim()) {
+              const q = searchQuery.toLowerCase();
+              tierEntries = tierEntries.filter(e => e.title?.toLowerCase().includes(q));
+            }
+            return (
+              <TierRow
+                key={tier.id}
+                tier={tier}
+                entries={tierEntries}
+                allTiers={sortedTiers}
+                allEntryIds={allEntryIds}
+                index={index}
+                totalTiers={sortedTiers.length}
+                onRename={renameTier}
+                onRecolor={recolorTier}
+                onDelete={deleteTier}
+                onAddEntry={addEntry}
+                onRemoveEntry={removeEntry}
+                onStatusChange={setStatus}
+                onMoveEntry={moveEntry}
+                onProgress={setProgress}
+                onMoveUp={(i) => reorderTiers(i, i - 1)}
+                onMoveDown={(i) => reorderTiers(i, i + 1)}
+                isSearching={!!searchQuery.trim()}
+              />
+            );
+          })
         )}
       </div>
 

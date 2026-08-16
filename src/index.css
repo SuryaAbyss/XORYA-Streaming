@@ -5508,7 +5508,29 @@ body::before {
     left: 1.2rem;
     /* Align with mobile padding */
   }
+
+  /* Mobile Fullscreen & Full-width Video Player Optimizations */
+  .watch-player-frame {
+    border-radius: 12px !important;
+    border-left: none !important;
+    border-right: none !important;
+  }
+
+  .watch-player-frame:fullscreen,
+  .watch-player-frame:-webkit-full-screen {
+    border-radius: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    max-width: 100vw !important;
+    background: #000 !important;
+  }
+
+  .watch-player-frame:fullscreen iframe,
+  .watch-player-frame:-webkit-full-screen iframe {
+    height: calc(100vh - 44px) !important;
+  }
 }
+
 
 /* YouTube Background Player Lockdown Styles - Ensures trailer video stays 100% locked & centered on browser zoom (120%, 130%, etc.) */
 .yt-player-container {

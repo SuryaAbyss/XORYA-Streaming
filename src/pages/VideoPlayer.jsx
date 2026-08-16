@@ -128,15 +128,26 @@ const VideoPlayer = () => {
     const playerFrameRef = useRef(null);
 
     const toggleFullscreen = () => {
-        if (!playerFrameRef.current) return;
-        if (!document.fullscreenElement) {
-            playerFrameRef.current.requestFullscreen().catch((err) => {
-                console.error("Error attempting to enable fullscreen:", err);
-            });
+        const elem = playerFrameRef.current;
+        if (!elem) return;
+
+        const isFS = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement;
+
+        if (!isFS) {
+            const req = elem.requestFullscreen || elem.webkitRequestFullscreen || elem.mozRequestFullScreen || elem.msRequestFullscreen;
+            if (req) {
+                req.call(elem).catch((err) => {
+                    console.error("Error attempting to enable fullscreen:", err);
+                });
+            }
         } else {
-            document.exitFullscreen();
+            const exit = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen || document.msExitFullscreen;
+            if (exit) {
+                exit.call(document);
+            }
         }
     };
+
 
     // Safe initialisation bypassing ANY state closures by scanning localStorage directly
     const getInitialProgress = () => {

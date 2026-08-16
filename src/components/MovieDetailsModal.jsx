@@ -472,9 +472,10 @@ const MovieDetailsModal = () => {
                                 <button
                                     onClick={() => {
                                         closeModal();
-                                        navigate(`/watch/${selectedMediaType}/${selectedMovieId}`);
+                                        navigate(`/watch/${selectedMediaType}/${selectedMovieId}?autofs=true`);
                                     }}
                                     style={{
+
                                         flex: 1,
                                         display: 'flex',
                                         alignItems: 'center',

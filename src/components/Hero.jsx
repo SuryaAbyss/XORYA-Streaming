@@ -437,10 +437,11 @@ const Hero = ({ movie, onPlay, onInfo, onTrailerStart, isTrailerPlaying, onTrail
                                 if (onPlay) onPlay(movie);
                                 if (movie?.id) {
                                     const mtype = movie.media_type || (movie.name ? 'tv' : 'movie');
-                                    navigate(`/watch/${mtype}/${movie.id}`);
+                                    navigate(`/watch/${mtype}/${movie.id}?autofs=true`);
                                 }
                             }}
                             className="interactive-play-btn"
+
                         >
                             <div className="bg-expander"></div>
                             <div className="primary-content">

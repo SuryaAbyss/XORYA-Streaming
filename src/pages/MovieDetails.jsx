@@ -344,7 +344,12 @@ const MovieDetails = () => {
                         {/* Play Button - Always Visible */}
                         <button
                             key="play-button-glass"
+                            onClick={() => {
+                                const targetType = movie.name ? 'tv' : 'movie';
+                                navigate(`/watch/${targetType}/${movie.id}?autofs=true`);
+                            }}
                             style={{
+
                                 padding: '0.5rem 1.2rem',
                                 borderRadius: '50px',
                                 display: 'flex',

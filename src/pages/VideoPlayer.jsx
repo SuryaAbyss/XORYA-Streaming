@@ -99,8 +99,12 @@ const VideoPlayer = () => {
     const [currentEpisodeDetails, setCurrentEpisodeDetails] = useState(null);
     const [accentColorRgb, setAccentColorRgb] = useState('0, 188, 212'); // Default cyan
     const [shareToast, setShareToast] = useState(false);
-    // Safe initialization of active server from watchlist localStorage
     const getInitialServer = () => {
+        const isMobile = typeof window !== 'undefined' && (
+            /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+            (navigator.maxTouchPoints > 0 && window.innerWidth <= 768)
+        );
+
         try {
             const raw = localStorage.getItem('xorya_watchlist');
             if (raw) {
@@ -113,8 +117,10 @@ const VideoPlayer = () => {
         } catch {
             // localStorage can be unavailable in private or embedded contexts.
         }
-        return 'vidfast';
+        return isMobile ? 'vidking' : 'vidfast';
     };
+
+
 
     const [activeServer, setActiveServer] = useState(getInitialServer);
     const [iframeKey, setIframeKey] = useState(0);
@@ -197,6 +203,25 @@ const VideoPlayer = () => {
         document.body.classList.add('watch-page-active');
         return () => document.body.classList.remove('watch-page-active');
     }, []);
+
+    // Auto-trigger full screen for mobile users coming from Play Now button
+    useEffect(() => {
+        const searchParams = new URLSearchParams(window.location.search);
+        const autoFS = searchParams.get('autofs');
+        const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || (navigator.maxTouchPoints > 0 && window.innerWidth <= 768);
+
+        if (autoFS === 'true' && isMobileDevice && playerFrameRef.current) {
+            const timer = setTimeout(() => {
+                if (playerFrameRef.current && !document.fullscreenElement) {
+                    playerFrameRef.current.requestFullscreen().catch(() => {
+                        // Browser permissions fallback
+                    });
+                }
+            }, 600);
+            return () => clearTimeout(timer);
+        }
+    }, []);
+
 
     // Handle vidsrc.wtf Watch Progress
     useEffect(() => {

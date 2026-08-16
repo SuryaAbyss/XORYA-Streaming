@@ -210,17 +210,27 @@ const VideoPlayer = () => {
         const autoFS = searchParams.get('autofs');
         const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || (navigator.maxTouchPoints > 0 && window.innerWidth <= 768);
 
-        if (autoFS === 'true' && isMobileDevice && playerFrameRef.current) {
-            const timer = setTimeout(() => {
-                if (playerFrameRef.current && !document.fullscreenElement) {
-                    playerFrameRef.current.requestFullscreen().catch(() => {
-                        // Browser permissions fallback
+        if (autoFS === 'true' && isMobileDevice) {
+            const triggerFS = () => {
+                const elem = playerFrameRef.current;
+                if (!elem || document.fullscreenElement) return;
+                const requestMethod = elem.requestFullscreen || elem.webkitRequestFullscreen || elem.mozRequestFullScreen || elem.msRequestFullscreen;
+                if (requestMethod) {
+                    requestMethod.call(elem).catch((err) => {
+                        console.warn('Automated fullscreen request blocked by browser gesture policy:', err);
                     });
                 }
-            }, 600);
-            return () => clearTimeout(timer);
+            };
+
+            const timer1 = setTimeout(triggerFS, 300);
+            const timer2 = setTimeout(triggerFS, 1000);
+            return () => {
+                clearTimeout(timer1);
+                clearTimeout(timer2);
+            };
         }
-    }, []);
+    }, [loading]);
+
 
 
     // Handle vidsrc.wtf Watch Progress
@@ -522,7 +532,20 @@ const VideoPlayer = () => {
         if (loadTimeoutRef.current) {
             clearTimeout(loadTimeoutRef.current);
         }
+
+        const searchParams = new URLSearchParams(window.location.search);
+        const autoFS = searchParams.get('autofs');
+        const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || (navigator.maxTouchPoints > 0 && window.innerWidth <= 768);
+
+        if (autoFS === 'true' && isMobileDevice && playerFrameRef.current && !document.fullscreenElement) {
+            const elem = playerFrameRef.current;
+            const requestMethod = elem.requestFullscreen || elem.webkitRequestFullscreen || elem.mozRequestFullScreen || elem.msRequestFullscreen;
+            if (requestMethod) {
+                requestMethod.call(elem).catch(() => {});
+            }
+        }
     };
+
 
     const handleEpisodeSelect = (season, episode) => {
         setCurrentSeason(season);

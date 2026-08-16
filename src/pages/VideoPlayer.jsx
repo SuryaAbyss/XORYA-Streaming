@@ -126,9 +126,10 @@ const VideoPlayer = () => {
     const [iframeKey, setIframeKey] = useState(0);
     const [isTheaterMode, setIsTheaterMode] = useState(false);
     const playerFrameRef = useRef(null);
+    const iframeRef = useRef(null);
 
     const toggleFullscreen = () => {
-        const elem = playerFrameRef.current;
+        const elem = iframeRef.current || playerFrameRef.current;
         if (!elem) return;
 
         const isFS = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement;
@@ -147,6 +148,7 @@ const VideoPlayer = () => {
             }
         }
     };
+
 
 
     // Safe initialisation bypassing ANY state closures by scanning localStorage directly
@@ -548,14 +550,17 @@ const VideoPlayer = () => {
         const autoFS = searchParams.get('autofs');
         const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || (navigator.maxTouchPoints > 0 && window.innerWidth <= 768);
 
-        if (autoFS === 'true' && isMobileDevice && playerFrameRef.current && !document.fullscreenElement) {
-            const elem = playerFrameRef.current;
-            const requestMethod = elem.requestFullscreen || elem.webkitRequestFullscreen || elem.mozRequestFullScreen || elem.msRequestFullscreen;
-            if (requestMethod) {
-                requestMethod.call(elem).catch(() => {});
+        if (autoFS === 'true' && isMobileDevice && !document.fullscreenElement) {
+            const elem = iframeRef.current || playerFrameRef.current;
+            if (elem) {
+                const requestMethod = elem.requestFullscreen || elem.webkitRequestFullscreen || elem.mozRequestFullScreen || elem.msRequestFullscreen;
+                if (requestMethod) {
+                    requestMethod.call(elem).catch(() => {});
+                }
             }
         }
     };
+
 
 
     const handleEpisodeSelect = (season, episode) => {
@@ -938,8 +943,10 @@ const VideoPlayer = () => {
 
                                         <div style={{ width: '100%', aspectRatio: '16/9' }}>
                                             <iframe
+                                                ref={iframeRef}
                                                 key={iframeKey}
                                                 src={playerUrl}
+
                                                 onLoad={handleIframeLoad}
                                                 style={{
                                                     width: '100%',

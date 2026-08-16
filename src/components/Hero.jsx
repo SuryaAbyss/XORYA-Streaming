@@ -267,14 +267,16 @@ const Hero = ({ movie, onPlay, onInfo, onTrailerStart, isTrailerPlaying, onTrail
             ref={heroScopeRef}
             className="hero-section"
             style={{
-                height: isMobile ? '60vh' : '100vh',
-                minHeight: isMobile ? '460px' : undefined,
+                height: isMobile ? 'clamp(440px, 120vw, 510px)' : '100vh',
+                minHeight: isMobile ? '440px' : undefined,
+                maxHeight: isMobile ? '520px' : undefined,
                 width: '100%',
                 position: 'relative',
                 marginBottom: '0',
                 overflow: 'visible'
             }}
         >
+
 
             {/* Video Background - YouTube IFrame Player API (desktop only) */}
             {/* Using plain div (not motion.div) to prevent Framer Motion re-renders causing jitter */}

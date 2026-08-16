@@ -267,13 +267,15 @@ const Hero = ({ movie, onPlay, onInfo, onTrailerStart, isTrailerPlaying, onTrail
             ref={heroScopeRef}
             className="hero-section"
             style={{
-                height: isMobile ? '55vh' : '100vh',
+                height: isMobile ? '60vh' : '100vh',
+                minHeight: isMobile ? '460px' : undefined,
                 width: '100%',
                 position: 'relative',
                 marginBottom: '0',
                 overflow: 'visible'
             }}
         >
+
             {/* Video Background - YouTube IFrame Player API (desktop only) */}
             {/* Using plain div (not motion.div) to prevent Framer Motion re-renders causing jitter */}
             {!isMobile && (
@@ -320,7 +322,7 @@ const Hero = ({ movie, onPlay, onInfo, onTrailerStart, isTrailerPlaying, onTrail
                     top: 0, left: 0, width: '100%',
                     height: isMobile ? '80vh' : '145vh',
                     objectFit: 'cover',
-                    objectPosition: 'center 20%',
+                    objectPosition: isMobile ? 'center top' : 'center 20%',
                     zIndex: 0
                 }}
             />
@@ -394,9 +396,9 @@ const Hero = ({ movie, onPlay, onInfo, onTrailerStart, isTrailerPlaying, onTrail
                 ref={contentRef}
                 style={isMobile ? {
                     position: 'absolute',
-                    bottom: '1.5rem',
-                    left: '4%',
-                    right: '4%',
+                    bottom: '1.25rem',
+                    left: '1.2rem',
+                    right: '1.2rem',
                     maxWidth: '100%',
                     zIndex: 25,
                 } : {
@@ -410,27 +412,29 @@ const Hero = ({ movie, onPlay, onInfo, onTrailerStart, isTrailerPlaying, onTrail
                 }}>
                 <div
                     className="hero-anim-item"
-                    style={{ marginBottom: '1rem' }}
+                    style={{ marginBottom: '0.85rem' }}
                 >
                     {logoPath ? (
                         <img
                             src={imageUrl(logoPath, 'w500')}
                             alt={movie.title}
-                            width="300"
-                            height="100"
-                            style={{ maxHeight: '100px', width: 'auto', display: 'block', objectFit: 'contain' }}
+                            width="260"
+                            height="80"
+                            style={{ maxHeight: isMobile ? '72px' : '100px', width: 'auto', display: 'block', objectFit: 'contain' }}
                         />
                     ) : (
-                        <h1 className="gradient-text" style={{ fontSize: '2.5rem', lineHeight: 1.1 }}>
+                        <h1 className="gradient-text" style={{ fontSize: isMobile ? '1.8rem' : '2.5rem', lineHeight: 1.1 }}>
                             {movie.title}
                         </h1>
                     )}
                 </div>
 
+
                 <div
                     className="hero-anim-item"
-                    style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}
+                    style={{ display: 'flex', gap: isMobile ? '0.65rem' : '1rem', alignItems: 'center' }}
                 >
+
                     <div>
                         <button
                             onClick={() => {

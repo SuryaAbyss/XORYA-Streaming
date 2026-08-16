@@ -1615,14 +1615,15 @@ body::before {
 
   /* Ensure the home page content doesn't hide behind the bottom bar */
   .home-page {
-    padding-bottom: 70px;
+    padding-bottom: 90px;
+    overflow-x: hidden;
   }
 
   /* Interactive Movie Card */
   .interactive-movie-card {
-    width: calc((100% - (var(--visible-cards) - 1) * var(--gap)) / var(--visible-cards));
-    min-width: calc((100% - (var(--visible-cards) - 1) * var(--gap)) / var(--visible-cards));
-    height: 120px;
+    width: calc((100vw - 3.2rem) / 2) !important;
+    min-width: calc((100vw - 3.2rem) / 2) !important;
+    height: calc((100vw - 3.2rem) / 2 * 9 / 16) !important;
   }
 
   .gradient-overlay {
@@ -1651,9 +1652,9 @@ body::before {
   }
 
   .movie-row-container {
-    padding: 1rem 1rem;
-    margin: 0;
-    gap: 0.75rem;
+    padding: 0.5rem 1rem !important;
+    margin: 0 !important;
+    gap: 0.75rem !important;
     --gap: 0.75rem;
     --visible-cards: 2;
   }
@@ -1674,9 +1675,9 @@ body::before {
 
   /* Top 10 */
   .top10-grid-container {
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
-    padding: 1.5rem 1rem 2rem 1rem;
+    grid-template-columns: 1fr !important;
+    gap: 1.2rem !important;
+    padding: 1.25rem 0.85rem 1.5rem 0.85rem !important;
   }
 
   .top10-header-column {
@@ -1684,15 +1685,15 @@ body::before {
   }
 
   .top10-rank-number {
-    font-size: 7.5rem;
-    margin-right: -20px;
-    margin-bottom: -8px;
+    font-size: 6.5rem;
+    margin-right: -15px;
+    margin-bottom: -6px;
     -webkit-text-stroke: 1.5px rgba(255, 255, 255, 0.35);
   }
 
   .top10-rank-number.rank-10 {
-    letter-spacing: -10px;
-    margin-right: -25px;
+    letter-spacing: -8px;
+    margin-right: -20px;
   }
 
   .top10-rank-number.hovered {
@@ -1701,13 +1702,12 @@ body::before {
   }
 
   .top10-header-box {
-    padding: 0.75rem 1rem 1rem;
-    width: 100%;
+    padding: 0.5rem 0.5rem 0.85rem !important;
+    width: 100% !important;
     box-sizing: border-box;
   }
 
   .top10-header-title {
-    font-size: 2rem;
     -webkit-text-stroke: 1.5px #dc2626;
   }
 

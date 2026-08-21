@@ -15,28 +15,46 @@ const ONE_WEEK_MS  = 7 * 24 * 60 * 60 * 1000;
 const INTRO_VERSION = "v1";
 
 /**
+ * DEV MODE: always show intro on every reload so you can debug/fix it.
+ * In production (deployed site), the normal weekly gate applies.
+ */
+const IS_DEV = typeof window !== "undefined" &&
+  (window.location.hostname === "localhost" ||
+   window.location.hostname === "127.0.0.1" ||
+   window.location.hostname.startsWith("192.168."));
+
+/**
  * Returns true if the intro should be shown this visit:
+ *  - In DEV mode (localhost) → ALWAYS show, every reload (for debugging)
  *  - Always shows if the user has never seen this INTRO_VERSION
  *  - After first v-versioned view, shows again every 7 days
  */
 function shouldShowIntro() {
-  try {
-    const seenVersion = localStorage.getItem(VERSION_KEY);
-    // Force-show for this version if they haven't seen it yet
-    if (seenVersion !== INTRO_VERSION) return true;
+  // DEV (localhost): always show every reload so you can debug/fix glitches
+  if (IS_DEV) return true;
 
-    // They've already seen v1 — apply weekly rotation
-    const last = localStorage.getItem(STORAGE_KEY);
-    if (!last) return true;
-    const lastTime = parseInt(last, 10);
-    if (isNaN(lastTime)) return true;
-    return Date.now() - lastTime >= ONE_WEEK_MS;
-  } catch {
-    return true;
-  }
+  // PRODUCTION: intro is temporarily disabled while glitches are being fixed.
+  // Change this to `false` → `true` (or restore the weekly-gate logic below)
+  // once the intro is polished and ready to go live.
+  return false;
+
+  // ── Weekly-gate logic (re-enable when going live) ──────────────────────────
+  // try {
+  //   const seenVersion = localStorage.getItem(VERSION_KEY);
+  //   if (seenVersion !== INTRO_VERSION) return true;
+  //   const last = localStorage.getItem(STORAGE_KEY);
+  //   if (!last) return true;
+  //   const lastTime = parseInt(last, 10);
+  //   if (isNaN(lastTime)) return true;
+  //   return Date.now() - lastTime >= ONE_WEEK_MS;
+  // } catch {
+  //   return true;
+  // }
 }
 
 function markIntroShown() {
+  // Don't pollute localStorage during dev testing
+  if (IS_DEV) return;
   try {
     localStorage.setItem(VERSION_KEY,  INTRO_VERSION);
     localStorage.setItem(STORAGE_KEY,  String(Date.now()));

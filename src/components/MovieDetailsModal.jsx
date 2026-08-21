@@ -36,7 +36,7 @@ const MovieDetailsModal = () => {
     const handleClose = useCallback(() => {
         if (isClosing) return;
         setIsClosing(true);
-        
+
         const tl = gsap.timeline({
             onComplete: () => {
                 closeModal();
@@ -46,10 +46,10 @@ const MovieDetailsModal = () => {
 
         if (isMobile) {
             tl.to(mobileContainerRef.current, { y: '100%', opacity: 0, duration: 0.35, ease: "power3.in" })
-              .to(overlayRef.current, { opacity: 0, duration: 0.25 }, "-=0.25");
+                .to(overlayRef.current, { opacity: 0, duration: 0.25 }, "-=0.25");
         } else {
             tl.to(containerRef.current, { scale: 0.95, y: 20, opacity: 0, duration: 0.3, ease: "power3.in" })
-              .to(overlayRef.current, { opacity: 0, duration: 0.25 }, "-=0.2");
+                .to(overlayRef.current, { opacity: 0, duration: 0.25 }, "-=0.2");
         }
     }, [isClosing, isMobile, closeModal]);
 
@@ -61,11 +61,11 @@ const MovieDetailsModal = () => {
 
         if (isMobile) {
             tl.fromTo(overlayRef.current, { opacity: 0 }, { opacity: 1, duration: 0.3 })
-              .fromTo(mobileContainerRef.current, 
-                  { y: '100%', opacity: 0 },
-                  { y: 0, opacity: 1, duration: 0.5, ease: "power4.out" },
-                  "-=0.15"
-              );
+                .fromTo(mobileContainerRef.current,
+                    { y: '100%', opacity: 0 },
+                    { y: 0, opacity: 1, duration: 0.5, ease: "power4.out" },
+                    "-=0.15"
+                );
             const epItems = mobileContainerRef.current?.querySelectorAll('[data-ep-item]');
             if (epItems && epItems.length > 0) {
                 tl.fromTo(epItems,
@@ -76,11 +76,11 @@ const MovieDetailsModal = () => {
             }
         } else {
             tl.fromTo(overlayRef.current, { opacity: 0 }, { opacity: 1, duration: 0.3 })
-              .fromTo(containerRef.current,
-                  { scale: 0.95, y: 30, opacity: 0 },
-                  { scale: 1, y: 0, opacity: 1, duration: 0.5, ease: "power4.out" },
-                  "-=0.15"
-              );
+                .fromTo(containerRef.current,
+                    { scale: 0.95, y: 30, opacity: 0 },
+                    { scale: 1, y: 0, opacity: 1, duration: 0.5, ease: "power4.out" },
+                    "-=0.15"
+                );
 
             const leftElements = containerRef.current?.querySelectorAll('.modal-left-anim');
             if (leftElements && leftElements.length > 0) {
@@ -720,7 +720,7 @@ const MovieDetailsModal = () => {
                         background: 'linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 100%)',
                         zIndex: 2, pointerEvents: 'none'
                     }} />
-                    
+
                     {preloadingUrl && (
                         <iframe
                             src={preloadingUrl}

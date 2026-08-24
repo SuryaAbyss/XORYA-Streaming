@@ -107,7 +107,7 @@ const MovieDetails = () => {
 
     return (
         <div style={{ minHeight: '100vh', color: 'white', paddingBottom: isMobile ? '80px' : '3rem' }}>
-            <SEO 
+            <SEO
                 title={`${movie.title || movie.name} - XORYA Streaming`}
                 description={movie.overview}
                 image={imageUrl(movie.poster_path || movie.backdrop_path, 'w1280')}
@@ -250,17 +250,17 @@ const MovieDetails = () => {
                     </motion.h1>
 
                     {/* Breadcrumbs for SEO */}
-                    <motion.nav 
+                    <motion.nav
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ duration: 0.6, delay: 0.2 }}
-                        aria-label="Breadcrumb" 
+                        aria-label="Breadcrumb"
                         style={{ marginBottom: '1.2rem', fontSize: '0.85rem', color: '#ccc' }}
                     >
                         <ol style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                            <li><Link to="/" style={{ color: '#ccc', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={(e) => e.target.style.color='white'} onMouseLeave={(e) => e.target.style.color='#ccc'}>Home</Link></li>
+                            <li><Link to="/" style={{ color: '#ccc', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={(e) => e.target.style.color = 'white'} onMouseLeave={(e) => e.target.style.color = '#ccc'}>Home</Link></li>
                             <li style={{ fontSize: '0.7rem' }}>&gt;</li>
-                            <li><Link to={movie.name ? "/series" : "/movies"} style={{ color: '#ccc', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={(e) => e.target.style.color='white'} onMouseLeave={(e) => e.target.style.color='#ccc'}>{movie.name ? 'TV Shows' : 'Movies'}</Link></li>
+                            <li><Link to={movie.name ? "/series" : "/movies"} style={{ color: '#ccc', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={(e) => e.target.style.color = 'white'} onMouseLeave={(e) => e.target.style.color = '#ccc'}>{movie.name ? 'TV Shows' : 'Movies'}</Link></li>
                             <li style={{ fontSize: '0.7rem' }}>&gt;</li>
                             <li aria-current="page" style={{ color: 'white', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '150px' }}>{movie.title || movie.name}</li>
                         </ol>

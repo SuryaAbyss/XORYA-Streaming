@@ -21,7 +21,17 @@ export const servers = [
             tv: (tmdbId, season, episode) => `https://vidsrc.sbs/embed/tv/${tmdbId}/${season}/${episode}?autoplay=1`
         }
     },
-    // Server #3 - Videasy Net
+    // Server #3 - 111Movies (3rd Place)
+    {
+        id: '111movies',
+        name: '111Movies',
+        type: 'alternate',
+        urlTemplate: {
+            movie: (tmdbId) => `https://111movies.net/movie/${tmdbId}`,
+            tv: (tmdbId, season, episode) => `https://111movies.net/tv/${tmdbId}/${season}/${episode}`
+        }
+    },
+    // Server #4 - Videasy Net
     {
         id: 'videasy-net',
         name: 'Videasy',
@@ -321,16 +331,6 @@ export const servers = [
         }
     },
     {
-        id: '111movies',
-        name: '111Movies',
-        type: 'testing',
-        category: 'testing',
-        urlTemplate: {
-            movie: (tmdbId) => `https://111movies.net/movie/${tmdbId}`,
-            tv: (tmdbId, season, episode) => `https://111movies.net/tv/${tmdbId}/${season}/${episode}`
-        }
-    },
-    {
         id: 'videasy-pro',
         name: 'Videasy Pro',
         type: 'testing',
@@ -338,6 +338,46 @@ export const servers = [
         urlTemplate: {
             movie: (tmdbId) => `https://player.videasy.to/movie/${tmdbId}?color=00bcd4`,
             tv: (tmdbId, season, episode) => `https://player.videasy.to/tv/${tmdbId}/${season}/${episode}?color=00bcd4&nextEpisode=true&autoplayNextEpisode=true`
+        }
+    },
+    {
+        id: 'peachify',
+        name: 'Peachify',
+        type: 'testing',
+        category: 'testing',
+        urlTemplate: {
+            movie: (tmdbId) => `https://peachify.top/embed/movie/${tmdbId}?accent=00bcd4&autoPlay=true`,
+            tv: (tmdbId, season, episode) => `https://peachify.top/embed/tv/${tmdbId}/${season}/${episode}?accent=00bcd4&autoPlay=true&autoNext=30`
+        }
+    },
+    {
+        id: 'vidup',
+        name: 'VidUP',
+        type: 'testing',
+        category: 'testing',
+        urlTemplate: {
+            movie: (tmdbId) => `https://vidup.to/movie/${tmdbId}?autoPlay=true&theme=00bcd4`,
+            tv: (tmdbId, season, episode) => `https://vidup.to/tv/${tmdbId}/${season}/${episode}?autoPlay=true&nextButton=true&autoNext=true&theme=00bcd4`
+        }
+    },
+    {
+        id: 'vidcore',
+        name: 'VidCore',
+        type: 'testing',
+        category: 'testing',
+        urlTemplate: {
+            movie: (tmdbId) => `https://vidcore.io/movie/${tmdbId}?autoPlay=true&theme=00bcd4`,
+            tv: (tmdbId, season, episode) => `https://vidcore.io/tv/${tmdbId}/${season}/${episode}?autoPlay=true&nextButton=true&autoNext=true&theme=00bcd4`
+        }
+    },
+    {
+        id: 'vsembed',
+        name: 'VidSrc (VSEmbed)',
+        type: 'testing',
+        category: 'testing',
+        urlTemplate: {
+            movie: (tmdbId) => `https://vsembed.ru/embed/movie/${tmdbId}?autoplay=1`,
+            tv: (tmdbId, season, episode) => `https://vsembed.ru/embed/tv/${tmdbId}/${season}/${episode}?autoplay=1&autonext=1`
         }
     }
 ];

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 
 import { motion, AnimatePresence } from 'framer-motion';
@@ -245,6 +245,31 @@ const VideoPlayer = () => {
     }, [loading]);
 
 
+
+    const handleEpisodeSelect = useCallback((season, episode) => {
+        setCurrentSeason(season);
+        setCurrentEpisode(episode);
+        navigate(`/watch/tv/${id}/season/${season}/episode/${episode}`, { replace: true });
+    }, [id, navigate]);
+
+    const handlePreviousEpisode = useCallback(() => {
+        if (currentEpisode > 1) {
+            handleEpisodeSelect(currentSeason, currentEpisode - 1);
+        }
+    }, [currentEpisode, currentSeason, handleEpisodeSelect]);
+
+    const handleNextEpisode = useCallback(() => {
+        const totalEpisodesInCurrentSeason = episodeCounts[currentSeason];
+        if (totalEpisodesInCurrentSeason && currentEpisode >= totalEpisodesInCurrentSeason) {
+            const currentSeasonIndex = seasons.findIndex(s => s.season_number === currentSeason);
+            const nextSeason = seasons[currentSeasonIndex + 1];
+            if (nextSeason) {
+                handleEpisodeSelect(nextSeason.season_number, 1);
+            }
+        } else {
+            handleEpisodeSelect(currentSeason, currentEpisode + 1);
+        }
+    }, [episodeCounts, currentSeason, currentEpisode, seasons, handleEpisodeSelect]);
 
     // Ref to prevent multiple triggers for the same episode during postMessage stream
     const nextTriggeredRef = useRef(false);
@@ -655,32 +680,7 @@ const VideoPlayer = () => {
 
 
 
-    const handleEpisodeSelect = (season, episode) => {
-        setCurrentSeason(season);
-        setCurrentEpisode(episode);
-        // Update URL
-        navigate(`/watch/tv/${id}/season/${season}/episode/${episode}`, { replace: true });
-    };
 
-    const handlePreviousEpisode = () => {
-        if (currentEpisode > 1) {
-            handleEpisodeSelect(currentSeason, currentEpisode - 1);
-        }
-    };
-
-    const handleNextEpisode = () => {
-        const totalEpisodesInCurrentSeason = episodeCounts[currentSeason];
-        // If we know the count and are at the last episode, jump to next season
-        if (totalEpisodesInCurrentSeason && currentEpisode >= totalEpisodesInCurrentSeason) {
-            const currentSeasonIndex = seasons.findIndex(s => s.season_number === currentSeason);
-            const nextSeason = seasons[currentSeasonIndex + 1];
-            if (nextSeason) {
-                handleEpisodeSelect(nextSeason.season_number, 1);
-            }
-        } else {
-            handleEpisodeSelect(currentSeason, currentEpisode + 1);
-        }
-    };
 
     if (loading) {
         return <LemniscateBloomLoader text="Loading player..." fullScreen={true} color="#00bcd4" />;

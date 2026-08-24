@@ -246,19 +246,102 @@ const VideoPlayer = () => {
 
 
 
-    // Handle vidsrc.wtf Watch Progress
+    // Ref to prevent multiple triggers for the same episode during postMessage stream
+    const nextTriggeredRef = useRef(false);
+
+    // Reset nextTriggeredRef when season/episode/id changes
     useEffect(() => {
-        const handleMessage = (event) => {
-            if (event.origin !== "https://vidsrc.wtf" && event.origin !== "https://www.vidsrc.wtf") return;
-            if (event.data?.type === "MEDIA_DATA") {
+        nextTriggeredRef.current = false;
+    }, [id, currentSeason, currentEpisode]);
+
+    // Handle universal embed player postMessage events & smart credit/end-of-episode detection
+    useEffect(() => {
+        const handlePlayerMessage = (event) => {
+            if (!event.data) return;
+
+            // Save raw server media progress data if present
+            if (event.data?.type === 'MEDIA_DATA') {
                 const mediaData = event.data.data;
-                localStorage.setItem("vidsrcwtf-Progress", JSON.stringify(mediaData));
+                try {
+                    localStorage.setItem("vidsrcwtf-Progress", JSON.stringify(mediaData));
+                    localStorage.setItem("peachifyProgress", JSON.stringify(mediaData));
+                } catch (e) {}
+            }
+
+            let currentTime = null;
+            let duration = null;
+            let playerStatus = null;
+
+            // Extract status, currentTime, and duration from various embed formats
+            if (event.data.type === 'PLAYER_EVENT') {
+                const data = event.data.data || event.data;
+                playerStatus = data.event || data.player_status;
+                currentTime = data.currentTime ?? data.player_progress ?? data.progress ?? data.time;
+                duration = data.duration ?? data.player_duration ?? data.totalTime;
+            } else if (event.data.event || event.data.type) {
+                const typeStr = (event.data.event || event.data.type || '').toString().toLowerCase();
+                if (typeStr.includes('time') || typeStr.includes('progress') || typeStr.includes('play') || typeStr.includes('end')) {
+                    currentTime = event.data.currentTime ?? event.data.progress ?? event.data.position;
+                    duration = event.data.duration ?? event.data.total;
+                    playerStatus = event.data.status || event.data.event || event.data.type;
+                }
+            }
+
+            // Check if we have numerical playback info
+            if (currentTime !== null && duration !== null && duration > 0) {
+                const remaining = duration - currentTime;
+                const percent = (currentTime / duration) * 100;
+
+                // Near End Criteria: Remaining <= 90 seconds OR Watched >= 95% OR status is ended/completed
+                const isNearEnd = remaining <= 90 || percent >= 95 || playerStatus === 'completed' || playerStatus === 'ended';
+
+                if (isNearEnd && type === 'tv' && !nextTriggeredRef.current) {
+                    nextTriggeredRef.current = true;
+                    console.log(`[Smart Credits Detection] Episode near end (${Math.round(remaining)}s remaining). Advancing progress to next episode.`);
+
+                    // Calculate Next Episode
+                    let nextS = currentSeason;
+                    let nextE = currentEpisode + 1;
+                    const totalEpsInCurrentSeason = episodeCounts[currentSeason];
+
+                    if (totalEpsInCurrentSeason && currentEpisode >= totalEpsInCurrentSeason) {
+                        const currentSeasonIdx = seasons.findIndex(s => s.season_number === currentSeason);
+                        if (currentSeasonIdx !== -1 && seasons[currentSeasonIdx + 1]) {
+                            nextS = seasons[currentSeasonIdx + 1].season_number;
+                            nextE = 1;
+                        }
+                    }
+
+                    // Save Next Episode to localStorage (xorya_watchlist)
+                    try {
+                        const raw = localStorage.getItem('xorya_watchlist');
+                        if (raw) {
+                            const saved = JSON.parse(raw);
+                            if (saved.entries) {
+                                const entryIdx = saved.entries.findIndex(e => String(e.tmdbId) === String(id));
+                                if (entryIdx !== -1) {
+                                    saved.entries[entryIdx].progress = { season: nextS, episode: nextE };
+                                    saved.entries[entryIdx].status = 'watching';
+                                    saved.entries[entryIdx].updatedAt = Date.now();
+                                    localStorage.setItem('xorya_watchlist', JSON.stringify(saved));
+                                }
+                            }
+                        }
+                    } catch (err) {
+                        console.error('Error saving smart progress:', err);
+                    }
+
+                    // If player emitted explicit ended/completed event, trigger handleNextEpisode directly
+                    if (playerStatus === 'completed' || playerStatus === 'ended') {
+                        handleNextEpisode();
+                    }
+                }
             }
         };
 
-        window.addEventListener("message", handleMessage);
-        return () => window.removeEventListener("message", handleMessage);
-    }, []);
+        window.addEventListener('message', handlePlayerMessage);
+        return () => window.removeEventListener('message', handlePlayerMessage);
+    }, [id, type, currentSeason, currentEpisode, episodeCounts, seasons, handleNextEpisode]);
 
     // Fetch details of the current active episode for TV Shows
     useEffect(() => {
@@ -424,7 +507,16 @@ const VideoPlayer = () => {
             } else {
                 const response = await getTVShowDetails(id);
                 data = response.data;
-                setSeasons(data.seasons?.filter(s => s.season_number > 0) || []);
+                const activeSeasons = data.seasons?.filter(s => s.season_number > 0) || [];
+                setSeasons(activeSeasons);
+
+                const counts = {};
+                activeSeasons.forEach(s => {
+                    if (s.season_number > 0 && s.episode_count) {
+                        counts[s.season_number] = s.episode_count;
+                    }
+                });
+                setEpisodeCounts(counts);
 
                 // Fetch Logo for TV Show safely
                 try {

@@ -29,9 +29,11 @@ function saveToStorage(data) {
   } catch { /* storage full or private mode */ }
 }
 
+const DEFAULT_GOOGLE_CLIENT_ID = '810677752824-45upun1mjej9960adujjnteeedh238vs.apps.googleusercontent.com';
+
 export function useWatchlist() {
   const [clientId, setClientId] = useState(() => {
-    return localStorage.getItem(DRIVE_CLIENT_ID_KEY) || import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
+    return localStorage.getItem(DRIVE_CLIENT_ID_KEY) || import.meta.env.VITE_GOOGLE_CLIENT_ID || DEFAULT_GOOGLE_CLIENT_ID;
   });
 
   const [accessToken, setAccessToken] = useState(() => {
@@ -121,7 +123,7 @@ export function useWatchlist() {
   }, []);
 
   const connectGoogleDrive = useCallback(async () => {
-    const activeClientId = clientId || import.meta.env.VITE_GOOGLE_CLIENT_ID;
+    const activeClientId = clientId || import.meta.env.VITE_GOOGLE_CLIENT_ID || DEFAULT_GOOGLE_CLIENT_ID;
     if (!activeClientId) {
       setCloudError('Google Client ID is missing. Click "Configure Google Client ID" below to paste your Google OAuth Client ID or set VITE_GOOGLE_CLIENT_ID in Vercel.');
       return false;

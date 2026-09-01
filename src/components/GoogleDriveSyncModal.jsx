@@ -14,7 +14,7 @@ const GoogleDriveSyncModal = ({
     onSaveClientId
 }) => {
     const [customIdInput, setCustomIdInput] = useState(clientId || '');
-    const [showKeyInput, setShowKeyInput] = useState(!clientId);
+    const [showKeyInput, setShowKeyInput] = useState(false);
 
     useEffect(() => {
         setCustomIdInput(clientId || '');

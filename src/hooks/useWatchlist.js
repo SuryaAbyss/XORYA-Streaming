@@ -123,7 +123,7 @@ export function useWatchlist() {
   const connectGoogleDrive = useCallback(async () => {
     const activeClientId = clientId || import.meta.env.VITE_GOOGLE_CLIENT_ID;
     if (!activeClientId) {
-      setCloudError('Please enter a Google OAuth Client ID to connect.');
+      setCloudError('Google Client ID is missing. Click "Configure Google Client ID" below to paste your Google OAuth Client ID or set VITE_GOOGLE_CLIENT_ID in Vercel.');
       return false;
     }
 

@@ -3,13 +3,14 @@ import './WatchlistCard.css';
 import Lenis from 'lenis';
 import {
   Plus, Download, Upload, Trash2, X, Search,
-  Eye, Clock, CheckCircle2, LayoutList, Film, Tv
+  Eye, Clock, CheckCircle2, LayoutList, Film, Tv, Cloud
 } from 'lucide-react';
 import { useWatchlist } from '../hooks/useWatchlist';
 import TierRow from '../components/TierRow';
 import { imageUrl } from '../api/tmdb';
 import ProgressTracker from '../components/ui/ProgressTracker';
 import { useMovieModal } from '../context/MovieModalContext';
+import GoogleDriveSyncModal from '../components/GoogleDriveSyncModal';
 import { gsap } from 'gsap';
 import { useGSAP } from '@gsap/react';
 
@@ -500,9 +501,12 @@ const Watchlist = () => {
     addEntry, removeEntry, setStatus, moveEntry, setProgress,
     entriesForTier,
     exportData, importData, clearAll,
+    driveState, connectGoogleDrive, disconnectGoogleDrive,
+    syncNowWithDrive, restoreFromDrive, saveCustomClientId
   } = useWatchlist();
 
   const [showNewTier, setShowNewTier] = useState(false);
+  const [showDriveModal, setShowDriveModal] = useState(false);
   const [importError, setImportError] = useState('');
   const [activeFilter, setActiveFilter] = useState(null); // null | 'all' | 'watched' | 'watching' | 'pending'
   const [searchQuery, setSearchQuery] = useState('');
@@ -639,6 +643,29 @@ const Watchlist = () => {
         </div>
 
         <div className="wl-toolbar-group">
+          <button 
+            className="wl-btn-tool" 
+            onClick={() => setShowDriveModal(true)}
+            style={{
+              background: driveState.isConnected ? 'rgba(66, 133, 244, 0.15)' : 'rgba(255, 255, 255, 0.04)',
+              borderColor: driveState.isConnected ? 'rgba(66, 133, 244, 0.4)' : 'rgba(255, 255, 255, 0.1)',
+              color: driveState.isConnected ? '#4285F4' : 'rgba(255, 255, 255, 0.8)'
+            }}
+          >
+            <Cloud size={15} />
+            <span>{driveState.isConnected ? 'Cloud Sync' : 'Drive Backup'}</span>
+            {driveState.isConnected && (
+              <span style={{
+                width: '6px',
+                height: '6px',
+                borderRadius: '50%',
+                background: driveState.isSyncing ? '#ffa502' : '#34A853',
+                display: 'inline-block',
+                boxShadow: driveState.isSyncing ? '0 0 6px #ffa502' : '0 0 6px #34A853'
+              }} />
+            )}
+          </button>
+
           <button className="wl-btn-tool" onClick={exportData}>
             <Download size={15} /><span>Export</span>
           </button>
@@ -657,6 +684,64 @@ const Watchlist = () => {
         <div className="wl-import-error">
           <span>⚠️ {importError}</span>
           <button onClick={() => setImportError('')}><X size={14} /></button>
+        </div>
+      )}
+
+      {/* ── Cache Restoration Banner if Empty ── */}
+      {entries.length === 0 && (
+        <div style={{
+          margin: '1.5rem 2rem 0',
+          padding: '1.2rem 1.5rem',
+          background: 'linear-gradient(135deg, rgba(66, 133, 244, 0.12) 0%, rgba(52, 168, 83, 0.08) 100%)',
+          border: '1px solid rgba(66, 133, 244, 0.25)',
+          borderRadius: '20px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: '1rem'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
+            <div style={{
+              width: '40px',
+              height: '40px',
+              borderRadius: '12px',
+              background: 'rgba(66, 133, 244, 0.2)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#4285F4'
+            }}>
+              <Cloud size={20} />
+            </div>
+            <div>
+              <div style={{ color: 'white', fontWeight: '700', fontSize: '0.92rem' }}>
+                Cleared browser cache or history?
+              </div>
+              <div style={{ color: 'rgba(255, 255, 255, 0.65)', fontSize: '0.8rem', marginTop: '2px' }}>
+                Connect your Google Drive to instantly restore your Watchlist titles, tiers, and episode progress.
+              </div>
+            </div>
+          </div>
+          <button
+            onClick={() => setShowDriveModal(true)}
+            style={{
+              background: 'linear-gradient(135deg, #4285F4 0%, #34A853 100%)',
+              border: 'none',
+              borderRadius: '12px',
+              padding: '0.65rem 1.2rem',
+              color: 'white',
+              fontSize: '0.82rem',
+              fontWeight: '700',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              boxShadow: '0 4px 15px rgba(66, 133, 244, 0.3)'
+            }}
+          >
+            <Cloud size={15} /> Restore from Google Drive
+          </button>
         </div>
       )}
 
@@ -719,6 +804,19 @@ const Watchlist = () => {
         tiers={tiers}
         onProgress={setProgress}
         onStatusChange={setStatus}
+      />
+
+      {/* ── Google Drive Sync Modal ── */}
+      <GoogleDriveSyncModal
+        isOpen={showDriveModal}
+        onClose={() => setShowDriveModal(false)}
+        driveState={driveState}
+        onConnect={connectGoogleDrive}
+        onDisconnect={disconnectGoogleDrive}
+        onSyncNow={syncNowWithDrive}
+        onRestore={restoreFromDrive}
+        clientId={driveState.clientId}
+        onSaveClientId={saveCustomClientId}
       />
     </div>
   );

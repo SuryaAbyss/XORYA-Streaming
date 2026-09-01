@@ -1,6 +1,11 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { requestGoogleToken, fetchUserInfo, downloadBackupFromDrive, uploadBackupToDrive } from '../services/googleDriveSync';
 
 const STORAGE_KEY = 'xorya_watchlist';
+const DRIVE_CLIENT_ID_KEY = 'xorya_google_client_id';
+const DRIVE_TOKEN_KEY = 'xorya_google_access_token';
+const DRIVE_USER_KEY = 'xorya_google_user_profile';
+const DRIVE_LAST_SYNC_KEY = 'xorya_google_last_synced';
 
 const DEFAULT_TIERS = [
   { id: 'tier_must', name: 'Watching', color: '#ff4757', order: 0 },
@@ -25,6 +30,29 @@ function saveToStorage(data) {
 }
 
 export function useWatchlist() {
+  const [clientId, setClientId] = useState(() => {
+    return localStorage.getItem(DRIVE_CLIENT_ID_KEY) || import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
+  });
+
+  const [accessToken, setAccessToken] = useState(() => {
+    return sessionStorage.getItem(DRIVE_TOKEN_KEY) || localStorage.getItem(DRIVE_TOKEN_KEY) || '';
+  });
+
+  const [userProfile, setUserProfile] = useState(() => {
+    try {
+      const raw = localStorage.getItem(DRIVE_USER_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch { return null; }
+  });
+
+  const [lastSyncedAt, setLastSyncedAt] = useState(() => {
+    const raw = localStorage.getItem(DRIVE_LAST_SYNC_KEY);
+    return raw ? parseInt(raw) : null;
+  });
+
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [cloudError, setCloudError] = useState(null);
+
   const [tiers, setTiers] = useState(() => {
     const saved = loadFromStorage();
     let initialTiers = saved?.tiers ?? DEFAULT_TIERS;
@@ -48,10 +76,151 @@ export function useWatchlist() {
     return saved?.entries ?? [];
   });
 
-  // Persist on every change
+  // Persist local storage on every change
   useEffect(() => {
     saveToStorage({ tiers, entries });
   }, [tiers, entries]);
+
+  // Debounced Cloud Sync to Google Drive
+  const syncTimeoutRef = useRef(null);
+  useEffect(() => {
+    if (!accessToken) return;
+
+    if (syncTimeoutRef.current) clearTimeout(syncTimeoutRef.current);
+
+    syncTimeoutRef.current = setTimeout(async () => {
+      try {
+        setIsSyncing(true);
+        setCloudError(null);
+        const result = await uploadBackupToDrive(accessToken, { tiers, entries });
+        const now = result.timestamp || Date.now();
+        setLastSyncedAt(now);
+        localStorage.setItem(DRIVE_LAST_SYNC_KEY, now.toString());
+      } catch (err) {
+        console.warn('Auto Cloud Sync warning:', err);
+        setCloudError(err.message || 'Auto sync failed');
+      } finally {
+        setIsSyncing(false);
+      }
+    }, 4000); // 4 second debounce
+
+    return () => {
+      if (syncTimeoutRef.current) clearTimeout(syncTimeoutRef.current);
+    };
+  }, [tiers, entries, accessToken]);
+
+  // ─── Google Drive OAuth Ops ──────────────────────────────────────────────────
+
+  const saveCustomClientId = useCallback((newId) => {
+    setClientId(newId);
+    if (newId) {
+      localStorage.setItem(DRIVE_CLIENT_ID_KEY, newId);
+    } else {
+      localStorage.removeItem(DRIVE_CLIENT_ID_KEY);
+    }
+  }, []);
+
+  const connectGoogleDrive = useCallback(async () => {
+    const activeClientId = clientId || import.meta.env.VITE_GOOGLE_CLIENT_ID;
+    if (!activeClientId) {
+      setCloudError('Please enter a Google OAuth Client ID to connect.');
+      return false;
+    }
+
+    try {
+      setIsSyncing(true);
+      setCloudError(null);
+      const tokenResult = await requestGoogleToken(activeClientId);
+      const token = tokenResult.accessToken;
+
+      setAccessToken(token);
+      localStorage.setItem(DRIVE_TOKEN_KEY, token);
+
+      // Fetch user profile
+      const profile = await fetchUserInfo(token);
+      if (profile) {
+        setUserProfile(profile);
+        localStorage.setItem(DRIVE_USER_KEY, JSON.stringify(profile));
+      }
+
+      // Check if backup exists in Drive and restore if local storage is empty
+      const backup = await downloadBackupFromDrive(token);
+      if (backup?.data) {
+        if (entries.length === 0 || (backup.data.updatedAt && backup.data.updatedAt > (lastSyncedAt || 0))) {
+          if (backup.data.tiers) setTiers(backup.data.tiers);
+          if (backup.data.entries) setEntries(backup.data.entries);
+        }
+      } else {
+        // Upload initial backup
+        await uploadBackupToDrive(token, { tiers, entries });
+      }
+
+      const now = Date.now();
+      setLastSyncedAt(now);
+      localStorage.setItem(DRIVE_LAST_SYNC_KEY, now.toString());
+      return true;
+    } catch (err) {
+      console.error('Google Drive connection failed:', err);
+      setCloudError(err.message || 'Failed to connect Google Drive');
+      return false;
+    } finally {
+      setIsSyncing(false);
+    }
+  }, [clientId, entries.length, lastSyncedAt, tiers, entries]);
+
+  const disconnectGoogleDrive = useCallback(() => {
+    setAccessToken('');
+    setUserProfile(null);
+    setLastSyncedAt(null);
+    setCloudError(null);
+    localStorage.removeItem(DRIVE_TOKEN_KEY);
+    localStorage.removeItem(DRIVE_USER_KEY);
+    localStorage.removeItem(DRIVE_LAST_SYNC_KEY);
+    sessionStorage.removeItem(DRIVE_TOKEN_KEY);
+  }, []);
+
+  const syncNowWithDrive = useCallback(async () => {
+    if (!accessToken) return false;
+    try {
+      setIsSyncing(true);
+      setCloudError(null);
+      const result = await uploadBackupToDrive(accessToken, { tiers, entries });
+      const now = result.timestamp || Date.now();
+      setLastSyncedAt(now);
+      localStorage.setItem(DRIVE_LAST_SYNC_KEY, now.toString());
+      return true;
+    } catch (err) {
+      console.error('Manual sync failed:', err);
+      setCloudError(err.message || 'Sync failed');
+      return false;
+    } finally {
+      setIsSyncing(false);
+    }
+  }, [accessToken, tiers, entries]);
+
+  const restoreFromDrive = useCallback(async () => {
+    if (!accessToken) return false;
+    try {
+      setIsSyncing(true);
+      setCloudError(null);
+      const backup = await downloadBackupFromDrive(accessToken);
+      if (backup?.data) {
+        if (backup.data.tiers) setTiers(backup.data.tiers);
+        if (backup.data.entries) setEntries(backup.data.entries);
+        setLastSyncedAt(backup.data.updatedAt || Date.now());
+        return true;
+      } else {
+        setCloudError('No backup file found in your Google Drive.');
+        return false;
+      }
+    } catch (err) {
+      console.error('Restore failed:', err);
+      setCloudError(err.message || 'Restore failed');
+      return false;
+    } finally {
+      setIsSyncing(false);
+    }
+  }, [accessToken]);
 
   // ─── Tier CRUD ───────────────────────────────────────────────────────────────
 
@@ -76,7 +245,6 @@ export function useWatchlist() {
 
   const deleteTier = useCallback((tierId) => {
     setTiers(prev => prev.filter(t => t.id !== tierId));
-    // Also remove all entries in that tier
     setEntries(prev => prev.filter(e => e.tierId !== tierId));
   }, []);
 
@@ -92,24 +260,22 @@ export function useWatchlist() {
   // ─── Entry CRUD ──────────────────────────────────────────────────────────────
 
   const addEntry = useCallback((tierId, media) => {
-    // Prevent duplicates across all tiers
     setEntries(prev => {
       const exists = prev.find(e => String(e.tmdbId) === String(media.tmdbId));
       if (exists) {
-        // Move to new tier instead
         return prev.map(e => String(e.tmdbId) === String(media.tmdbId) ? { ...e, tierId } : e);
       }
       return [...prev, {
         id: `entry_${Date.now()}_${Math.random().toString(36).slice(2)}`,
         tierId,
         tmdbId: String(media.tmdbId),
-        type: media.type,            // 'movie' | 'tv'
+        type: media.type,
         title: media.title,
         poster: media.poster,
         backdrop: media.backdrop,
         year: media.year,
         rating: media.rating,
-        status: 'pending',           // 'pending' | 'watching' | 'watched'
+        status: 'pending',
         addedAt: Date.now(),
         updatedAt: Date.now(),
         note: '',
@@ -133,7 +299,6 @@ export function useWatchlist() {
     setEntries(prev => prev.map(e => e.id === entryId ? { ...e, note, updatedAt: Date.now() } : e));
   }, []);
 
-  // TV show episode progress or Movie percent progress
   const setProgress = useCallback((entryId, season, episode, percent) => {
     setEntries(prev => prev.map(e => {
       if (e.id !== entryId) return e;
@@ -205,15 +370,10 @@ export function useWatchlist() {
     setEntries([]);
   }, []);
 
-  /**
-   * Automatically updates or adds a title based on playback activity
-   * media: { tmdbId, type, title, poster, backdrop, year, rating, season, episode, server }
-   */
   const syncPlaybackWithWatchlist = useCallback((media) => {
     setEntries(prev => {
       const idx = prev.findIndex(e => String(e.tmdbId) === String(media.tmdbId));
       
-      // If already exists, update status. Only update progress if explicitly specified and > 1, OR if it's the first time setting it.
       if (idx !== -1) {
         return prev.map((e, i) => i === idx ? {
           ...e,
@@ -226,12 +386,11 @@ export function useWatchlist() {
         } : e);
       }
 
-      // If not exists, auto-add to the first tier
-      if (tiers.length === 0) return prev; // Safety check
+      if (tiers.length === 0) return prev;
       
       const newEntry = {
         id: `entry_${Date.now()}_${Math.random().toString(36).slice(2)}`,
-        tierId: tiers[0].id, // Default to first tier
+        tierId: tiers[0].id,
         tmdbId: media.tmdbId.toString(),
         type: media.type,
         title: media.title,
@@ -254,6 +413,21 @@ export function useWatchlist() {
     tiers,
     entries,
     stats,
+    // Google Drive Sync State & Ops
+    driveState: {
+      isConnected: Boolean(accessToken),
+      accessToken,
+      userProfile,
+      lastSyncedAt,
+      isSyncing,
+      error: cloudError,
+      clientId,
+    },
+    connectGoogleDrive,
+    disconnectGoogleDrive,
+    syncNowWithDrive,
+    restoreFromDrive,
+    saveCustomClientId,
     // Tier ops
     addTier,
     renameTier,
@@ -278,3 +452,4 @@ export function useWatchlist() {
     clearAll,
   };
 }
+

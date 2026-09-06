@@ -23,18 +23,21 @@
    ===================================================================== */
 
 @keyframes skeleton-shimmer {
-  0%   { background-position: -800px 0; }
-  100% { background-position: 800px 0; }
+  0% {
+    background-position: -800px 0;
+  }
+
+  100% {
+    background-position: 800px 0;
+  }
 }
 
 /* Base skeleton mixin — applied to all skeleton elements */
 .skeleton-base {
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0.04) 0px,
-    rgba(255, 255, 255, 0.09) 40px,
-    rgba(255, 255, 255, 0.04) 80px
-  );
+  background: linear-gradient(90deg,
+      rgba(255, 255, 255, 0.04) 0px,
+      rgba(255, 255, 255, 0.09) 40px,
+      rgba(255, 255, 255, 0.04) 80px);
   background-size: 800px 100%;
   animation: skeleton-shimmer 1.6s infinite linear;
   border-radius: 8px;
@@ -46,12 +49,10 @@
   width: 380px;
   min-width: 380px;
   height: 214px;
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0.04) 0px,
-    rgba(255, 255, 255, 0.09) 40px,
-    rgba(255, 255, 255, 0.04) 80px
-  );
+  background: linear-gradient(90deg,
+      rgba(255, 255, 255, 0.04) 0px,
+      rgba(255, 255, 255, 0.09) 40px,
+      rgba(255, 255, 255, 0.04) 80px);
   background-size: 800px 100%;
   animation: skeleton-shimmer 1.6s infinite linear;
   border-radius: 8px;
@@ -96,12 +97,10 @@
   width: 100%;
   height: 85vh;
   min-height: 480px;
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0.03) 0px,
-    rgba(255, 255, 255, 0.07) 80px,
-    rgba(255, 255, 255, 0.03) 160px
-  );
+  background: linear-gradient(90deg,
+      rgba(255, 255, 255, 0.03) 0px,
+      rgba(255, 255, 255, 0.07) 80px,
+      rgba(255, 255, 255, 0.03) 160px);
   background-size: 800px 100%;
   animation: skeleton-shimmer 2s infinite linear;
   position: relative;
@@ -111,7 +110,9 @@
 .skeleton-hero::after {
   content: '';
   position: absolute;
-  bottom: 0; left: 0; right: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
   height: 50%;
   background: linear-gradient(to top, #000 0%, transparent 100%);
 }
@@ -120,12 +121,10 @@
 .skeleton-text {
   height: 14px;
   border-radius: 4px;
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0.04) 0px,
-    rgba(255, 255, 255, 0.09) 40px,
-    rgba(255, 255, 255, 0.04) 80px
-  );
+  background: linear-gradient(90deg,
+      rgba(255, 255, 255, 0.04) 0px,
+      rgba(255, 255, 255, 0.09) 40px,
+      rgba(255, 255, 255, 0.04) 80px);
   background-size: 800px 100%;
   animation: skeleton-shimmer 1.6s infinite linear;
 }
@@ -145,8 +144,15 @@
 }
 
 @keyframes sectionFadeIn {
-  from { opacity: 0; transform: translateY(12px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 
@@ -1003,10 +1009,12 @@ body::before {
 .movie-row-container {
   display: flex;
   gap: 1rem;
-  padding: 3rem 2rem;       /* tall vertical padding so 1.4x scaled cards aren't clipped */
+  padding: 3rem 2rem;
+  /* tall vertical padding so 1.4x scaled cards aren't clipped */
   margin: 0;
   overflow-x: auto;
-  overflow-y: visible;      /* let expanded cards breathe vertically */
+  overflow-y: visible;
+  /* let expanded cards breathe vertically */
   scroll-behavior: smooth;
   scrollbar-width: none;
   -ms-overflow-style: none;
@@ -1215,7 +1223,10 @@ body::before {
 /* ---- Gradient: dark bottom gradient fades in on hover ---- */
 .imc-gradient {
   position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   background: linear-gradient(to bottom, rgba(20, 20, 20, 0) 0%, rgba(20, 20, 20, 0.95) 100%);
   opacity: 0;
   transition: opacity 0.4s ease;
@@ -1245,7 +1256,7 @@ body::before {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  text-shadow: 0 1px 4px rgba(0,0,0,0.9);
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9);
 }
 
 .imc-meta {
@@ -4680,7 +4691,8 @@ body::before {
 /* MovieRow alignment inside grid container */
 .premium-section-container .movie-row-container {
   margin: 0;
-  padding: 4rem 28px;      /* ample vertical padding for hover expansion */
+  padding: 4rem 28px;
+  /* ample vertical padding for hover expansion */
   gap: 12px;
 }
 
@@ -5077,6 +5089,13 @@ body::before {
 .watch-details-container>div:first-of-type button {
   padding-inline: 0 !important;
   margin-right: 1.6rem;
+}
+
+.watch-episode-panel,
+.watch-episode-panel *,
+.watch-sidebar,
+.watch-sidebar * {
+  font-family: var(--font-main, 'Inter', system-ui, -apple-system, sans-serif) !important;
 }
 
 .watch-episode-panel {
@@ -5580,4 +5599,92 @@ iframe[id^="yt-player-"] {
   border: none !important;
   pointer-events: none !important;
   object-fit: cover !important;
+}
+
+/* =====================================================================
+   REFRA 4K MOBILE PHONE VIEW DESIGN SYSTEM & UTILITIES
+   Liquid Glass, Snap-x rails, Safe Area insets, OLED tokens
+   ===================================================================== */
+
+:root {
+  --refra-bg: #060606;
+  --refra-surface: #0c0d10;
+  --refra-card-bg: #14161d;
+  --refra-glass-bg: rgba(30, 39, 46, 0.58);
+  --refra-glass-border: rgba(255, 255, 255, 0.12);
+  --refra-accent-blue: #0984E3;
+  --refra-accent-cyan: #00CEC9;
+  --refra-font-display: 'Unbounded', 'Syne', -apple-system, sans-serif;
+  --refra-font-body: 'Plus Jakarta Sans', 'Inter', -apple-system, sans-serif;
+}
+
+.font-panchange {
+  font-family: var(--refra-font-display);
+}
+
+.font-refra-body {
+  font-family: var(--refra-font-body);
+}
+
+/* Liquid Glass Backdrop with Optical Distortion */
+.liquid-glass {
+  background: rgba(30, 39, 46, 0.58);
+  backdrop-filter: blur(18px) saturate(180%);
+  -webkit-backdrop-filter: blur(18px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.liquid-glass-subtle {
+  background: rgba(30, 39, 46, 0.35);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.liquid-glass-elevated {
+  background: rgba(20, 24, 33, 0.78);
+  backdrop-filter: blur(24px) saturate(190%);
+  -webkit-backdrop-filter: blur(24px) saturate(190%);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+}
+
+.safe-top {
+  padding-top: max(0.875rem, env(safe-area-inset-top, 0.875rem));
+}
+
+.safe-bottom {
+  padding-bottom: max(1rem, env(safe-area-inset-bottom, 1rem));
+}
+
+.scroll-smooth-touch {
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Mobile Snap rails */
+.snap-x {
+  scroll-snap-type: x mandatory;
+}
+
+.snap-start {
+  scroll-snap-align: start;
+}
+
+/* Mobile card animations & transitions */
+.mobile-card-touch {
+  transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.25s ease;
+}
+
+.mobile-card-touch:active {
+  transform: scale(0.96);
 }

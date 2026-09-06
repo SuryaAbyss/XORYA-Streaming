@@ -1,0 +1,23 @@
+/* shadcn theme generated from Refra — 4K Ad-Free Cinematic Streaming & Anime */
+:root {
+    --background: #f2f4f6;
+    --foreground: #020202;
+    --card: #f2f4f6;
+    --card-foreground: #020202;
+    --popover: #f2f4f6;
+    --popover-foreground: #020202;
+    --primary: #14161d;
+    --primary-foreground: #f2f4f6;
+    --ring: #14161d;
+    --secondary: #e4ecf3;
+    --secondary-foreground: #14161d;
+    --muted: #e4ecf3;
+    --muted-foreground: #808b94;
+    --accent: #e4ecf3;
+    --accent-foreground: #14161d;
+    --destructive: #ef4444;
+    --destructive-foreground: #f2f4f6;
+    --border: #d6dfe7;
+    --input: #d6dfe7;
+    --radius: 0.5rem;
+}

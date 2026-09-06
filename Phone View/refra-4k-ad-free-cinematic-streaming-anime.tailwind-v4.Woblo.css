@@ -1,0 +1,43 @@
+/* Design system extracted from Refra — 4K Ad-Free Cinematic Streaming & Anime */
+@theme {
+
+    /* Colors */
+    --color-neutral-50: oklch(0.9696 0.011 243.7);
+    --color-neutral-100: oklch(0.9391 0.0128 244.3);
+    --color-neutral-200: oklch(0.8992 0.0147 244.7);
+    --color-neutral-300: oklch(0.8306 0.0157 241.8);
+    --color-neutral-400: oklch(0.7393 0.0172 245.2);
+    --color-neutral-500: oklch(0.6307 0.0187 242.6);
+    --color-neutral-600: oklch(0.5194 0.0168 244.9);
+    --color-neutral-700: oklch(0.4193 0.0156 244.6);
+    --color-neutral-800: oklch(0.3204 0.0131 239);
+    --color-neutral-900: oklch(0.2192 0.0124 248.4);
+    --color-neutral-950: oklch(0.1301 0.0114 233.8);
+
+    /* Spacing */
+    --spacing-1: 0.125rem;
+    --spacing-2: 0.25rem;
+    --spacing-3: 0.375rem;
+    --spacing-4: 0.5rem;
+    --spacing-5: 0.625rem;
+    --spacing-6: 0.75rem;
+    --spacing-7: 0.875rem;
+    --spacing-8: 1rem;
+    --spacing-56: 7rem;
+
+    /* Border Radius */
+    --radius-2xl: 1rem;
+    --radius-3xl: 1.5rem;
+
+    /* Shadows */
+    --shadow-md: rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.1) 0px 1px 3px 0px, rgba(0, 0, 0, 0.1) 0px 1px 2px -1px;
+    --shadow-xl: rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.1) 0px 10px 15px -3px, rgba(0, 0, 0, 0.1) 0px 4px 6px -4px;
+    --shadow-2xl: rgba(0, 0, 0, 0.35) 0px 8px 32px 0px, rgba(255, 255, 255, 0.36) 0px 1px 0px 0px inset;
+
+    /* Typography */
+    --text-10px: 0.625rem;
+    --text-11px: 0.6875rem;
+    --text-12px: 0.75rem;
+    --text-16px: 1rem;
+    --text-24px: 1.5rem;
+}

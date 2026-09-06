@@ -447,17 +447,25 @@ const MovieDetailsModal = () => {
                             </div>
 
                             {/* Overview */}
-                            <p style={{
-                                fontSize: '0.88rem',
-                                lineHeight: '1.6',
-                                color: 'rgba(255,255,255,0.75)',
-                                marginBottom: '22px',
-                                // Allow max 5 lines
-                                display: '-webkit-box',
-                                WebkitLineClamp: 5,
-                                WebkitBoxOrient: 'vertical',
-                                overflow: 'hidden',
-                            }}>
+                            <p
+                                className="text-xs text-neutral-200 font-normal leading-relaxed refra-synopsis"
+                                style={{
+                                    fontFamily: 'Unbounded, Syne, "Plus Jakarta Sans", sans-serif',
+                                    fontSize: '12px',
+                                    fontWeight: 400,
+                                    lineHeight: '19.5px',
+                                    letterSpacing: '-0.32px',
+                                    textAlign: 'start',
+                                    color: 'var(--color-neutral-200, oklch(0.922 0 none))',
+                                    marginBottom: '20px',
+                                    maxWidth: '355.33px',
+                                    display: '-webkit-box',
+                                    WebkitLineClamp: 5,
+                                    WebkitBoxOrient: 'vertical',
+                                    overflow: 'hidden',
+                                    transition: 'all',
+                                }}
+                            >
                                 {movie.overview}
                             </p>
 

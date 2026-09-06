@@ -10,6 +10,7 @@ import EpisodesSidebar from '../components/EpisodesSidebar';
 import MovieRow from '../components/MovieRow';
 import WatchDetailsTabs from '../components/WatchDetailsTabs';
 import LemniscateBloomLoader from '../components/LemniscateBloomLoader';
+import MobileVideoPlayerView from '../components/mobile/MobileVideoPlayerView';
 
 
 // Genre to color mappings for atmospheric fallback themes
@@ -125,6 +126,19 @@ const VideoPlayer = () => {
     const [activeServer, setActiveServer] = useState(getInitialServer);
     const [iframeKey, setIframeKey] = useState(0);
     const [isTheaterMode, setIsTheaterMode] = useState(false);
+    const [isMobileView, setIsMobileView] = useState(() => {
+        if (typeof window === 'undefined') return false;
+        return window.innerWidth <= 768;
+    });
+
+    useEffect(() => {
+        const handleResize = () => {
+            setIsMobileView(window.innerWidth <= 768);
+        };
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
     const playerFrameRef = useRef(null);
     const iframeRef = useRef(null);
 
@@ -290,7 +304,7 @@ const VideoPlayer = () => {
                 try {
                     localStorage.setItem("vidsrcwtf-Progress", JSON.stringify(mediaData));
                     localStorage.setItem("peachifyProgress", JSON.stringify(mediaData));
-                } catch (e) {}
+                } catch (e) { }
             }
 
             let currentTime = null;
@@ -502,13 +516,13 @@ const VideoPlayer = () => {
                 try {
                     const recResponse = await getMovieRecommendations(id);
                     recs = (recResponse.data?.results || []).filter(r => r.poster_path);
-                } catch (e) {}
+                } catch (e) { }
 
                 if (recs.length === 0) {
                     try {
                         const simResponse = await getMovieSimilar(id);
                         recs = (simResponse.data?.results || []).filter(r => r.poster_path);
-                    } catch (e) {}
+                    } catch (e) { }
                 }
 
                 if (recs.length === 0 && data.genres && data.genres.length > 0) {
@@ -518,14 +532,14 @@ const VideoPlayer = () => {
                             params: { with_genres: genreId, sort_by: 'popularity.desc' }
                         });
                         recs = (popResponse.data?.results || []).filter(r => r.poster_path && String(r.id) !== String(id));
-                    } catch (e) {}
+                    } catch (e) { }
                 }
 
                 if (recs.length === 0) {
                     try {
                         const trendResponse = await getTrendingMovies();
                         recs = (trendResponse.data?.results || []).filter(r => r.poster_path && String(r.id) !== String(id));
-                    } catch (e) {}
+                    } catch (e) { }
                 }
 
                 setRecommendations(recs);
@@ -558,13 +572,13 @@ const VideoPlayer = () => {
                 try {
                     const recResponse = await getTVShowRecommendations(id);
                     recs = (recResponse.data?.results || []).filter(r => r.backdrop_path || r.poster_path);
-                } catch (e) {}
+                } catch (e) { }
 
                 if (recs.length === 0) {
                     try {
                         const simResponse = await getTVShowSimilar(id);
                         recs = (simResponse.data?.results || []).filter(r => r.backdrop_path || r.poster_path);
-                    } catch (e) {}
+                    } catch (e) { }
                 }
 
                 if (recs.length === 0 && data.genres && data.genres.length > 0) {
@@ -574,21 +588,21 @@ const VideoPlayer = () => {
                             params: { with_genres: genreId, sort_by: 'popularity.desc' }
                         });
                         recs = (popResponse.data?.results || []).filter(r => (r.backdrop_path || r.poster_path) && String(r.id) !== String(id));
-                    } catch (e) {}
+                    } catch (e) { }
                 }
 
                 if (recs.length === 0) {
                     try {
                         const trendResponse = await getTrendingTVShows();
                         recs = (trendResponse.data?.results || []).filter(r => (r.backdrop_path || r.poster_path) && String(r.id) !== String(id));
-                    } catch (e) {}
+                    } catch (e) { }
                 }
 
                 if (recs.length === 0) {
                     try {
                         const popTv = await tmdb.get('/tv/popular');
                         recs = (popTv.data?.results || []).filter(r => (r.backdrop_path || r.poster_path) && String(r.id) !== String(id));
-                    } catch (e) {}
+                    } catch (e) { }
                 }
 
                 setRecommendations(recs);
@@ -672,7 +686,7 @@ const VideoPlayer = () => {
             if (elem) {
                 const requestMethod = elem.requestFullscreen || elem.webkitRequestFullscreen || elem.mozRequestFullScreen || elem.msRequestFullscreen;
                 if (requestMethod) {
-                    requestMethod.call(elem).catch(() => {});
+                    requestMethod.call(elem).catch(() => { });
                 }
             }
         }
@@ -712,6 +726,28 @@ const VideoPlayer = () => {
         ? `${contentData.number_of_seasons || seasons.length} Season${(contentData.number_of_seasons || seasons.length) > 1 ? 's' : ''}`
         : contentData.runtime ? `${Math.floor(contentData.runtime / 60)}h ${contentData.runtime % 60}m` : '';
     const heroBackdrop = contentData.backdrop_path || contentData.poster_path;
+
+    if (isMobileView) {
+        const totalEps = episodeCounts[currentSeason] || 10;
+        const episodesList = Array.from({ length: totalEps }, (_, i) => ({ episode_number: i + 1 }));
+        return (
+            <MobileVideoPlayerView
+                type={type}
+                id={id}
+                contentData={contentData}
+                playerUrl={getServerUrl(activeServer, type, id, currentSeason, currentEpisode)}
+                servers={servers}
+                activeServer={activeServer}
+                onServerChange={(newServer) => setActiveServer(newServer)}
+                currentSeason={currentSeason}
+                currentEpisode={currentEpisode}
+                onEpisodeChange={handleEpisodeSelect}
+                seasons={seasons}
+                episodes={episodesList}
+                recommendations={recommendations}
+            />
+        );
+    }
 
     return (
         <div className="xorya-watch-page" style={{
@@ -929,9 +965,9 @@ const VideoPlayer = () => {
                                     }}
                                 >
                                     {/* Video Player Container */}
-                                    <div 
+                                    <div
                                         ref={playerFrameRef}
-                                        className="watch-player-frame" 
+                                        className="watch-player-frame"
                                         style={{
                                             width: '100%',
                                             maxWidth: isTheaterMode ? '100%' : '990px', // Full width in theater mode
@@ -1056,18 +1092,18 @@ const VideoPlayer = () => {
                                     </div>
 
                                     {/* Under-Player Control Bar */}
-                                        {contentData && (
-                                            <div className="watch-action-bar" style={{
-                                                width: '100%',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'space-between',
-                                                marginTop: '1.2rem',
-                                                flexWrap: 'wrap',
-                                                gap: '1rem',
-                                                boxSizing: 'border-box',
-                                                padding: '0 0.2rem'
-                                            }}>
+                                    {contentData && (
+                                        <div className="watch-action-bar" style={{
+                                            width: '100%',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'space-between',
+                                            marginTop: '1.2rem',
+                                            flexWrap: 'wrap',
+                                            gap: '1rem',
+                                            boxSizing: 'border-box',
+                                            padding: '0 0.2rem'
+                                        }}>
                                             {/* Left side: Action Utilities */}
                                             <div style={{ display: 'flex', gap: '0.8rem', alignItems: 'center', flexWrap: 'wrap' }}>
                                                 {(() => {

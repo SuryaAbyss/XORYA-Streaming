@@ -30,12 +30,7 @@ const IS_DEV = typeof window !== "undefined" &&
  *  - After first v-versioned view, shows again every 7 days
  */
 function shouldShowIntro() {
-  // DEV (localhost): always show every reload so you can debug/fix glitches
-  if (IS_DEV) return true;
-
-  // PRODUCTION: intro is temporarily disabled while glitches are being fixed.
-  // Change this to `false` → `true` (or restore the weekly-gate logic below)
-  // once the intro is polished and ready to go live.
+  // Intro is disabled during testing
   return false;
 
   // ── Weekly-gate logic (re-enable when going live) ──────────────────────────
@@ -85,6 +80,11 @@ export default function IntroSequence({ children }) {
       document.body.style.overflow = "hidden";
       setStage("hello");
     } else {
+      document.body.style.overflow = "";
+      if (typeof window !== "undefined") {
+        window.XORYA_INITIAL_LOAD_COMPLETE = true;
+        window.dispatchEvent(new CustomEvent('xorya-intro-complete'));
+      }
       setStage("done");
     }
   }, []);

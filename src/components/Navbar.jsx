@@ -15,7 +15,19 @@ const Navbar = () => {
     const logoTimerRef = useRef(null);
     const [hoveredItem, setHoveredItem] = useState(null);
 
-    const isMobile = typeof window !== 'undefined' && navigator.maxTouchPoints > 0 && window.innerWidth <= 768;
+    const [isMobile, setIsMobile] = useState(() => {
+        if (typeof window === 'undefined') return false;
+        return window.innerWidth <= 768;
+    });
+
+    useEffect(() => {
+        const handleResize = () => {
+            setIsMobile(window.innerWidth <= 768);
+        };
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
     const isActive = (path) => {
         if (!path) return false;
         if (location.pathname === path) return true;
@@ -180,6 +192,10 @@ const Navbar = () => {
         border: '1px solid rgba(255, 255, 255, 0.18)',
         transition: 'opacity 0.8s ease, background-color 0.8s ease, backdrop-filter 0.8s ease, -webkit-backdrop-filter 0.8s ease, box-shadow 0.8s ease, border-color 0.8s ease',
     };
+
+    if (isMobile) {
+        return null;
+    }
 
     return (
         <div ref={navbarScopeRef} style={{ display: 'contents' }}>

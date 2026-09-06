@@ -170,9 +170,9 @@ const EpisodesSidebar = ({
     const visibleEpisodes = showAllEpisodes
         ? episodes
         : episodes.slice(
-              currentEpIdx >= 0 ? currentEpIdx : 0,
-              currentEpIdx >= 0 ? currentEpIdx + 3 : 3
-          );
+            currentEpIdx >= 0 ? currentEpIdx : 0,
+            currentEpIdx >= 0 ? currentEpIdx + 3 : 3
+        );
 
     const currentEp = episodes.find(e => e.episode_number === currentEpisode);
     const displayedStills = episodeStills.length > 0
@@ -201,7 +201,7 @@ const EpisodesSidebar = ({
                         <h4 style={{ fontSize: '0.95rem', fontWeight: '700', marginBottom: '0.5rem', color: 'var(--theme-accent)' }}>Synopsis</h4>
                         <p style={{ lineHeight: '1.6', color: 'rgba(255,255,255,0.8)', margin: 0 }}>{showData.overview}</p>
                     </div>
-                    
+
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '1rem', marginTop: '0.5rem' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                             <span style={{ color: 'rgba(255,255,255,0.5)' }}>Release Date</span>
@@ -285,7 +285,7 @@ const EpisodesSidebar = ({
                             Season {currentSeason} Episode {currentEpisode}
                         </span>
                     </div>
-                    
+
                     {loadingStills ? (
                         <div style={{ padding: '1rem', textAlign: 'center', color: 'rgba(255,255,255,0.4)', fontSize: '0.8rem' }}>
                             Fetching episode stills...
@@ -397,10 +397,10 @@ const EpisodesSidebar = ({
                 {/* Series Main Cast / Permanent Members */}
                 {regulars.length > 0 && (
                     <div>
-                        <div style={{ 
-                            fontSize: '0.8rem', 
-                            fontWeight: '700', 
-                            color: 'var(--theme-accent)', 
+                        <div style={{
+                            fontSize: '0.8rem',
+                            fontWeight: '700',
+                            color: 'var(--theme-accent)',
                             marginBottom: '0.8rem',
                             display: 'flex',
                             alignItems: 'center',
@@ -448,10 +448,10 @@ const EpisodesSidebar = ({
                     <>
                         <div style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.08)', margin: '0.5rem 0' }} />
                         <div>
-                            <div style={{ 
-                                fontSize: '0.8rem', 
-                                fontWeight: '700', 
-                                color: 'rgba(255, 255, 255, 0.55)', 
+                            <div style={{
+                                fontSize: '0.8rem',
+                                fontWeight: '700',
+                                color: 'rgba(255, 255, 255, 0.55)',
                                 marginBottom: '0.8rem',
                                 display: 'flex',
                                 alignItems: 'center',
@@ -517,8 +517,8 @@ const EpisodesSidebar = ({
                             boxShadow: '0 4px 10px rgba(0,0,0,0.3)',
                             transition: 'all 0.2s ease'
                         }}
-                        onMouseEnter={(e) => e.currentTarget.style.borderColor = 'var(--theme-accent)'}
-                        onMouseLeave={(e) => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'}
+                            onMouseEnter={(e) => e.currentTarget.style.borderColor = 'var(--theme-accent)'}
+                            onMouseLeave={(e) => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'}
                         >
                             <img
                                 src={imageUrl(show.backdrop_path || show.poster_path, 'w300')}
@@ -549,7 +549,8 @@ const EpisodesSidebar = ({
             display: 'flex',
             flexDirection: 'column',
             position: 'relative',
-            overflow: 'hidden'
+            overflow: 'hidden',
+            fontFamily: "var(--font-main, 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif)"
         }}>
             {/* Tabs Header */}
             {!hideTabs && (
@@ -823,8 +824,8 @@ const EpisodesSidebar = ({
                                                                 boxShadow: '0 4px 12px rgba(var(--theme-accent-rgb), 0.25)',
                                                                 transition: 'all 0.2s'
                                                             }}
-                                                            onMouseEnter={(e) => e.currentTarget.style.filter = 'brightness(1.1)'}
-                                                            onMouseLeave={(e) => e.currentTarget.style.filter = 'none'}
+                                                                onMouseEnter={(e) => e.currentTarget.style.filter = 'brightness(1.1)'}
+                                                                onMouseLeave={(e) => e.currentTarget.style.filter = 'none'}
                                                             >
                                                                 <Play size={12} fill="black" />
                                                                 Continue Watching
@@ -833,7 +834,7 @@ const EpisodesSidebar = ({
                                                     );
                                                 }
 
-                                                {/* Inactive Episode Card */}
+                                                {/* Inactive Episode Card */ }
                                                 return (
                                                     <motion.div
                                                         className="watch-episode-card"
@@ -953,8 +954,8 @@ const EpisodesSidebar = ({
                                 </motion.div>
                             )}
                         </AnimatePresence>
-                        </>
-                 )}
+                    </>
+                )}
 
                 {activeTab === 'details' && renderDetailsTab()}
                 {activeTab === 'cast' && renderCastTab()}

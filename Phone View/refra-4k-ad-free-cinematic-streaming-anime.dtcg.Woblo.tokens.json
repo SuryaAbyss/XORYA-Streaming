@@ -1,0 +1,667 @@
+{
+  "$schema": "https://designtokens.org/schemas/2025.10/tokens.json",
+  "$description": "Minimalist ad-free 4K cinematic streaming and anime discovery platform.",
+  "color": {
+    "neutral": {
+      "50": {
+        "$type": "color",
+        "$value": {
+          "colorSpace": "oklch",
+          "components": [
+            0.9696,
+            0.011,
+            243.7
+          ],
+          "alpha": 1,
+          "hex": "#eff6fc"
+        },
+        "$extensions": {
+          "com.tikki.source": "neutralRamp"
+        }
+      },
+      "100": {
+        "$type": "color",
+        "$value": {
+          "colorSpace": "oklch",
+          "components": [
+            0.9391,
+            0.0128,
+            244.3
+          ],
+          "alpha": 1,
+          "hex": "#e4ecf3"
+        },
+        "$extensions": {
+          "com.tikki.source": "neutralRamp"
+        }
+      },
+      "200": {
+        "$type": "color",
+        "$value": {
+          "colorSpace": "oklch",
+          "components": [
+            0.8992,
+            0.0147,
+            244.7
+          ],
+          "alpha": 1,
+          "hex": "#d6dfe7"
+        },
+        "$extensions": {
+          "com.tikki.source": "neutralRamp"
+        }
+      },
+      "300": {
+        "$type": "color",
+        "$value": {
+          "colorSpace": "oklch",
+          "components": [
+            0.8306,
+            0.0157,
+            241.8
+          ],
+          "alpha": 1,
+          "hex": "#bfc9d1"
+        },
+        "$extensions": {
+          "com.tikki.source": "neutralRamp"
+        }
+      },
+      "400": {
+        "$type": "color",
+        "$value": {
+          "colorSpace": "oklch",
+          "components": [
+            0.7393,
+            0.0172,
+            245.2
+          ],
+          "alpha": 1,
+          "hex": "#a2acb5"
+        },
+        "$extensions": {
+          "com.tikki.source": "neutralRamp"
+        }
+      },
+      "500": {
+        "$type": "color",
+        "$value": {
+          "colorSpace": "oklch",
+          "components": [
+            0.6307,
+            0.0187,
+            242.6
+          ],
+          "alpha": 1,
+          "hex": "#808b94"
+        },
+        "$extensions": {
+          "com.tikki.source": "neutralRamp"
+        }
+      },
+      "600": {
+        "$type": "color",
+        "$value": {
+          "colorSpace": "oklch",
+          "components": [
+            0.5194,
+            0.0168,
+            244.9
+          ],
+          "alpha": 1,
+          "hex": "#616a72"
+        },
+        "$extensions": {
+          "com.tikki.source": "neutralRamp"
+        }
+      },
+      "700": {
+        "$type": "color",
+        "$value": {
+          "colorSpace": "oklch",
+          "components": [
+            0.4193,
+            0.0156,
+            244.6
+          ],
+          "alpha": 1,
+          "hex": "#464e55"
+        },
+        "$extensions": {
+          "com.tikki.source": "neutralRamp"
+        }
+      },
+      "800": {
+        "$type": "color",
+        "$value": {
+          "colorSpace": "oklch",
+          "components": [
+            0.3204,
+            0.0131,
+            239
+          ],
+          "alpha": 1,
+          "hex": "#2d3439"
+        },
+        "$extensions": {
+          "com.tikki.source": "neutralRamp"
+        }
+      },
+      "900": {
+        "$type": "color",
+        "$value": {
+          "colorSpace": "oklch",
+          "components": [
+            0.2192,
+            0.0124,
+            248.4
+          ],
+          "alpha": 1,
+          "hex": "#161b20"
+        },
+        "$extensions": {
+          "com.tikki.source": "neutralRamp"
+        }
+      },
+      "950": {
+        "$type": "color",
+        "$value": {
+          "colorSpace": "oklch",
+          "components": [
+            0.1301,
+            0.0114,
+            233.8
+          ],
+          "alpha": 1,
+          "hex": "#04080b"
+        },
+        "$extensions": {
+          "com.tikki.source": "neutralRamp"
+        }
+      }
+    }
+  },
+  "dimension": {
+    "spacing": {
+      "1": {
+        "$type": "dimension",
+        "$value": {
+          "value": 2,
+          "unit": "px"
+        },
+        "$extensions": {
+          "com.tikki.scale-base": 2,
+          "com.tikki.scale-fit": "detected"
+        }
+      },
+      "2": {
+        "$type": "dimension",
+        "$value": {
+          "value": 4,
+          "unit": "px"
+        },
+        "$extensions": {
+          "com.tikki.scale-base": 2,
+          "com.tikki.scale-fit": "detected"
+        }
+      },
+      "3": {
+        "$type": "dimension",
+        "$value": {
+          "value": 6,
+          "unit": "px"
+        },
+        "$extensions": {
+          "com.tikki.scale-base": 2,
+          "com.tikki.scale-fit": "detected"
+        }
+      },
+      "4": {
+        "$type": "dimension",
+        "$value": {
+          "value": 8,
+          "unit": "px"
+        },
+        "$extensions": {
+          "com.tikki.scale-base": 2,
+          "com.tikki.scale-fit": "detected"
+        }
+      },
+      "5": {
+        "$type": "dimension",
+        "$value": {
+          "value": 10,
+          "unit": "px"
+        },
+        "$extensions": {
+          "com.tikki.scale-base": 2,
+          "com.tikki.scale-fit": "detected"
+        }
+      },
+      "6": {
+        "$type": "dimension",
+        "$value": {
+          "value": 12,
+          "unit": "px"
+        },
+        "$extensions": {
+          "com.tikki.scale-base": 2,
+          "com.tikki.scale-fit": "detected"
+        }
+      },
+      "7": {
+        "$type": "dimension",
+        "$value": {
+          "value": 14,
+          "unit": "px"
+        },
+        "$extensions": {
+          "com.tikki.scale-base": 2,
+          "com.tikki.scale-fit": "detected"
+        }
+      },
+      "8": {
+        "$type": "dimension",
+        "$value": {
+          "value": 16,
+          "unit": "px"
+        },
+        "$extensions": {
+          "com.tikki.scale-base": 2,
+          "com.tikki.scale-fit": "detected"
+        }
+      },
+      "56": {
+        "$type": "dimension",
+        "$value": {
+          "value": 112,
+          "unit": "px"
+        },
+        "$extensions": {
+          "com.tikki.scale-base": 2,
+          "com.tikki.scale-fit": "detected"
+        }
+      }
+    },
+    "radius": {
+      "2xl": {
+        "$type": "dimension",
+        "$value": {
+          "value": 16,
+          "unit": "px"
+        }
+      },
+      "3xl": {
+        "$type": "dimension",
+        "$value": {
+          "value": 24,
+          "unit": "px"
+        }
+      }
+    }
+  },
+  "typography": {
+    "size": {
+      "10px": {
+        "$type": "dimension",
+        "$value": {
+          "value": 10,
+          "unit": "px"
+        }
+      },
+      "11px": {
+        "$type": "dimension",
+        "$value": {
+          "value": 11,
+          "unit": "px"
+        }
+      },
+      "12px": {
+        "$type": "dimension",
+        "$value": {
+          "value": 12,
+          "unit": "px"
+        }
+      },
+      "16px": {
+        "$type": "dimension",
+        "$value": {
+          "value": 16,
+          "unit": "px"
+        }
+      },
+      "24px": {
+        "$type": "dimension",
+        "$value": {
+          "value": 24,
+          "unit": "px"
+        }
+      }
+    }
+  },
+  "shadow": {
+    "md": {
+      "$type": "shadow",
+      "$value": [
+        {
+          "color": "rgba(0, 0, 0, 0)",
+          "offsetX": {
+            "value": 0,
+            "unit": "px"
+          },
+          "offsetY": {
+            "value": 0,
+            "unit": "px"
+          },
+          "blur": {
+            "value": 0,
+            "unit": "px"
+          },
+          "spread": {
+            "value": 0,
+            "unit": "px"
+          },
+          "inset": false
+        },
+        {
+          "color": "rgba(0, 0, 0, 0)",
+          "offsetX": {
+            "value": 0,
+            "unit": "px"
+          },
+          "offsetY": {
+            "value": 0,
+            "unit": "px"
+          },
+          "blur": {
+            "value": 0,
+            "unit": "px"
+          },
+          "spread": {
+            "value": 0,
+            "unit": "px"
+          },
+          "inset": false
+        },
+        {
+          "color": "rgba(0, 0, 0, 0)",
+          "offsetX": {
+            "value": 0,
+            "unit": "px"
+          },
+          "offsetY": {
+            "value": 0,
+            "unit": "px"
+          },
+          "blur": {
+            "value": 0,
+            "unit": "px"
+          },
+          "spread": {
+            "value": 0,
+            "unit": "px"
+          },
+          "inset": false
+        },
+        {
+          "color": "rgba(0, 0, 0, 0)",
+          "offsetX": {
+            "value": 0,
+            "unit": "px"
+          },
+          "offsetY": {
+            "value": 0,
+            "unit": "px"
+          },
+          "blur": {
+            "value": 0,
+            "unit": "px"
+          },
+          "spread": {
+            "value": 0,
+            "unit": "px"
+          },
+          "inset": false
+        },
+        {
+          "color": "rgba(0, 0, 0, 0.1)",
+          "offsetX": {
+            "value": 0,
+            "unit": "px"
+          },
+          "offsetY": {
+            "value": 1,
+            "unit": "px"
+          },
+          "blur": {
+            "value": 3,
+            "unit": "px"
+          },
+          "spread": {
+            "value": 0,
+            "unit": "px"
+          },
+          "inset": false
+        },
+        {
+          "color": "rgba(0, 0, 0, 0.1)",
+          "offsetX": {
+            "value": 0,
+            "unit": "px"
+          },
+          "offsetY": {
+            "value": 1,
+            "unit": "px"
+          },
+          "blur": {
+            "value": 2,
+            "unit": "px"
+          },
+          "spread": {
+            "value": -1,
+            "unit": "px"
+          },
+          "inset": false
+        }
+      ],
+      "$extensions": {
+        "com.tikki.intensity": 18.5,
+        "com.tikki.css-original": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.1) 0px 1px 3px 0px, rgba(0, 0, 0, 0.1) 0px 1px 2px -1px"
+      }
+    },
+    "xl": {
+      "$type": "shadow",
+      "$value": [
+        {
+          "color": "rgba(0, 0, 0, 0)",
+          "offsetX": {
+            "value": 0,
+            "unit": "px"
+          },
+          "offsetY": {
+            "value": 0,
+            "unit": "px"
+          },
+          "blur": {
+            "value": 0,
+            "unit": "px"
+          },
+          "spread": {
+            "value": 0,
+            "unit": "px"
+          },
+          "inset": false
+        },
+        {
+          "color": "rgba(0, 0, 0, 0)",
+          "offsetX": {
+            "value": 0,
+            "unit": "px"
+          },
+          "offsetY": {
+            "value": 0,
+            "unit": "px"
+          },
+          "blur": {
+            "value": 0,
+            "unit": "px"
+          },
+          "spread": {
+            "value": 0,
+            "unit": "px"
+          },
+          "inset": false
+        },
+        {
+          "color": "rgba(0, 0, 0, 0)",
+          "offsetX": {
+            "value": 0,
+            "unit": "px"
+          },
+          "offsetY": {
+            "value": 0,
+            "unit": "px"
+          },
+          "blur": {
+            "value": 0,
+            "unit": "px"
+          },
+          "spread": {
+            "value": 0,
+            "unit": "px"
+          },
+          "inset": false
+        },
+        {
+          "color": "rgba(0, 0, 0, 0)",
+          "offsetX": {
+            "value": 0,
+            "unit": "px"
+          },
+          "offsetY": {
+            "value": 0,
+            "unit": "px"
+          },
+          "blur": {
+            "value": 0,
+            "unit": "px"
+          },
+          "spread": {
+            "value": 0,
+            "unit": "px"
+          },
+          "inset": false
+        },
+        {
+          "color": "rgba(0, 0, 0, 0.1)",
+          "offsetX": {
+            "value": 0,
+            "unit": "px"
+          },
+          "offsetY": {
+            "value": 10,
+            "unit": "px"
+          },
+          "blur": {
+            "value": 15,
+            "unit": "px"
+          },
+          "spread": {
+            "value": -3,
+            "unit": "px"
+          },
+          "inset": false
+        },
+        {
+          "color": "rgba(0, 0, 0, 0.1)",
+          "offsetX": {
+            "value": 0,
+            "unit": "px"
+          },
+          "offsetY": {
+            "value": 4,
+            "unit": "px"
+          },
+          "blur": {
+            "value": 6,
+            "unit": "px"
+          },
+          "spread": {
+            "value": -4,
+            "unit": "px"
+          },
+          "inset": false
+        }
+      ],
+      "$extensions": {
+        "com.tikki.intensity": 87.5,
+        "com.tikki.css-original": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.1) 0px 10px 15px -3px, rgba(0, 0, 0, 0.1) 0px 4px 6px -4px"
+      }
+    },
+    "2xl": {
+      "$type": "shadow",
+      "$value": [
+        {
+          "color": "rgba(0, 0, 0, 0.35)",
+          "offsetX": {
+            "value": 0,
+            "unit": "px"
+          },
+          "offsetY": {
+            "value": 8,
+            "unit": "px"
+          },
+          "blur": {
+            "value": 32,
+            "unit": "px"
+          },
+          "spread": {
+            "value": 0,
+            "unit": "px"
+          },
+          "inset": false
+        },
+        {
+          "color": "rgba(255, 255, 255, 0.36)",
+          "offsetX": {
+            "value": 0,
+            "unit": "px"
+          },
+          "offsetY": {
+            "value": 1,
+            "unit": "px"
+          },
+          "blur": {
+            "value": 0,
+            "unit": "px"
+          },
+          "spread": {
+            "value": 0,
+            "unit": "px"
+          },
+          "inset": true
+        }
+      ],
+      "$extensions": {
+        "com.tikki.intensity": 109.5,
+        "com.tikki.css-original": "rgba(0, 0, 0, 0.35) 0px 8px 32px 0px, rgba(255, 255, 255, 0.36) 0px 1px 0px 0px inset"
+      }
+    }
+  },
+  "semantic": {
+    "color": {
+      "text": {
+        "primary": {
+          "$type": "color",
+          "$value": "{color.neutral.fg}"
+        }
+      },
+      "surface": {
+        "canvas": {
+          "$type": "color",
+          "$value": "{color.neutral.50}"
+        }
+      }
+    }
+  }
+}

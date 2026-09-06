@@ -16,6 +16,7 @@ import {
 } from '../api/tmdb';
 import { getIMDbCuratedTVShows, getIMDbTop10MixedPool } from '../api/imdb';
 import { useLazySection } from '../hooks/useLazySection';
+import MobileHomeView from '../components/mobile/MobileHomeView';
 
 
 const Home = ({ category = 'all' }) => {
@@ -24,15 +25,25 @@ const Home = ({ category = 'all' }) => {
     const [top10Data, setTop10Data] = useState([]);
 
     // Detect mobile for layout adjustments
-    const isMobileView = typeof window !== 'undefined' && navigator.maxTouchPoints > 0 && window.innerWidth <= 768;
+    const [isMobileView, setIsMobileView] = useState(() => {
+        if (typeof window === 'undefined') return false;
+        return window.innerWidth <= 768;
+    });
+
+    useEffect(() => {
+        const handleResize = () => {
+            setIsMobileView(window.innerWidth <= 768);
+        };
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     // Preload YouTube API early so trailer loads faster (desktop only)
     useEffect(() => {
-        const isMobile = navigator.maxTouchPoints > 0 && window.innerWidth <= 768;
-        if (!isMobile) {
+        if (!isMobileView) {
             loadYouTubeAPI();
         }
-    }, []);
+    }, [isMobileView]);
 
     // Scroll to top on mount or category change
     useEffect(() => {
@@ -170,6 +181,18 @@ const Home = ({ category = 'all' }) => {
         });
         return () => links.forEach(link => link.parentNode?.removeChild(link));
     }, [mainData]);
+
+    if (isMobileView) {
+        return (
+            <div className="home-page pb-0">
+                <SEO
+                    title="XORYA - Premium Streaming Platform"
+                    description="Watch the latest and most popular movies and TV shows on XORYA. Experience premium streaming with an interactive interface."
+                />
+                <MobileHomeView category={category} top10Data={top10Data} />
+            </div>
+        );
+    }
 
     return (
         <div className="home-page pb-0">

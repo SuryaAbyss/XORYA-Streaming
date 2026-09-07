@@ -13,7 +13,8 @@ import {
   Award,
   Check,
   Server,
-  Layers
+  Layers,
+  ShieldCheck
 } from 'lucide-react';
 import { imageUrl } from '../../api/tmdb';
 import MobileContentRail from './MobileContentRail';
@@ -44,6 +45,32 @@ const MobileVideoPlayerView = ({
   const navigate = useNavigate();
   const [showServerDrawer, setShowServerDrawer] = useState(false);
   const [showSeasonDrawer, setShowSeasonDrawer] = useState(false);
+
+  // Mobile Redirect Shield: Trap rogue top-level navigations & back-redirects
+  useEffect(() => {
+    try {
+      window.history.pushState({ xoryaPlayerActive: true }, '', window.location.href);
+    } catch {}
+
+    const handlePopState = () => {
+      try {
+        window.history.pushState({ xoryaPlayerActive: true }, '', window.location.href);
+      } catch {}
+    };
+
+    const handleBeforeUnload = (e) => {
+      e.preventDefault();
+      return (e.returnValue = '');
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [id, currentSeason, currentEpisode]);
 
   // Extract crew details
   const crew = contentData?.credits?.crew || [];
@@ -248,6 +275,8 @@ const MobileVideoPlayerView = ({
               title={`${title} Stream`}
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
               allowFullScreen
+              loading="eager"
+              referrerPolicy="no-referrer-when-downgrade"
               className="w-full h-full border-0 bg-black"
               style={{ width: '100%', height: '100%', border: 'none', backgroundColor: '#000000' }}
             />
@@ -302,9 +331,15 @@ const MobileVideoPlayerView = ({
               </div>
 
               <div className="min-w-0 flex-1 space-y-1" style={{ minWidth: 0, flex: 1 }}>
-                <h3 className="text-xs font-bold text-white tracking-tight truncate" style={{ fontSize: '12.5px', fontWeight: 700, color: '#ffffff', margin: 0 }}>
-                  {currentServerObj.name}
-                </h3>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-xs font-bold text-white tracking-tight truncate" style={{ fontSize: '12.5px', fontWeight: 700, color: '#ffffff', margin: 0 }}>
+                    {currentServerObj.name}
+                  </h3>
+                  <span className="inline-flex items-center gap-1 px-1.5 py-0.2 text-[8.5px] font-mono rounded-[4px] bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-semibold" style={{ padding: '1px 5px', borderRadius: '4px', display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                    <ShieldCheck className="w-2.5 h-2.5" style={{ width: '10px', height: '10px' }} />
+                    Shield Protected
+                  </span>
+                </div>
                 <div className="flex items-center gap-1 flex-wrap" style={{ display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap', marginTop: '2px' }}>
                   <span className="inline-flex items-center justify-center px-1.5 py-0.2 text-[9.5px] font-mono rounded-[4px] bg-white text-black font-bold">4K</span>
                   <span className="inline-flex items-center justify-center px-1.5 py-0.2 text-[9.5px] font-mono rounded-[4px] bg-transparent text-white font-medium border border-white/40">BluRay</span>

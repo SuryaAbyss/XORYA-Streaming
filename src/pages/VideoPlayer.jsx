@@ -649,7 +649,7 @@ const VideoPlayer = () => {
         }
     };
 
-    // Monitor playerUrl changes to trigger load timeout of 10 seconds
+    // Monitor playerUrl changes to trigger load timeout of 40 seconds (giving user buffer time)
     useEffect(() => {
         // Clear any existing load timeout
         if (loadTimeoutRef.current) {
@@ -659,9 +659,9 @@ const VideoPlayer = () => {
         // Only start timeout if it's not a download page
         if (activeServer !== 'rive-download') {
             loadTimeoutRef.current = setTimeout(() => {
-                console.log(`Server ${activeServer} load timed out. Auto-switching...`);
+                console.log(`Server ${activeServer} load timed out (40s). Auto-switching to next server...`);
                 switchToNextServer();
-            }, 10000);
+            }, 40000);
         }
 
         return () => {
@@ -1074,7 +1074,6 @@ const VideoPlayer = () => {
                                                 ref={iframeRef}
                                                 key={iframeKey}
                                                 src={playerUrl}
-
                                                 onLoad={handleIframeLoad}
                                                 style={{
                                                     width: '100%',

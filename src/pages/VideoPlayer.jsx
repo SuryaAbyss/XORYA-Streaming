@@ -118,7 +118,7 @@ const VideoPlayer = () => {
         } catch {
             // localStorage can be unavailable in private or embedded contexts.
         }
-        return isMobile ? 'vidking' : 'vidfast';
+        return isMobile ? '111movies' : 'vidfast';
     };
 
 

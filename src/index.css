@@ -278,36 +278,46 @@ body::before {
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+.hero-play-btn,
 .hero-glass-btn {
-  padding: 0.6rem 1.4rem;
-  display: flex;
+  padding: 0.55rem 1.35rem;
+  display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.5rem;
   border-radius: 50px;
-  font-weight: 700;
+  font-family: var(--font-main, 'Inter', system-ui, -apple-system, sans-serif) !important;
+  font-weight: 600;
   cursor: pointer;
-  background: rgba(255, 255, 255, 0.28);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  color: white;
-  border: 1px solid rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.28);
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-  font-size: 0.85rem;
+  font-size: 0.875rem;
   height: 38px;
+  white-space: nowrap !important;
+  text-decoration: none;
+  outline: none;
 }
 
+.hero-play-btn:hover,
 .hero-glass-btn:hover {
-  background: rgba(255, 255, 255, 0.16);
-  border-color: rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.32);
+  border-color: rgba(255, 255, 255, 0.45);
   transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3), 0 0 15px rgba(255, 255, 255, 0.08);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3), 0 0 15px rgba(255, 255, 255, 0.1);
+  color: #ffffff;
 }
 
+.hero-play-btn:active,
 .hero-glass-btn:active {
   transform: translateY(0);
 }
 
+.hero-play-btn:focus-visible,
 .hero-glass-btn:focus-visible {
   outline: 2px solid #38bdf8;
   outline-offset: 2px;
@@ -1836,11 +1846,13 @@ body::before {
   /* We use a dedicated class: .hero-mobile-content applied in JSX or override via CSS */
 
   /* Hero play + info buttons: minimum 46px height, properly sized text */
+  .hero-play-btn,
+  .hero-glass-btn,
   .interactive-play-btn {
     height: 46px !important;
-    min-width: 120px !important;
-    font-size: 0.88rem !important;
-    padding: 0 1.1rem !important;
+    font-size: 0.9rem !important;
+    padding: 0 1.25rem !important;
+    white-space: nowrap !important;
   }
 
   /* ── Home Page — Section Headers ───────────────────────────── */

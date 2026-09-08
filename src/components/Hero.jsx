@@ -446,20 +446,14 @@ const Hero = ({ movie, onPlay, onInfo, onTrailerStart, isTrailerPlaying, onTrail
                                     navigate(`/watch/${mtype}/${movie.id}?autofs=true`);
                                 }
                             }}
-                            className="interactive-play-btn"
-
+                            className="hero-play-btn"
+                            style={isMobile ? {
+                                height: '46px',
+                                fontSize: '0.9rem'
+                            } : undefined}
                         >
-                            <div className="bg-expander"></div>
-                            <div className="primary-content">
-                                <span className="primary-text">
-                                    <Play fill="white" color="white" size={16} />
-                                    <span>Play Now</span>
-                                </span>
-                            </div>
-                            <div className="secondary-content">
-                                <span>Play Now</span>
-                                <Play fill="black" color="black" size={16} />
-                            </div>
+                            <Play fill="white" color="white" size={isMobile ? 16 : 18} />
+                            <span>Play Now</span>
                         </button>
                     </div>
 

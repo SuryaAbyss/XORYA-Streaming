@@ -127,7 +127,7 @@ const MobileVideoPlayerView = ({
     { id: 12, name: 'Adventure' },
   ];
 
-  const currentServerObj = servers.find((s) => s.id === activeServer) || servers[0] || { name: 'PenguPlay' };
+  const currentServerObj = servers.find((s) => s.id === activeServer) || servers.find((s) => s.id === '111movies') || servers[0] || { name: '111Movies' };
 
   return (
     <div

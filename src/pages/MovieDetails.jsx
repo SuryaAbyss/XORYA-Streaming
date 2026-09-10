@@ -1,11 +1,12 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { getMovieDetails, imageUrl, getMovieVideos } from '../api/tmdb';
-import { ArrowLeft, Play, Plus, Download, Volume2, VolumeX } from 'lucide-react';
+import { ArrowLeft, Play, Plus, Download, Volume2, VolumeX, Calendar } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import useYouTubePlayer from '../hooks/useYouTubePlayer';
 import SEO from '../components/SEO';
 import LemniscateBloomLoader from '../components/LemniscateBloomLoader';
+import { getReleaseInfo } from '../utils/releaseStatus';
 
 
 const MovieDetails = () => {
@@ -344,46 +345,68 @@ const MovieDetails = () => {
                         transition={{ duration: 0.6, delay: 0.4 }}
                         style={{ display: 'flex', gap: '0.7rem', flexWrap: 'wrap', alignItems: 'center' }}
                     >
-                        {/* Play Button - Always Visible */}
-                        <button
-                            key="play-button-glass"
-                            onClick={() => {
-                                const targetType = movie.name ? 'tv' : 'movie';
-                                navigate(`/watch/${targetType}/${movie.id}?autofs=true`);
-                            }}
-                            style={{
-
-                                padding: '0.5rem 1.2rem',
-                                borderRadius: '50px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '0.4rem',
-                                background: 'rgba(255, 255, 255, 0.1)',
-                                backdropFilter: 'blur(20px)',
-                                WebkitBackdropFilter: 'blur(20px)',
-                                fontWeight: '600',
-                                cursor: 'pointer',
-                                border: '1px solid rgba(255, 255, 255, 0.2)',
-                                color: '#ffffff',
-                                fontSize: '0.875rem',
-                                transition: 'all 0.3s ease',
-                                boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
-                                outline: 'none',
-                                minHeight: '44px'
-                            }}
-                            onMouseEnter={(e) => {
-                                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)';
-                                e.currentTarget.style.transform = 'translateY(-2px)';
-                                e.currentTarget.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)';
-                            }}
-                            onMouseLeave={(e) => {
-                                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
-                                e.currentTarget.style.transform = 'translateY(0)';
-                                e.currentTarget.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)';
-                            }}
-                        >
-                            <Play fill="white" color="white" size={14} /> Play
-                        </button>
+                        {/* Play / Release Status Button - Always Visible */}
+                        {(() => {
+                            const releaseInfo = getReleaseInfo(movie);
+                            return (
+                                <button
+                                    key="play-button-glass"
+                                    onClick={() => {
+                                        if (releaseInfo.isUnreleased) {
+                                            if (trailerKey) setShowTrailer(true);
+                                        } else {
+                                            const targetType = movie.name ? 'tv' : 'movie';
+                                            navigate(`/watch/${targetType}/${movie.id}?autofs=true`);
+                                        }
+                                    }}
+                                    style={{
+                                        padding: '0.5rem 1.2rem',
+                                        borderRadius: '50px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '0.4rem',
+                                        background: releaseInfo.isUnreleased
+                                            ? 'linear-gradient(135deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.07) 100%)'
+                                            : 'rgba(255, 255, 255, 0.1)',
+                                        backdropFilter: 'blur(20px)',
+                                        WebkitBackdropFilter: 'blur(20px)',
+                                        fontWeight: '600',
+                                        cursor: 'pointer',
+                                        border: '1px solid rgba(255, 255, 255, 0.25)',
+                                        color: '#ffffff',
+                                        fontSize: '0.875rem',
+                                        transition: 'all 0.3s ease',
+                                        boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+                                        outline: 'none',
+                                        minHeight: '44px'
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)';
+                                        e.currentTarget.style.transform = 'translateY(-2px)';
+                                        e.currentTarget.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        e.currentTarget.style.background = releaseInfo.isUnreleased
+                                            ? 'linear-gradient(135deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.07) 100%)'
+                                            : 'rgba(255, 255, 255, 0.1)';
+                                        e.currentTarget.style.transform = 'translateY(0)';
+                                        e.currentTarget.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)';
+                                    }}
+                                >
+                                    {releaseInfo.isUnreleased ? (
+                                        <>
+                                            <Calendar color="#38bdf8" size={15} />
+                                            <span>{releaseInfo.label}</span>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Play fill="white" color="white" size={14} />
+                                            <span>Play</span>
+                                        </>
+                                    )}
+                                </button>
+                            );
+                        })()}
 
                         {/* Mute Button - Always Visible when trailer is playing */}
                         {showTrailer && trailerKey && (

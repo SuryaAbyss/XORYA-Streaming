@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Play, Plus, Check, Info, Star } from 'lucide-react';
+import { Play, Plus, Check, Info, Star, Calendar } from 'lucide-react';
 import { imageUrl } from '../../api/tmdb';
 import { useMovieModal } from '../../context/MovieModalContext';
 import { useWatchlist } from '../../hooks/useWatchlist';
+import { getReleaseInfo } from '../../utils/releaseStatus';
 
 // Genre ID mapper for common TMDB genres
 const GENRE_MAP = {
@@ -86,9 +87,15 @@ const MobileHeroBanner = ({ movies = [] }) => {
     }
   };
 
+  const releaseInfo = getReleaseInfo(currentMovie);
+
   const handlePlay = (e) => {
     e.stopPropagation();
-    navigate(`/watch/${mediaType}/${currentMovie.id}`);
+    if (releaseInfo.isUnreleased) {
+      openModal(currentMovie.id, mediaType);
+    } else {
+      navigate(`/watch/${mediaType}/${currentMovie.id}`);
+    }
   };
 
   const handleInfo = (e) => {
@@ -198,15 +205,42 @@ const MobileHeroBanner = ({ movies = [] }) => {
 
           {/* Action Buttons */}
           <div className="flex items-center gap-2 pt-1" style={{ display: 'flex', alignItems: 'center', gap: '8px', paddingTop: '4px' }}>
-            {/* Primary Play Button */}
+            {/* Primary Play / Release Status Button */}
             <button
               type="button"
               onClick={handlePlay}
-              className="flex-1 py-2.5 px-4 rounded-xl bg-white hover:bg-neutral-100 text-neutral-950 font-bold text-xs flex items-center justify-center gap-2 shadow-xl transition-all active:scale-95 min-h-[42px] cursor-pointer"
-              style={{ flex: 1, backgroundColor: '#ffffff', color: '#0a0a0c', minHeight: '42px', height: '42px', borderRadius: '14px', border: 'none', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', cursor: 'pointer', fontFamily: "'Unbounded', sans-serif", fontSize: '11.5px' }}
+              className="flex-1 py-2.5 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 shadow-xl transition-all active:scale-95 min-h-[42px] cursor-pointer"
+              style={{
+                flex: 1,
+                backgroundColor: releaseInfo.isUnreleased ? 'rgba(30, 39, 46, 0.8)' : '#ffffff',
+                color: releaseInfo.isUnreleased ? '#ffffff' : '#0a0a0c',
+                border: releaseInfo.isUnreleased ? '1px solid rgba(255, 255, 255, 0.22)' : 'none',
+                backdropFilter: releaseInfo.isUnreleased ? 'blur(16px)' : undefined,
+                WebkitBackdropFilter: releaseInfo.isUnreleased ? 'blur(16px)' : undefined,
+                minHeight: '42px',
+                height: '42px',
+                borderRadius: '14px',
+                fontWeight: 700,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                cursor: 'pointer',
+                fontFamily: "'Unbounded', sans-serif",
+                fontSize: '11.5px'
+              }}
             >
-              <Play className="w-3.5 h-3.5 fill-neutral-950 text-neutral-950" style={{ width: '13px', height: '13px', fill: '#0a0a0c', color: '#0a0a0c' }} />
-              <span>Play</span>
+              {releaseInfo.isUnreleased ? (
+                <>
+                  <Calendar className="w-3.5 h-3.5 text-sky-400" style={{ width: '13px', height: '13px', color: '#38bdf8' }} />
+                  <span className="truncate">{releaseInfo.label}</span>
+                </>
+              ) : (
+                <>
+                  <Play className="w-3.5 h-3.5 fill-neutral-950 text-neutral-950" style={{ width: '13px', height: '13px', fill: '#0a0a0c', color: '#0a0a0c' }} />
+                  <span>Play</span>
+                </>
+              )}
             </button>
 
             {/* Watchlist Toggle */}

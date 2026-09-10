@@ -1,10 +1,11 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { imageUrl, getMovieImages, getMovieVideos } from '../api/tmdb';
-import { Play, Info, Volume2, VolumeX, ArrowRight } from 'lucide-react';
+import { Play, Info, Volume2, VolumeX, ArrowRight, Calendar } from 'lucide-react';
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion'; // eslint-disable-line no-unused-vars
 import useYouTubePlayer from '../hooks/useYouTubePlayer';
 import { selectBestTrailer } from '../utils/trailerSelector';
+import { getReleaseInfo } from '../utils/releaseStatus';
 import ShinyPill from './ShinyPill';
 import { animate, createScope, createTimeline, stagger } from 'animejs';
 import GridPattern from './ui/GridPattern';
@@ -434,26 +435,50 @@ const Hero = ({ movie, onPlay, onInfo, onTrailerStart, isTrailerPlaying, onTrail
                     className="hero-anim-item"
                     style={{ display: 'flex', gap: isMobile ? '0.65rem' : '1rem', alignItems: 'center' }}
                 >
-
-                    <div>
-                        <button
-                            onClick={() => {
-                                if (onPlay) onPlay(movie);
-                                if (movie?.id) {
-                                    const mtype = movie.media_type || (movie.name ? 'tv' : 'movie');
-                                    navigate(`/watch/${mtype}/${movie.id}?autofs=true`);
-                                }
-                            }}
-                            className="hero-play-btn"
-                            style={isMobile ? {
-                                height: '46px',
-                                fontSize: '0.9rem'
-                            } : undefined}
-                        >
-                            <Play fill="white" color="white" size={isMobile ? 16 : 18} />
-                            <span>Play Now</span>
-                        </button>
-                    </div>
+                    {(() => {
+                        const releaseInfo = getReleaseInfo(movie);
+                        return (
+                            <div>
+                                <button
+                                    onClick={() => {
+                                        if (releaseInfo.isUnreleased) {
+                                            if (onInfo) onInfo(movie);
+                                            if (movie?.id) navigate(`/movie/${movie.id}`);
+                                        } else {
+                                            if (onPlay) onPlay(movie);
+                                            if (movie?.id) {
+                                                const mtype = movie.media_type || (movie.name ? 'tv' : 'movie');
+                                                navigate(`/watch/${mtype}/${movie.id}?autofs=true`);
+                                            }
+                                        }
+                                    }}
+                                    className={releaseInfo.isUnreleased ? 'hero-glass-btn' : 'hero-play-btn'}
+                                    style={{
+                                        ...(isMobile ? { height: '46px', fontSize: '0.9rem' } : {}),
+                                        ...(releaseInfo.isUnreleased ? {
+                                            background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0.08) 100%)',
+                                            border: '1px solid rgba(255, 255, 255, 0.3)',
+                                            color: '#ffffff',
+                                            backdropFilter: 'blur(16px)',
+                                            WebkitBackdropFilter: 'blur(16px)',
+                                        } : {})
+                                    }}
+                                >
+                                    {releaseInfo.isUnreleased ? (
+                                        <>
+                                            <Calendar size={isMobile ? 16 : 18} color="#38bdf8" />
+                                            <span>{releaseInfo.label}</span>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Play fill="white" color="white" size={isMobile ? 16 : 18} />
+                                            <span>Play Now</span>
+                                        </>
+                                    )}
+                                </button>
+                            </div>
+                        );
+                    })()}
 
                     <div>
                         <button

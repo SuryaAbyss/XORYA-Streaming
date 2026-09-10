@@ -1,13 +1,14 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getMovieDetails, getTVShowDetails, imageUrl, getSeasonDetails, getTVShowImages, getMovieImages } from '../api/tmdb';
-import { X, Play, Heart, Bookmark, Volume2, VolumeX, ChevronDown } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { X, Play, Heart, Bookmark, Volume2, VolumeX, ChevronDown, Calendar, Clock, Sparkles } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import useYouTubePlayer from '../hooks/useYouTubePlayer';
 import { useMovieModal } from '../context/MovieModalContext';
 import { useWatchlist } from '../hooks/useWatchlist';
 import { getServerUrl } from '../config/servers';
 import { selectBestTrailer } from '../utils/trailerSelector';
+import { getReleaseInfo } from '../utils/releaseStatus';
 import { gsap } from 'gsap';
 import { useGSAP } from '@gsap/react';
 
@@ -234,6 +235,8 @@ const MovieDetailsModal = () => {
     }, [handleClose]);
 
     if (!selectedMovieId || !movie) return null;
+
+    const releaseInfo = getReleaseInfo(movie);
 
     // ─── MOBILE LAYOUT ───────────────────────────────────────────────────────
     if (isMobile) {
@@ -479,14 +482,20 @@ const MovieDetailsModal = () => {
                                 gap: '10px',
                                 marginBottom: '10px',
                             }}>
-                                {/* Primary Play Now button — big pill */}
+                                {/* Primary Action button — Play Now or Releasing Date / Coming Soon */}
                                 <button
                                     onClick={() => {
-                                        closeModal();
-                                        navigate(`/watch/${selectedMediaType}/${selectedMovieId}?autofs=true`);
+                                        if (releaseInfo.isUnreleased) {
+                                            // Title is not released yet — toggle watchlist so user doesn't miss it
+                                            if (!isMustWatch) {
+                                                toggleHeart();
+                                            }
+                                        } else {
+                                            closeModal();
+                                            navigate(`/watch/${selectedMediaType}/${selectedMovieId}?autofs=true`);
+                                        }
                                     }}
                                     style={{
-
                                         flex: 1,
                                         display: 'flex',
                                         alignItems: 'center',
@@ -494,18 +503,46 @@ const MovieDetailsModal = () => {
                                         gap: '8px',
                                         height: '50px',
                                         borderRadius: '50px',
-                                        background: '#ffffff',
-                                        color: '#000',
+                                        background: releaseInfo.isUnreleased
+                                            ? 'linear-gradient(135deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.07) 100%)'
+                                            : '#ffffff',
+                                        color: releaseInfo.isUnreleased ? '#ffffff' : '#000000',
                                         fontWeight: '700',
-                                        fontSize: '0.95rem',
-                                        border: 'none',
-                                        cursor: 'pointer',
+                                        fontSize: '0.92rem',
+                                        border: releaseInfo.isUnreleased ? '1px solid rgba(255, 255, 255, 0.28)' : 'none',
+                                        cursor: releaseInfo.isUnreleased ? 'pointer' : 'pointer',
                                         letterSpacing: '0.3px',
-                                        boxShadow: '0 4px 20px rgba(255,255,255,0.2)',
+                                        boxShadow: releaseInfo.isUnreleased
+                                            ? '0 4px 20px rgba(0,0,0,0.35)'
+                                            : '0 4px 20px rgba(255,255,255,0.2)',
+                                        backdropFilter: releaseInfo.isUnreleased ? 'blur(16px)' : undefined,
+                                        WebkitBackdropFilter: releaseInfo.isUnreleased ? 'blur(16px)' : undefined,
+                                        transition: 'all 0.2s ease',
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        if (releaseInfo.isUnreleased) {
+                                            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.22)';
+                                            e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.45)';
+                                        }
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        if (releaseInfo.isUnreleased) {
+                                            e.currentTarget.style.background = 'linear-gradient(135deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.07) 100%)';
+                                            e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.28)';
+                                        }
                                     }}
                                 >
-                                    <Play fill="black" size={18} />
-                                    Play Now
+                                    {releaseInfo.isUnreleased ? (
+                                        <>
+                                            <Calendar size={18} color="#38bdf8" />
+                                            <span>{releaseInfo.label}</span>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Play fill="black" size={18} />
+                                            <span>Play Now</span>
+                                        </>
+                                    )}
                                 </button>
 
                                 {/* Heart */}
@@ -837,22 +874,46 @@ const MovieDetailsModal = () => {
                     >
                         <button
                             onClick={() => {
-                                closeModal();
-                                navigate(`/watch/${selectedMediaType}/${selectedMovieId}`);
+                                if (releaseInfo.isUnreleased) {
+                                    if (!isMustWatch) toggleHeart();
+                                } else {
+                                    closeModal();
+                                    navigate(`/watch/${selectedMediaType}/${selectedMovieId}`);
+                                }
                             }}
                             style={{
                                 display: 'flex', alignItems: 'center', gap: '0.6rem',
                                 padding: '0.8rem 1.8rem', borderRadius: '50px',
-                                background: 'white', color: 'black',
-                                fontWeight: 'bold', fontSize: '0.95rem',
-                                border: 'none', cursor: 'pointer',
-                                boxShadow: '0 4px 15px rgba(255,255,255,0.3)',
-                                transition: 'transform 0.2s',
+                                background: releaseInfo.isUnreleased
+                                    ? 'linear-gradient(135deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.07) 100%)'
+                                    : 'white',
+                                color: releaseInfo.isUnreleased ? 'white' : 'black',
+                                fontWeight: 'bold', fontSize: '0.92rem',
+                                border: releaseInfo.isUnreleased ? '1px solid rgba(255, 255, 255, 0.28)' : 'none',
+                                cursor: 'pointer',
+                                boxShadow: releaseInfo.isUnreleased ? '0 4px 15px rgba(0,0,0,0.4)' : '0 4px 15px rgba(255,255,255,0.3)',
+                                backdropFilter: releaseInfo.isUnreleased ? 'blur(16px)' : undefined,
+                                WebkitBackdropFilter: releaseInfo.isUnreleased ? 'blur(16px)' : undefined,
+                                transition: 'all 0.2s',
                             }}
-                            onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
-                            onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                            onMouseEnter={(e) => {
+                                if (!releaseInfo.isUnreleased) e.currentTarget.style.transform = 'scale(1.05)';
+                            }}
+                            onMouseLeave={(e) => {
+                                if (!releaseInfo.isUnreleased) e.currentTarget.style.transform = 'scale(1)';
+                            }}
                         >
-                            <Play fill="black" size={18} /> Play Now
+                            {releaseInfo.isUnreleased ? (
+                                <>
+                                    <Calendar size={17} color="#38bdf8" />
+                                    <span>{releaseInfo.label}</span>
+                                </>
+                            ) : (
+                                <>
+                                    <Play fill="black" size={18} />
+                                    <span>Play Now</span>
+                                </>
+                            )}
                         </button>
 
                         <motion.button

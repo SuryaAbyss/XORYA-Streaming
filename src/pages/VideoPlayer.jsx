@@ -102,9 +102,8 @@ const VideoPlayer = () => {
     const [shareToast, setShareToast] = useState(false);
     const checkIsMobile = () => {
         if (typeof window === 'undefined') return false;
-        const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
-            (navigator.maxTouchPoints > 0 && Math.min(window.innerWidth, window.innerHeight) <= 768);
-        return isMobileDevice || window.innerWidth <= 768;
+        const isMobileUA = /Android|iPhone|iPod|Mobile|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        return isMobileUA || window.innerWidth <= 768;
     };
 
     const getInitialServer = () => {

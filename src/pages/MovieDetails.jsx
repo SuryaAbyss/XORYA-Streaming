@@ -23,8 +23,7 @@ const MovieDetails = () => {
     const playerContainerRef = useRef(null);
     // Detect mobile for layout adjustments
     const isMobile = typeof window !== 'undefined' && (
-        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
-        (navigator.maxTouchPoints > 0 && Math.min(window.innerWidth, window.innerHeight) <= 768) ||
+        /Android|iPhone|iPod|Mobile|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
         window.innerWidth <= 768
     );
 

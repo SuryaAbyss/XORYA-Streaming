@@ -639,48 +639,8 @@ const VideoPlayer = () => {
         type === 'tv' ? currentEpisode : null
     );
 
-    const loadTimeoutRef = React.useRef(null);
-    const [fallbackToast, setFallbackToast] = useState(null);
-
-    const switchToNextServer = () => {
-        const playableServers = servers.filter(s => s.id !== 'rive-download');
-        const currentIndex = playableServers.findIndex(s => s.id === activeServer);
-        if (currentIndex !== -1) {
-            const nextIndex = (currentIndex + 1) % playableServers.length;
-            const nextServer = playableServers[nextIndex];
-            setActiveServer(nextServer.id);
-            setFallbackToast(nextServer.name);
-            setTimeout(() => setFallbackToast(null), 4000);
-        }
-    };
-
-    // Monitor playerUrl changes to trigger load timeout of 40 seconds (giving user buffer time)
-    useEffect(() => {
-        // Clear any existing load timeout
-        if (loadTimeoutRef.current) {
-            clearTimeout(loadTimeoutRef.current);
-        }
-
-        // Only start timeout if it's not a download page
-        if (activeServer !== 'rive-download') {
-            loadTimeoutRef.current = setTimeout(() => {
-                console.log(`Server ${activeServer} load timed out (40s). Auto-switching to next server...`);
-                switchToNextServer();
-            }, 40000);
-        }
-
-        return () => {
-            if (loadTimeoutRef.current) {
-                clearTimeout(loadTimeoutRef.current);
-            }
-        };
-    }, [playerUrl, activeServer]);
-
     const handleIframeLoad = () => {
         console.log(`Iframe successfully loaded ${activeServer}`);
-        if (loadTimeoutRef.current) {
-            clearTimeout(loadTimeoutRef.current);
-        }
 
         const searchParams = new URLSearchParams(window.location.search);
         const autoFS = searchParams.get('autofs');
@@ -1761,46 +1721,7 @@ const VideoPlayer = () => {
                     }
                 `}
                 </style>
-                {/* Fallback Toast Notification */}
-                <AnimatePresence>
-                    {fallbackToast && (
-                        <motion.div
-                            initial={{ opacity: 0, y: 50, scale: 0.9 }}
-                            animate={{ opacity: 1, y: 0, scale: 1 }}
-                            exit={{ opacity: 0, y: 20, scale: 0.9 }}
-                            transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-                            style={{
-                                position: 'fixed',
-                                bottom: '2rem',
-                                left: '2rem',
-                                background: 'rgba(15, 15, 20, 0.85)',
-                                backdropFilter: 'blur(20px)',
-                                WebkitBackdropFilter: 'blur(20px)',
-                                border: '1px solid rgba(0, 188, 212, 0.3)',
-                                borderRadius: '16px',
-                                padding: '1rem 1.5rem',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '0.8rem',
-                                boxShadow: '0 12px 40px rgba(0, 0, 0, 0.5), 0 0 20px rgba(0, 188, 212, 0.1)',
-                                zIndex: 999999,
-                                color: 'white',
-                                maxWidth: '380px'
-                            }}
-                        >
-                            <div style={{
-                                width: '8px',
-                                height: '8px',
-                                background: '#00bcd4',
-                                borderRadius: '50%',
-                                boxShadow: '0 0 8px #00bcd4'
-                            }} />
-                            <div style={{ fontSize: '0.88rem', fontWeight: '500' }}>
-                                Server slow. Auto-switched to <span style={{ color: '#00bcd4', fontWeight: '700' }}>{fallbackToast}</span>
-                            </div>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
+
             </div>
         </div>
     );

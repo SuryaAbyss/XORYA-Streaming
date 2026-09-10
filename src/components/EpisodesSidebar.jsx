@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Play, Calendar, Star, Clock, Info, ChevronDown, ChevronUp, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Play, Calendar, Star, Clock, Info, ChevronDown, ChevronUp, X, ChevronLeft, ChevronRight, Tv } from 'lucide-react';
 import { getSeasonDetails, getTVEpisodeCredits, getTVEpisodeImages, imageUrl } from '../api/tmdb';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -757,7 +757,9 @@ const EpisodesSidebar = ({
                                                                             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                                                         />
                                                                     ) : (
-                                                                        <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.3 }}>ðŸ“º</div>
+                                                                        <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.35 }}>
+                                                                            <Tv size={16} />
+                                                                        </div>
                                                                     )}
                                                                     <div style={{
                                                                         position: 'absolute',
@@ -775,7 +777,7 @@ const EpisodesSidebar = ({
                                                                 <div style={{ flex: 1, minWidth: 0 }}>
                                                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.2rem' }}>
                                                                         <h4 style={{ fontSize: '0.88rem', fontWeight: '700', color: 'var(--theme-accent)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                                                            E{episode.episode_number} â€¢ {episode.name}
+                                                                            E{episode.episode_number} • {episode.name}
                                                                         </h4>
                                                                         {/* Equalizer animation */}
                                                                         <div className="active-equalizer" style={{ display: 'flex', alignItems: 'flex-end', gap: '2px', height: '12px', flexShrink: 0 }}>
@@ -786,8 +788,10 @@ const EpisodesSidebar = ({
                                                                     </div>
 
                                                                     <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center', fontSize: '0.72rem', color: 'rgba(255,255,255,0.5)', marginBottom: '0.4rem' }}>
-                                                                        <span style={{ color: '#fbbf24' }}>â˜… {episode.vote_average?.toFixed(1)}</span>
-                                                                        <span>â€¢</span>
+                                                                        <span style={{ color: '#fbbf24', display: 'inline-flex', alignItems: 'center', gap: '3px', fontWeight: 600 }}>
+                                                                            <Star size={11} fill="#fbbf24" color="#fbbf24" /> {episode.vote_average ? episode.vote_average.toFixed(1) : 'N/A'}
+                                                                        </span>
+                                                                        <span>•</span>
                                                                         <span>{episode.runtime ? `${episode.runtime} min` : '42 min'}</span>
                                                                     </div>
 
@@ -880,7 +884,9 @@ const EpisodesSidebar = ({
                                                                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                                                 />
                                                             ) : (
-                                                                <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.3 }}>ðŸ“º</div>
+                                                                <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.35 }}>
+                                                                    <Tv size={16} />
+                                                                </div>
                                                             )}
                                                         </div>
 
@@ -889,8 +895,10 @@ const EpisodesSidebar = ({
                                                                 <span style={{ color: 'var(--theme-accent)', fontWeight: 800 }}>E{episode.episode_number}</span> &nbsp; {episode.name}
                                                             </h4>
                                                             <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center', fontSize: '0.72rem', color: 'rgba(255,255,255,0.4)' }}>
-                                                                <span style={{ color: '#fbbf24' }}>â˜… {episode.vote_average?.toFixed(1)}</span>
-                                                                <span>â€¢</span>
+                                                                <span style={{ color: '#fbbf24', display: 'inline-flex', alignItems: 'center', gap: '3px', fontWeight: 600 }}>
+                                                                    <Star size={11} fill="#fbbf24" color="#fbbf24" /> {episode.vote_average ? episode.vote_average.toFixed(1) : 'N/A'}
+                                                                </span>
+                                                                <span>•</span>
                                                                 <span>{episode.runtime ? `${episode.runtime} min` : '42 min'}</span>
                                                             </div>
                                                             <p className="watch-episode-summary" style={{
@@ -1038,13 +1046,15 @@ const EpisodesSidebar = ({
                             {nextEpisode.still_path ? (
                                 <img src={imageUrl(nextEpisode.still_path, 'w300')} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                             ) : (
-                                <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.3 }}>ðŸ“º</div>
+                                <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.35 }}>
+                                    <Tv size={16} />
+                                </div>
                             )}
                         </div>
 
                         <div style={{ flex: 1, minWidth: 0 }}>
                             <h5 style={{ fontSize: '0.82rem', fontWeight: '700', color: 'white', margin: '0 0 0.1rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                E{nextEpisode.episode_number} â€¢ {nextEpisode.name}
+                                E{nextEpisode.episode_number} • {nextEpisode.name}
                             </h5>
                             <p style={{
                                 fontSize: '0.7rem',

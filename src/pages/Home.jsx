@@ -25,17 +25,25 @@ const Home = ({ category = 'all' }) => {
     const [top10Data, setTop10Data] = useState([]);
 
     // Detect mobile for layout adjustments
-    const [isMobileView, setIsMobileView] = useState(() => {
+    const checkIsMobile = () => {
         if (typeof window === 'undefined') return false;
-        return window.innerWidth <= 768;
-    });
+        const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+            (navigator.maxTouchPoints > 0 && Math.min(window.innerWidth, window.innerHeight) <= 768);
+        return isMobileDevice || window.innerWidth <= 768;
+    };
+
+    const [isMobileView, setIsMobileView] = useState(checkIsMobile);
 
     useEffect(() => {
         const handleResize = () => {
-            setIsMobileView(window.innerWidth <= 768);
+            setIsMobileView(checkIsMobile());
         };
         window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
+        window.addEventListener('orientationchange', handleResize);
+        return () => {
+            window.removeEventListener('resize', handleResize);
+            window.removeEventListener('orientationchange', handleResize);
+        };
     }, []);
 
     // Preload YouTube API early so trailer loads faster (desktop only)

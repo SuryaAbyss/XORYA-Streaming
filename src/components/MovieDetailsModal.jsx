@@ -31,7 +31,11 @@ const MovieDetailsModal = () => {
     const [isClosing, setIsClosing] = useState(false);
 
     // Mobile detection
-    const isMobile = typeof window !== 'undefined' && navigator.maxTouchPoints > 0 && window.innerWidth <= 768;
+    const isMobile = typeof window !== 'undefined' && (
+        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+        (navigator.maxTouchPoints > 0 && Math.min(window.innerWidth, window.innerHeight) <= 768) ||
+        window.innerWidth <= 768
+    );
 
     const handleClose = useCallback(() => {
         if (isClosing) return;

@@ -5,7 +5,11 @@ import { RefreshCw, Shield, FlaskConical, AlertTriangle } from 'lucide-react';
 const ServerSelector = ({ servers, activeServer, onServerChange, onReload }) => {
     const [isExpanded, setIsExpanded] = React.useState(false);
     // Detect mobile for grid layout
-    const isMobile = typeof window !== 'undefined' && navigator.maxTouchPoints > 0 && window.innerWidth <= 768;
+    const isMobile = typeof window !== 'undefined' && (
+        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+        (navigator.maxTouchPoints > 0 && Math.min(window.innerWidth, window.innerHeight) <= 768) ||
+        window.innerWidth <= 768
+    );
 
     // Filter out testing servers first
     const testingServers = servers.filter(s => s.category === 'testing');

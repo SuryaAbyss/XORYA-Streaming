@@ -13,7 +13,11 @@ const InteractiveMovieCard = ({ movie, index = 0 }) => {
     const [imgLoaded, setImgLoaded] = useState(false);
     const [imgError, setImgError] = useState(false);
 
-    const isMobile = typeof window !== 'undefined' && navigator.maxTouchPoints > 0 && window.innerWidth <= 768;
+    const isMobile = typeof window !== 'undefined' && (
+        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+        (navigator.maxTouchPoints > 0 && Math.min(window.innerWidth, window.innerHeight) <= 768) ||
+        window.innerWidth <= 768
+    );
 
     // ── Fetch transparent title logo ───────────────────────────────────────
     useEffect(() => {

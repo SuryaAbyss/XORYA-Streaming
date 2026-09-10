@@ -45,6 +45,22 @@ const MobileVideoPlayerView = ({
   const navigate = useNavigate();
   const [showServerDrawer, setShowServerDrawer] = useState(false);
   const [showSeasonDrawer, setShowSeasonDrawer] = useState(false);
+  const [isLandscape, setIsLandscape] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return window.innerWidth > window.innerHeight;
+  });
+
+  useEffect(() => {
+    const handleOrientation = () => {
+      setIsLandscape(window.innerWidth > window.innerHeight);
+    };
+    window.addEventListener('resize', handleOrientation);
+    window.addEventListener('orientationchange', handleOrientation);
+    return () => {
+      window.removeEventListener('resize', handleOrientation);
+      window.removeEventListener('orientationchange', handleOrientation);
+    };
+  }, []);
 
   // Mobile Redirect Shield: Trap rogue top-level navigations & back-redirects
   useEffect(() => {
@@ -161,19 +177,19 @@ const MobileVideoPlayerView = ({
 
       {/* Floating Header */}
       <header
-        className="fixed top-0 left-0 right-0 z-40 px-3 pt-3 flex items-center justify-between max-w-md mx-auto pointer-events-auto safe-top"
+        className="fixed top-0 left-0 right-0 z-40 px-3 pt-3 flex items-center justify-between mx-auto pointer-events-auto safe-top"
         style={{
           position: 'fixed',
           top: 0,
           left: 0,
           right: 0,
           zIndex: 40,
-          maxWidth: '440px',
+          maxWidth: isLandscape ? '100%' : '440px',
           margin: '0 auto',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          padding: '12px 14px',
+          padding: isLandscape ? '10px 24px' : '12px 14px',
         }}
       >
         {/* Back Button */}
@@ -239,15 +255,15 @@ const MobileVideoPlayerView = ({
 
       {/* Main Player Content Container */}
       <main
-        className="w-full max-w-md mx-auto flex-1 relative z-10 flex flex-col pt-16 px-3 pb-24 space-y-4 select-none"
+        className="w-full mx-auto flex-1 relative z-10 flex flex-col pt-16 px-3 pb-24 space-y-4 select-none"
         style={{
           width: '100%',
-          maxWidth: '440px',
+          maxWidth: isLandscape ? '960px' : '440px',
           margin: '0 auto',
           position: 'relative',
           zIndex: 10,
           flex: 1,
-          padding: '60px 12px 110px 12px',
+          padding: isLandscape ? '56px 20px 100px 20px' : '60px 12px 110px 12px',
           display: 'flex',
           flexDirection: 'column',
           gap: '14px',
@@ -256,13 +272,13 @@ const MobileVideoPlayerView = ({
       >
         {/* 16:9 Cinema Player Card */}
         <section
-          className="relative mx-auto overflow-hidden bg-black/90 shadow-2xl w-full aspect-[16/9] max-h-[62vh] rounded-2xl border border-white/10"
+          className="relative mx-auto overflow-hidden bg-black/90 shadow-2xl w-full aspect-[16/9] rounded-2xl border border-white/10"
           style={{
             position: 'relative',
             width: '100%',
             aspectRatio: '16 / 9',
-            maxHeight: '60vh',
-            borderRadius: '18px',
+            maxHeight: isLandscape ? '85vh' : '60vh',
+            borderRadius: isLandscape ? '20px' : '18px',
             overflow: 'hidden',
             backgroundColor: '#000000',
             border: '1px solid rgba(255, 255, 255, 0.12)',

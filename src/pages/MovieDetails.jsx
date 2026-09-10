@@ -22,7 +22,11 @@ const MovieDetails = () => {
     const uiHideTimerRef = useRef(null);
     const playerContainerRef = useRef(null);
     // Detect mobile for layout adjustments
-    const isMobile = typeof window !== 'undefined' && navigator.maxTouchPoints > 0 && window.innerWidth <= 768;
+    const isMobile = typeof window !== 'undefined' && (
+        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+        (navigator.maxTouchPoints > 0 && Math.min(window.innerWidth, window.innerHeight) <= 768) ||
+        window.innerWidth <= 768
+    );
 
     const handleTrailerEnd = useCallback(() => {
         // Loop is handled by the hook

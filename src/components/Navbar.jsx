@@ -15,17 +15,25 @@ const Navbar = () => {
     const logoTimerRef = useRef(null);
     const [hoveredItem, setHoveredItem] = useState(null);
 
-    const [isMobile, setIsMobile] = useState(() => {
+    const checkIsMobile = () => {
         if (typeof window === 'undefined') return false;
-        return window.innerWidth <= 768;
-    });
+        const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+            (navigator.maxTouchPoints > 0 && Math.min(window.innerWidth, window.innerHeight) <= 768);
+        return isMobileDevice || window.innerWidth <= 768;
+    };
+
+    const [isMobile, setIsMobile] = useState(checkIsMobile);
 
     useEffect(() => {
         const handleResize = () => {
-            setIsMobile(window.innerWidth <= 768);
+            setIsMobile(checkIsMobile());
         };
         window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
+        window.addEventListener('orientationchange', handleResize);
+        return () => {
+            window.removeEventListener('resize', handleResize);
+            window.removeEventListener('orientationchange', handleResize);
+        };
     }, []);
 
     const isActive = (path) => {

@@ -12,10 +12,10 @@ import GridPattern from './ui/GridPattern';
 // Detect mobile/touch devices  trailers are disabled on phones
 const isMobileDevice = () => {
     if (typeof window === 'undefined') return false;
-    // Check for touch capability AND a narrow viewport (phones, not tablets/desktops)
+    const isMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     const hasTouch = navigator.maxTouchPoints > 0 || 'ontouchstart' in window;
-    const isNarrow = window.innerWidth <= 768;
-    return hasTouch && isNarrow;
+    const isMobileScreen = Math.min(window.innerWidth, window.innerHeight) <= 768;
+    return isMobileUA || (hasTouch && isMobileScreen) || window.innerWidth <= 768;
 };
 
 const Hero = ({ movie, onPlay, onInfo, onTrailerStart, isTrailerPlaying, onTrailerEnd }) => {

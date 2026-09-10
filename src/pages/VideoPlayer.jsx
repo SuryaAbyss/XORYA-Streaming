@@ -100,11 +100,15 @@ const VideoPlayer = () => {
     const [currentEpisodeDetails, setCurrentEpisodeDetails] = useState(null);
     const [accentColorRgb, setAccentColorRgb] = useState('0, 188, 212'); // Default cyan
     const [shareToast, setShareToast] = useState(false);
+    const checkIsMobile = () => {
+        if (typeof window === 'undefined') return false;
+        const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+            (navigator.maxTouchPoints > 0 && Math.min(window.innerWidth, window.innerHeight) <= 768);
+        return isMobileDevice || window.innerWidth <= 768;
+    };
+
     const getInitialServer = () => {
-        const isMobile = typeof window !== 'undefined' && (
-            /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
-            (navigator.maxTouchPoints > 0 && window.innerWidth <= 768)
-        );
+        const isMobile = checkIsMobile();
 
         try {
             const raw = localStorage.getItem('xorya_watchlist');
@@ -126,17 +130,18 @@ const VideoPlayer = () => {
     const [activeServer, setActiveServer] = useState(getInitialServer);
     const [iframeKey, setIframeKey] = useState(0);
     const [isTheaterMode, setIsTheaterMode] = useState(false);
-    const [isMobileView, setIsMobileView] = useState(() => {
-        if (typeof window === 'undefined') return false;
-        return window.innerWidth <= 768;
-    });
+    const [isMobileView, setIsMobileView] = useState(checkIsMobile);
 
     useEffect(() => {
         const handleResize = () => {
-            setIsMobileView(window.innerWidth <= 768);
+            setIsMobileView(checkIsMobile());
         };
         window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
+        window.addEventListener('orientationchange', handleResize);
+        return () => {
+            window.removeEventListener('resize', handleResize);
+            window.removeEventListener('orientationchange', handleResize);
+        };
     }, []);
 
     const playerFrameRef = useRef(null);

@@ -17,8 +17,8 @@ export const servers = [
         name: 'VidSrc SBS',
         type: 'alternate',
         urlTemplate: {
-            movie: (tmdbId) => `https://vidsrc.sbs/embed/movie/${tmdbId}?autoplay=1`,
-            tv: (tmdbId, season, episode) => `https://vidsrc.sbs/embed/tv/${tmdbId}/${season}/${episode}?autoplay=1`
+            movie: (tmdbId) => `https://vidsrc.sbs/embed/movie/${tmdbId}/`,
+            tv: (tmdbId, season, episode) => `https://vidsrc.sbs/embed/tv/${tmdbId}/${season}/${episode}/`
         }
     },
     // Server #3 - 111Movies (3rd Place)

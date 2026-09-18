@@ -11,6 +11,7 @@ import MovieRow from '../components/MovieRow';
 import WatchDetailsTabs from '../components/WatchDetailsTabs';
 import LemniscateBloomLoader from '../components/LemniscateBloomLoader';
 import MobileVideoPlayerView from '../components/mobile/MobileVideoPlayerView';
+import { isMobileDevice } from '../utils/deviceDetector';
 
 
 // Genre to color mappings for atmospheric fallback themes
@@ -100,11 +101,7 @@ const VideoPlayer = () => {
     const [currentEpisodeDetails, setCurrentEpisodeDetails] = useState(null);
     const [accentColorRgb, setAccentColorRgb] = useState('0, 188, 212'); // Default cyan
     const [shareToast, setShareToast] = useState(false);
-    const checkIsMobile = () => {
-        if (typeof window === 'undefined') return false;
-        const isMobileUA = /Android|iPhone|iPod|Mobile|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-        return isMobileUA || window.innerWidth <= 768;
-    };
+    const checkIsMobile = () => isMobileDevice();
 
     const getInitialServer = () => {
         const isMobile = checkIsMobile();
@@ -238,10 +235,9 @@ const VideoPlayer = () => {
     // Auto-trigger full screen for mobile users coming from Play Now button
     useEffect(() => {
         const searchParams = new URLSearchParams(window.location.search);
-        const autoFS = searchParams.get('autofs');
-        const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || (navigator.maxTouchPoints > 0 && window.innerWidth <= 768);
+        const isMob = isMobileDevice();
 
-        if (autoFS === 'true' && isMobileDevice) {
+        if (autoFS === 'true' && isMob) {
             const triggerFS = () => {
                 const elem = playerFrameRef.current;
                 if (!elem || document.fullscreenElement) return;
@@ -642,10 +638,9 @@ const VideoPlayer = () => {
         console.log(`Iframe successfully loaded ${activeServer}`);
 
         const searchParams = new URLSearchParams(window.location.search);
-        const autoFS = searchParams.get('autofs');
-        const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || (navigator.maxTouchPoints > 0 && window.innerWidth <= 768);
+        const isMob = isMobileDevice();
 
-        if (autoFS === 'true' && isMobileDevice && !document.fullscreenElement) {
+        if (autoFS === 'true' && isMob && !document.fullscreenElement) {
             const elem = iframeRef.current || playerFrameRef.current;
             if (elem) {
                 const requestMethod = elem.requestFullscreen || elem.webkitRequestFullscreen || elem.mozRequestFullScreen || elem.msRequestFullscreen;
@@ -1048,7 +1043,6 @@ const VideoPlayer = () => {
                                                 webkitAllowFullScreen
                                                 mozAllowFullScreen
                                                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen *"
-                                                referrerPolicy="no-referrer-when-downgrade"
                                                 scrolling="no"
                                             />
                                         </div>

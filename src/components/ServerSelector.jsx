@@ -1,14 +1,12 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { RefreshCw, Shield, FlaskConical, AlertTriangle } from 'lucide-react';
+import { isMobileDevice } from '../utils/deviceDetector';
 
 const ServerSelector = ({ servers, activeServer, onServerChange, onReload }) => {
     const [isExpanded, setIsExpanded] = React.useState(false);
-    // Detect mobile for grid layout
-    const isMobile = typeof window !== 'undefined' && (
-        /Android|iPhone|iPod|Mobile|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
-        window.innerWidth <= 768
-    );
+    // Detect mobile for grid layout (excludes TVs)
+    const isMobile = isMobileDevice();
 
     // Filter out testing servers first
     const testingServers = servers.filter(s => s.category === 'testing');

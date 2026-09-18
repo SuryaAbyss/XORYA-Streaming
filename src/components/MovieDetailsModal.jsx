@@ -9,6 +9,7 @@ import { useWatchlist } from '../hooks/useWatchlist';
 import { getServerUrl } from '../config/servers';
 import { selectBestTrailer } from '../utils/trailerSelector';
 import { getReleaseInfo } from '../utils/releaseStatus';
+import { isMobileDevice } from '../utils/deviceDetector';
 import { gsap } from 'gsap';
 import { useGSAP } from '@gsap/react';
 
@@ -31,11 +32,8 @@ const MovieDetailsModal = () => {
     const mobileContainerRef = useRef(null);
     const [isClosing, setIsClosing] = useState(false);
 
-    // Mobile detection
-    const isMobile = typeof window !== 'undefined' && (
-        /Android|iPhone|iPod|Mobile|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
-        window.innerWidth <= 768
-    );
+    // Mobile detection (excludes TVs)
+    const isMobile = isMobileDevice();
 
     const handleClose = useCallback(() => {
         if (isClosing) return;

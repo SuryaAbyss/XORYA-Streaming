@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { imageUrl, getLogoUrl, getMovieImages, getTVShowImages } from '../api/tmdb';
 import { Star } from 'lucide-react';
 import { useMovieModal } from '../context/MovieModalContext';
+import { isMobileDevice } from '../utils/deviceDetector';
 
 // In-memory logo cache to avoid repeated API calls
 const logoCache = new Map();
@@ -13,10 +14,7 @@ const InteractiveMovieCard = ({ movie, index = 0 }) => {
     const [imgLoaded, setImgLoaded] = useState(false);
     const [imgError, setImgError] = useState(false);
 
-    const isMobile = typeof window !== 'undefined' && (
-        /Android|iPhone|iPod|Mobile|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
-        window.innerWidth <= 768
-    );
+    const isMobile = isMobileDevice();
 
     // ── Fetch transparent title logo ───────────────────────────────────────
     useEffect(() => {

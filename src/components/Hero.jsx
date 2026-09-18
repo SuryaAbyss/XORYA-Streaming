@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { imageUrl, getMovieImages, getMovieVideos } from '../api/tmdb';
+import { imageUrl, getMovieImages, getMovieVideos, getTVShowImages, getTVShowVideos } from '../api/tmdb';
 import { Play, Info, Volume2, VolumeX, ArrowRight, Calendar } from 'lucide-react';
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion'; // eslint-disable-line no-unused-vars
 import useYouTubePlayer from '../hooks/useYouTubePlayer';
@@ -9,13 +9,7 @@ import { getReleaseInfo } from '../utils/releaseStatus';
 import ShinyPill from './ShinyPill';
 import { animate, createScope, createTimeline, stagger } from 'animejs';
 import GridPattern from './ui/GridPattern';
-
-// Detect mobile/touch devices  trailers are disabled on phones
-const isMobileDevice = () => {
-    if (typeof window === 'undefined') return false;
-    const isMobileUA = /Android|iPhone|iPod|Mobile|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    return isMobileUA || window.innerWidth <= 768;
-};
+import { isMobileDevice } from '../utils/deviceDetector';
 
 const Hero = ({ movie, onPlay, onInfo, onTrailerStart, isTrailerPlaying, onTrailerEnd }) => {
     const isMobile = isMobileDevice();
@@ -31,9 +25,15 @@ const Hero = ({ movie, onPlay, onInfo, onTrailerStart, isTrailerPlaying, onTrail
     const muteFadeTimerRef = useRef(null);
     const backgroundRef = useRef(null);
     const contentRef = useRef(null);
+    const fallbackTimerRef = useRef(null);
+    const trailerEndedRef = useRef(false);
+
+    const isTV = React.useMemo(() => {
+        if (!movie) return false;
+        return movie.media_type === 'tv' || !!movie.name || (!movie.title && !!movie.first_air_date);
+    }, [movie]);
 
     // Scope refs for anime.js animations
-
     const heroScopeRef = useRef(null);
     const scopeRef = useRef(null);
 
@@ -44,7 +44,6 @@ const Hero = ({ movie, onPlay, onInfo, onTrailerStart, isTrailerPlaying, onTrail
         if (heroScopeRef.current) {
             scopeRef.current = createScope({ root: heroScopeRef }).add(self => {
                 self.add('playEntrance', () => {
-                    console.log('Hero: playEntrance called inside scope context');
                     if (movie) {
                         const timeline = createTimeline({
                             defaults: {
@@ -97,7 +96,7 @@ const Hero = ({ movie, onPlay, onInfo, onTrailerStart, isTrailerPlaying, onTrail
                 scopeRef.current.revert();
             }
         };
-    }, [movie]);
+    }, [movie?.id]);
 
     // Handle transition of background when video trailer toggles
     useEffect(() => {
@@ -108,7 +107,7 @@ const Hero = ({ movie, onPlay, onInfo, onTrailerStart, isTrailerPlaying, onTrail
                 ease: 'inOut(2)'
             });
         }
-    }, [showVideo, movie]);
+    }, [showVideo, movie?.id]);
 
     // Handle mute fade timer
     useEffect(() => {
@@ -125,57 +124,116 @@ const Hero = ({ movie, onPlay, onInfo, onTrailerStart, isTrailerPlaying, onTrail
         };
     }, [isMuteHovered]);
 
+    // Guaranteed to fire at most ONCE per movie — eliminates the double-advance bug
+    const triggerTrailerEnd = useCallback(() => {
+        if (trailerEndedRef.current) return;
+        trailerEndedRef.current = true;
+        setShowVideo(false);
+        setRingProgress(0);
+        if (onTrailerEnd) {
+            onTrailerEnd();
+        }
+    }, [onTrailerEnd]);
+
     const handlePlayerReady = useCallback(() => {
-        // Player is ready, quality forcing is handled by the hook
+        // Player is ready
     }, []);
 
     const handleTrailerEnd = useCallback(() => {
-        if (onTrailerEnd) onTrailerEnd();
-    }, [onTrailerEnd]);
+        triggerTrailerEnd();
+    }, [triggerTrailerEnd]);
 
     const handlePlaying = useCallback(() => {
         setIsPlaying(true);
     }, []);
 
+    const isInitialLoad = typeof window !== 'undefined' && !window.XORYA_INITIAL_LOAD_COMPLETE;
+    const trailerDelay = isInitialLoad && window.HERO_DELAY ? window.HERO_DELAY : 500;
+
     const { isMuted, toggleMute, playerReady } = useYouTubePlayer(videoKey, playerContainerRef, {
-        active: !isMobile && !!videoKey, // Never mount on mobile � static backdrop only
+        active: !isMobile && !!videoKey, // Never mount on mobile — static backdrop only
         onReady: handlePlayerReady,
         onEnd: handleTrailerEnd,
         onPlaying: handlePlaying,
         loop: false, // Disable loop since we're manually controlling rotation
-        delayPlay: typeof window !== 'undefined' && window.HERO_DELAY ? window.HERO_DELAY : 1000, // Syncs trailer delay dynamically with the website's Intro length
+        delayPlay: trailerDelay, // Fast delay on normal rotations, syncs with Intro only on initial load
     });
 
     useEffect(() => {
-        if (movie?.id) {
-            // Reset states on new movie
+        if (!movie?.id) {
             setLogoPath(null);
             setVideoKey(null);
             setShowVideo(false);
             setIsPlaying(false);
-
-            // Fetch Logo
-            getMovieImages(movie.id).then(res => {
-                const logos = res.data.logos;
-                if (logos.length > 0) {
-                    setLogoPath(logos[0].file_path);
-                }
-            }).catch(console.error);
-
-            // Fetch Video - Skip entirely on mobile devices
-            if (!isMobile) {
-                getMovieVideos(movie.id).then(res => {
-                    const videos = res.data.results;
-                    const bestTrailer = selectBestTrailer(videos);
-                    if (bestTrailer) {
-                        setVideoKey(bestTrailer.key);
-                    }
-                }).catch(console.error);
-            }
+            setRingProgress(0);
+            return;
         }
-    }, [movie]);
 
-    // Fade-in only after video starts playing + 2.5s delay (allowing 1080p to stabilize)
+        let isCancelled = false;
+        trailerEndedRef.current = false;
+
+        // Reset states on new movie
+        setLogoPath(null);
+        setVideoKey(null);
+        setShowVideo(false);
+        setIsPlaying(false);
+        setRingProgress(0);
+
+        if (fallbackTimerRef.current) {
+            clearTimeout(fallbackTimerRef.current);
+            fallbackTimerRef.current = null;
+        }
+
+        // Fetch Logo
+        const fetchImages = isTV ? getTVShowImages(movie.id) : getMovieImages(movie.id);
+        fetchImages.then(res => {
+            if (isCancelled) return;
+            const logos = res?.data?.logos;
+            if (logos && logos.length > 0) {
+                setLogoPath(logos[0].file_path);
+            }
+        }).catch(() => {});
+
+        // Fetch Video - Skip entirely on mobile devices
+        if (!isMobile) {
+            const fetchVideos = isTV ? getTVShowVideos(movie.id) : getMovieVideos(movie.id);
+            fetchVideos.then(res => {
+                if (isCancelled) return;
+                const videos = res?.data?.results || [];
+                const bestTrailer = selectBestTrailer(videos);
+                if (bestTrailer?.key) {
+                    setVideoKey(bestTrailer.key);
+                } else {
+                    // No trailer for this movie — auto-advance after 10s fallback
+                    fallbackTimerRef.current = setTimeout(() => {
+                        if (!isCancelled) {
+                            triggerTrailerEnd();
+                        }
+                    }, 10000);
+                }
+            }).catch(err => {
+                if (!isCancelled) {
+                    console.warn('Error fetching hero trailer:', err);
+                    // On error, auto-advance after 10s fallback
+                    fallbackTimerRef.current = setTimeout(() => {
+                        if (!isCancelled) {
+                            triggerTrailerEnd();
+                        }
+                    }, 10000);
+                }
+            });
+        }
+
+        return () => {
+            isCancelled = true;
+            if (fallbackTimerRef.current) {
+                clearTimeout(fallbackTimerRef.current);
+                fallbackTimerRef.current = null;
+            }
+        };
+    }, [movie?.id, isMobile, isTV, triggerTrailerEnd]);
+
+    // Fade-in only after video starts playing + 1.8s delay (allowing 1080p to stabilize)
     useEffect(() => {
         if (isPlaying && !showVideo) {
             const timer = setTimeout(() => {
@@ -183,7 +241,7 @@ const Hero = ({ movie, onPlay, onInfo, onTrailerStart, isTrailerPlaying, onTrail
                 if (onTrailerStart) {
                     onTrailerStart();
                 }
-            }, 2500); // 2.5s after playback begins
+            }, 1800);
 
             return () => clearTimeout(timer);
         }
@@ -202,7 +260,6 @@ const Hero = ({ movie, onPlay, onInfo, onTrailerStart, isTrailerPlaying, onTrail
                 const players = playerContainerRef.current.querySelectorAll('iframe');
                 if (players.length > 0) {
                     try {
-                        // Try to get player instance
                         const ytPlayers = window.YT.get ? Array.from(players).map(p => window.YT.get(p.id)).filter(Boolean) : [];
 
                         if (ytPlayers.length > 0) {
@@ -212,21 +269,15 @@ const Hero = ({ movie, onPlay, onInfo, onTrailerStart, isTrailerPlaying, onTrail
                                 const duration = player.getDuration();
 
                                 if (duration > 0) {
-                                    // Update ring progress (0 → 1 over entire video)
                                     setRingProgress(Math.min(1, currentTime / duration));
 
                                     const stopTime = duration - 5; // Stop 5 seconds before end
 
                                     if (currentTime >= stopTime) {
-                                        // Stop video immediately
-                                        player.pauseVideo();
-
-                                        // Trigger trailer end callback
-                                        if (onTrailerEnd) {
-                                            setShowVideo(false);
-                                            setRingProgress(0);
-                                            onTrailerEnd();
-                                        }
+                                        try {
+                                            player.pauseVideo();
+                                        } catch (e) {}
+                                        triggerTrailerEnd();
                                     }
                                 }
                             }
@@ -236,10 +287,10 @@ const Hero = ({ movie, onPlay, onInfo, onTrailerStart, isTrailerPlaying, onTrail
                     }
                 }
             }
-        }, 500); // Check every 500ms
+        }, 500);
 
         return () => clearInterval(monitorInterval);
-    }, [showVideo, videoKey, playerReady, onTrailerEnd]);
+    }, [showVideo, videoKey, playerReady, triggerTrailerEnd]);
 
     const isUpcoming = React.useMemo(() => {
         if (!movie) return false;

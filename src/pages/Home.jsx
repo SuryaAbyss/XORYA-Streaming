@@ -17,6 +17,7 @@ import {
 import { getIMDbCuratedTVShows, getIMDbTop10MixedPool } from '../api/imdb';
 import { useLazySection } from '../hooks/useLazySection';
 import MobileHomeView from '../components/mobile/MobileHomeView';
+import { isMobileDevice } from '../utils/deviceDetector';
 
 
 const Home = ({ category = 'all' }) => {
@@ -24,12 +25,8 @@ const Home = ({ category = 'all' }) => {
     const [trendingTV, setTrendingTV] = useState([]);
     const [top10Data, setTop10Data] = useState([]);
 
-    // Detect mobile for layout adjustments
-    const checkIsMobile = () => {
-        if (typeof window === 'undefined') return false;
-        const isMobileUA = /Android|iPhone|iPod|Mobile|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-        return isMobileUA || window.innerWidth <= 768;
-    };
+    // Detect mobile for layout adjustments (excludes TVs)
+    const checkIsMobile = () => isMobileDevice();
 
     const [isMobileView, setIsMobileView] = useState(checkIsMobile);
 
@@ -137,7 +134,7 @@ const Home = ({ category = 'all' }) => {
     }, []);
 
     const [isTrailerPlaying, setIsTrailerPlaying] = useState(false);
-    const [currentHeroIndex, setCurrentHeroIndex] = useState(() => Math.floor(Math.random() * 20));
+    const [currentHeroIndex, setCurrentHeroIndex] = useState(null);
 
     const showMovies = category === 'all' || category === 'movies';
     const showTV = category === 'all' || category === 'tv';
@@ -147,11 +144,12 @@ const Home = ({ category = 'all' }) => {
     const { ref: top10Ref, isVisible: top10Visible }         = useLazySection('350px 0px');
     const { ref: providersRef, isVisible: providersVisible } = useLazySection('300px 0px');
 
-
-    // Re-randomize when trending data first loads
+    // Pick random initial hero index once data loads or category changes
     useEffect(() => {
         if (mainData.length > 0) {
-            setCurrentHeroIndex(Math.floor(Math.random() * mainData.length));
+            if (currentHeroIndex === null || currentHeroIndex >= mainData.length) {
+                setCurrentHeroIndex(Math.floor(Math.random() * mainData.length));
+            }
         }
     }, [mainData.length, category]);
 
@@ -162,13 +160,16 @@ const Home = ({ category = 'all' }) => {
     // Advance to next movie when trailer ends
     const handleTrailerEnd = React.useCallback(() => {
         setIsTrailerPlaying(false);
-        setCurrentHeroIndex((prev) => (prev + 1) % Math.max(mainData.length, 1));
+        setCurrentHeroIndex((prev) => {
+            if (prev === null) return 0;
+            return (prev + 1) % Math.max(mainData.length, 1);
+        });
     }, [mainData.length]);
 
     // Update heroMovie when index changes
     const heroMovie = React.useMemo(() => {
-        if (mainData.length > 0) {
-            return mainData[currentHeroIndex];
+        if (mainData.length > 0 && currentHeroIndex !== null) {
+            return mainData[currentHeroIndex] || null;
         }
         return null;
     }, [mainData, currentHeroIndex]);

@@ -7,6 +7,7 @@ import useYouTubePlayer from '../hooks/useYouTubePlayer';
 import SEO from '../components/SEO';
 import LemniscateBloomLoader from '../components/LemniscateBloomLoader';
 import { getReleaseInfo } from '../utils/releaseStatus';
+import { isMobileDevice } from '../utils/deviceDetector';
 
 
 const MovieDetails = () => {
@@ -22,11 +23,8 @@ const MovieDetails = () => {
     const trailerStartTimerRef = useRef(null);
     const uiHideTimerRef = useRef(null);
     const playerContainerRef = useRef(null);
-    // Detect mobile for layout adjustments
-    const isMobile = typeof window !== 'undefined' && (
-        /Android|iPhone|iPod|Mobile|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
-        window.innerWidth <= 768
-    );
+    // Detect mobile for layout adjustments (excludes TVs)
+    const isMobile = isMobileDevice();
 
     const handleTrailerEnd = useCallback(() => {
         // Loop is handled by the hook

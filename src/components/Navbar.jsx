@@ -4,6 +4,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import SearchModal from './SearchModal';
 import { createScope, createTimeline, stagger } from 'animejs';
+import { isMobileDevice } from '../utils/deviceDetector';
 
 
 const Navbar = () => {
@@ -15,11 +16,7 @@ const Navbar = () => {
     const logoTimerRef = useRef(null);
     const [hoveredItem, setHoveredItem] = useState(null);
 
-    const checkIsMobile = () => {
-        if (typeof window === 'undefined') return false;
-        const isMobileUA = /Android|iPhone|iPod|Mobile|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-        return isMobileUA || window.innerWidth <= 768;
-    };
+    const checkIsMobile = () => isMobileDevice();
 
     const [isMobile, setIsMobile] = useState(checkIsMobile);
 

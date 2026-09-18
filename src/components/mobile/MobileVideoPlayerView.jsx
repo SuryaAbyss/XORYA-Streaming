@@ -292,7 +292,6 @@ const MobileVideoPlayerView = ({
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
               allowFullScreen
               loading="eager"
-              referrerPolicy="no-referrer-when-downgrade"
               className="w-full h-full border-0 bg-black"
               style={{ width: '100%', height: '100%', border: 'none', backgroundColor: '#000000' }}
             />

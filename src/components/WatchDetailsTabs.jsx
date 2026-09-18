@@ -109,30 +109,49 @@ const WatchDetailsTabs = ({
             {/* Tabs Header */}
             <div style={{
                 display: 'flex',
-                gap: '1rem',
+                gap: '0.75rem',
                 borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
-                paddingBottom: '0.8rem',
+                paddingBottom: '1rem',
                 marginBottom: '1.5rem',
-                position: 'relative'
+                position: 'relative',
+                alignItems: 'center',
+                flexWrap: 'wrap'
             }}>
                 {tabs.map(tab => {
                     const isActive = activeTab === tab.id;
                     return (
                         <button
                             key={tab.id}
+                            className="watch-details-tab-btn"
                             onClick={() => setActiveTab(tab.id)}
                             style={{
                                 background: 'transparent',
                                 border: 'none',
-                                color: isActive ? 'white' : 'rgba(255, 255, 255, 0.65)',
-                                fontSize: '0.95rem',
+                                color: isActive ? '#ffffff' : 'rgba(255, 255, 255, 0.65)',
+                                fontSize: '0.92rem',
                                 fontWeight: '700',
                                 cursor: 'pointer',
-                                padding: '0.5rem 1.2rem',
+                                padding: '0.65rem 1.5rem',
                                 position: 'relative',
-                                transition: 'color 0.2s ease',
+                                transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
                                 outline: 'none',
-                                borderRadius: '16px'
+                                borderRadius: '9999px',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                letterSpacing: '0.02em',
+                                lineHeight: 1,
+                                boxSizing: 'border-box'
+                            }}
+                            onMouseEnter={(e) => {
+                                if (!isActive) {
+                                    e.currentTarget.style.color = 'rgba(255, 255, 255, 0.95)';
+                                }
+                            }}
+                            onMouseLeave={(e) => {
+                                if (!isActive) {
+                                    e.currentTarget.style.color = 'rgba(255, 255, 255, 0.65)';
+                                }
                             }}
                         >
                             <span style={{ position: 'relative', zIndex: 2 }}>{tab.label}</span>
@@ -147,13 +166,13 @@ const WatchDetailsTabs = ({
                                     style={{
                                         position: 'absolute',
                                         inset: 0,
-                                        borderRadius: '16px',
-                                        background: 'linear-gradient(135deg, rgba(var(--theme-accent-rgb), 0.25) 0%, rgba(var(--theme-accent-rgb), 0.08) 100%)',
-                                        border: '1.5px solid rgba(var(--theme-accent-rgb), 0.45)',
+                                        borderRadius: '9999px',
+                                        background: 'linear-gradient(135deg, rgba(var(--theme-accent-rgb), 0.28) 0%, rgba(var(--theme-accent-rgb), 0.08) 100%)',
+                                        border: '1.5px solid rgba(var(--theme-accent-rgb), 0.55)',
                                         boxShadow: `
-                                            inset 0 1px 1px rgba(255, 255, 255, 0.4),
-                                            0 6px 20px rgba(0, 0, 0, 0.35),
-                                            0 0 15px rgba(var(--theme-accent-rgb), 0.25)
+                                            inset 0 1px 1px rgba(255, 255, 255, 0.35),
+                                            0 4px 16px rgba(0, 0, 0, 0.35),
+                                            0 0 16px rgba(var(--theme-accent-rgb), 0.28)
                                         `,
                                         backdropFilter: 'blur(12px)',
                                         WebkitBackdropFilter: 'blur(12px)',

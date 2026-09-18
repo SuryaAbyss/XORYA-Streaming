@@ -235,6 +235,8 @@ const MovieDetailsModal = () => {
     if (!selectedMovieId || !movie) return null;
 
     const releaseInfo = getReleaseInfo(movie);
+    const validSeasons = (movie?.seasons || []).filter(s => s.season_number > 0);
+    const seasonsList = validSeasons.length > 0 ? validSeasons : (movie?.seasons || []);
 
     // ─── MOBILE LAYOUT ───────────────────────────────────────────────────────
     if (isMobile) {
@@ -616,8 +618,8 @@ const MovieDetailsModal = () => {
                             </div>
                         </div>
 
-                        {/* ── Episodes list (TV only, on mobile) ── */}
-                        {selectedMediaType === 'tv' && episodes && episodes.length > 0 && (
+                        {/* ── Seasons list (TV only, on mobile) ── */}
+                        {selectedMediaType === 'tv' && seasonsList && seasonsList.length > 0 && (
                             <div style={{ padding: '0 18px', marginTop: '16px' }}>
                                 <h3 style={{
                                     color: 'white',
@@ -625,60 +627,78 @@ const MovieDetailsModal = () => {
                                     fontWeight: '700',
                                     marginBottom: '12px',
                                     paddingLeft: '2px',
-                                }}>Episodes</h3>
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'space-between'
+                                }}>
+                                    <span>Seasons</span>
+                                    <span style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.45)', fontWeight: '500' }}>
+                                        {seasonsList.length} Total
+                                    </span>
+                                </h3>
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                                    {episodes.slice(0, 6).map((ep, index) => (
-                                        <div
-                                            key={ep.id || index}
-                                            data-ep-item
-                                            onClick={() => {
-                                                closeModal();
-                                                navigate(`/watch/tv/${selectedMovieId}/season/${ep.season_number}/episode/${ep.episode_number}`);
-                                            }}
-                                            style={{
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                gap: '12px',
-                                                background: 'rgba(255,255,255,0.04)',
-                                                borderRadius: '12px',
-                                                padding: '8px 10px',
-                                                cursor: 'pointer',
-                                                border: '1px solid rgba(255,255,255,0.07)',
-                                                opacity: 0
-                                            }}
-                                        >
-                                            <div style={{
-                                                width: '88px',
-                                                height: '54px',
-                                                borderRadius: '8px',
-                                                overflow: 'hidden',
-                                                background: '#222',
-                                                flexShrink: 0,
-                                            }}>
-                                                {ep.still_path ? (
-                                                    <img src={imageUrl(ep.still_path, 'w300')} alt={ep.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                                ) : (
-                                                    <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem', color: '#555' }}>No Image</div>
-                                                )}
-                                            </div>
-                                            <div style={{ flex: 1, overflow: 'hidden' }}>
-                                                <div style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.4)', marginBottom: '2px' }}>
-                                                    Ep {ep.episode_number}
-                                                </div>
+                                    {seasonsList.map((season, index) => {
+                                        const sNumber = season.season_number;
+                                        const displayName = season.name || `Season ${sNumber}`;
+                                        const posterUrl = season.poster_path
+                                            ? imageUrl(season.poster_path, 'w300')
+                                            : (movie.backdrop_path ? imageUrl(movie.backdrop_path, 'w300') : (movie.poster_path ? imageUrl(movie.poster_path, 'w300') : null));
+
+                                        return (
+                                            <div
+                                                key={season.id || index}
+                                                data-ep-item
+                                                onClick={() => {
+                                                    closeModal();
+                                                    navigate(`/watch/tv/${selectedMovieId}/season/${sNumber || 1}/episode/1`);
+                                                }}
+                                                style={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: '12px',
+                                                    background: 'rgba(255,255,255,0.04)',
+                                                    borderRadius: '12px',
+                                                    padding: '8px 10px',
+                                                    cursor: 'pointer',
+                                                    border: '1px solid rgba(255,255,255,0.07)',
+                                                    opacity: 0
+                                                }}
+                                            >
                                                 <div style={{
-                                                    fontSize: '0.88rem',
-                                                    fontWeight: '600',
-                                                    color: '#fff',
-                                                    whiteSpace: 'nowrap',
+                                                    width: '54px',
+                                                    height: '80px',
+                                                    borderRadius: '8px',
                                                     overflow: 'hidden',
-                                                    textOverflow: 'ellipsis',
+                                                    background: '#1a1a1a',
+                                                    flexShrink: 0,
+                                                    border: '1px solid rgba(255,255,255,0.12)',
+                                                    boxShadow: '0 4px 12px rgba(0,0,0,0.4)'
                                                 }}>
-                                                    {ep.name}
+                                                    {posterUrl ? (
+                                                        <img src={posterUrl} alt={displayName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                    ) : (
+                                                        <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem', color: '#555' }}>Season {sNumber}</div>
+                                                    )}
                                                 </div>
+                                                <div style={{ flex: 1, overflow: 'hidden' }}>
+                                                    <div style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.4)', marginBottom: '2px' }}>
+                                                        Season {sNumber} {season.episode_count ? `• ${season.episode_count} Ep` : ''}
+                                                    </div>
+                                                    <div style={{
+                                                        fontSize: '0.88rem',
+                                                        fontWeight: '600',
+                                                        color: '#fff',
+                                                        whiteSpace: 'nowrap',
+                                                        overflow: 'hidden',
+                                                        textOverflow: 'ellipsis',
+                                                    }}>
+                                                        {displayName}
+                                                    </div>
+                                                </div>
+                                                <Play size={16} color="rgba(255,255,255,0.5)" style={{ flexShrink: 0 }} />
                                             </div>
-                                            <Play size={16} color="rgba(255,255,255,0.5)" style={{ flexShrink: 0 }} />
-                                        </div>
-                                    ))}
+                                        );
+                                    })}
                                 </div>
                             </div>
                         )}
@@ -1010,48 +1030,70 @@ const MovieDetailsModal = () => {
                         padding: '1.5rem', overflowY: 'auto', flex: 1,
                         scrollbarWidth: 'thin', scrollbarColor: 'rgba(255,255,255,0.2) transparent'
                     }}>
-                        {selectedMediaType === 'tv' && episodes && episodes.length > 0 ? (
+                        {selectedMediaType === 'tv' && seasonsList && seasonsList.length > 0 ? (
                             <>
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
-                                    {episodes.map((ep, index) => (
-                                        <div
-                                            key={ep.id || index}
-                                            className="modal-right-anim"
-                                            style={{
-                                                display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '1rem',
-                                                cursor: 'pointer', opacity: 0
-                                            }}
-                                            onClick={() => {
-                                                closeModal();
-                                                navigate(`/watch/tv/${selectedMovieId}/season/${ep.season_number}/episode/${ep.episode_number}`);
-                                            }}
-                                        >
-                                            <div style={{ textAlign: 'right' }}>
-                                                <div style={{ fontSize: '0.95rem', fontWeight: 'bold', color: 'white', marginBottom: '0.2rem' }}>
-                                                    {String(ep.episode_number).padStart(2, '0')}
+                                    {seasonsList.map((season, index) => {
+                                        const sNumber = season.season_number;
+                                        const sNumFormatted = sNumber === 0 ? 'SP' : String(sNumber).padStart(2, '0');
+                                        const displayName = season.name || `Season ${sNumber}`;
+                                        const posterUrl = season.poster_path
+                                            ? imageUrl(season.poster_path, 'w300')
+                                            : (movie.backdrop_path ? imageUrl(movie.backdrop_path, 'w300') : (movie.poster_path ? imageUrl(movie.poster_path, 'w300') : null));
+
+                                        return (
+                                            <div
+                                                key={season.id || index}
+                                                className="modal-right-anim"
+                                                style={{
+                                                    display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '1rem',
+                                                    cursor: 'pointer', opacity: 0, transition: 'transform 0.2s ease'
+                                                }}
+                                                onMouseEnter={(e) => e.currentTarget.style.transform = 'translateX(-4px)'}
+                                                onMouseLeave={(e) => e.currentTarget.style.transform = 'translateX(0)'}
+                                                onClick={() => {
+                                                    closeModal();
+                                                    navigate(`/watch/tv/${selectedMovieId}/season/${sNumber || 1}/episode/1`);
+                                                }}
+                                            >
+                                                <div style={{ textAlign: 'right' }}>
+                                                    <div style={{ fontSize: '0.95rem', fontWeight: 'bold', color: 'white', marginBottom: '0.2rem' }}>
+                                                        {sNumFormatted}
+                                                    </div>
+                                                    <div style={{
+                                                        fontSize: '0.72rem', color: 'rgba(255,255,255,0.85)',
+                                                        maxWidth: '120px', whiteSpace: 'normal',
+                                                        lineHeight: '1.2', fontWeight: '600'
+                                                    }}>
+                                                        {displayName}
+                                                    </div>
+                                                    {season.episode_count ? (
+                                                        <div style={{ fontSize: '0.62rem', color: 'rgba(255,255,255,0.45)', marginTop: '2px' }}>
+                                                            {season.episode_count} Episodes
+                                                        </div>
+                                                    ) : null}
                                                 </div>
                                                 <div style={{
-                                                    fontSize: '0.65rem', color: 'rgba(255,255,255,0.7)',
-                                                    maxWidth: '100px', whiteSpace: 'normal',
-                                                    lineHeight: '1.2'
+                                                    width: '56px',
+                                                    height: '84px',
+                                                    borderRadius: '8px',
+                                                    overflow: 'hidden',
+                                                    background: '#1a1a1a',
+                                                    flexShrink: 0,
+                                                    border: '1px solid rgba(255,255,255,0.15)',
+                                                    boxShadow: '0 6px 18px rgba(0,0,0,0.6)'
                                                 }}>
-                                                    {ep.name}
+                                                    {posterUrl ? (
+                                                        <img src={posterUrl} alt={displayName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                    ) : (
+                                                        <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', color: '#666' }}>
+                                                            Season {sNumber}
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </div>
-                                            <div style={{
-                                                width: '100px', height: '56px', borderRadius: '6px',
-                                                overflow: 'hidden', background: '#333', flexShrink: 0,
-                                                border: '1px solid rgba(255,255,255,0.1)',
-                                                boxShadow: '0 5px 15px rgba(0,0,0,0.5)'
-                                            }}>
-                                                {ep.still_path ? (
-                                                    <img src={imageUrl(ep.still_path, 'w300')} alt={ep.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                                ) : (
-                                                    <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem', color: '#666' }}>No Image</div>
-                                                )}
-                                            </div>
-                                        </div>
-                                    ))}
+                                        );
+                                    })}
                                 </div>
                             </>
                         ) : (

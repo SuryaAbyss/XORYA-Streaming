@@ -5099,8 +5099,9 @@ body::before {
 }
 
 .watch-details-container>div:first-of-type button {
-  padding-inline: 0 !important;
-  margin-right: 1.6rem;
+  padding: 0.6rem 1.45rem !important;
+  border-radius: 9999px !important;
+  margin-right: 0 !important;
 }
 
 .watch-episode-panel,

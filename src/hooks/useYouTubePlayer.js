@@ -90,6 +90,7 @@ export default function useYouTubePlayer(videoKey, containerRef, options = {}) {
     const playerRef = useRef(null);
     const qualityIntervalRef = useRef(null);
     const recheckTimeoutRef = useRef(null);
+    const delayTimerRef = useRef(null);
     const [isMuted, setIsMuted] = useState(false);
     const [playerReady, setPlayerReady] = useState(false);
 
@@ -153,6 +154,7 @@ export default function useYouTubePlayer(videoKey, containerRef, options = {}) {
             playerRef.current = new window.YT.Player(targetDiv.id, {
                 width: '100%',
                 height: '100%',
+                videoId: videoKey,
                 host: 'https://www.youtube-nocookie.com',
                 playerVars: {
                     autoplay: 1,
@@ -184,19 +186,24 @@ export default function useYouTubePlayer(videoKey, containerRef, options = {}) {
                             iframeEl.style.left = '0';
                         }
 
+                        const playVideo = () => {
+                            if (destroyed || !event.target) return;
+                            try {
+                                if (typeof event.target.loadVideoById === 'function') {
+                                    event.target.loadVideoById({
+                                        videoId: videoKey,
+                                        suggestedQuality: 'hd1080',
+                                    });
+                                }
+                            } catch (e) {
+                                // ignore
+                            }
+                        };
+
                         if (delayPlay > 0) {
-                            setTimeout(() => {
-                                if (destroyed) return;
-                                event.target.loadVideoById({
-                                    videoId: videoKey,
-                                    suggestedQuality: 'hd1080',
-                                });
-                            }, delayPlay);
+                            delayTimerRef.current = setTimeout(playVideo, delayPlay);
                         } else {
-                            event.target.loadVideoById({
-                                videoId: videoKey,
-                                suggestedQuality: 'hd1080',
-                            });
+                            playVideo();
                         }
 
                         if (onReady) onReady(event);
@@ -242,6 +249,10 @@ export default function useYouTubePlayer(videoKey, containerRef, options = {}) {
             destroyed = true;
             setPlayerReady(false);
 
+            if (delayTimerRef.current) {
+                clearTimeout(delayTimerRef.current);
+                delayTimerRef.current = null;
+            }
             if (recheckTimeoutRef.current) {
                 clearTimeout(recheckTimeoutRef.current);
                 recheckTimeoutRef.current = null;

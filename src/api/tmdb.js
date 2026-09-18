@@ -69,6 +69,8 @@ export const getPersonCombinedCredits = (id) => tmdb.get(`/person/${id}/combined
 // TV Show APIs
 export const getTVShowDetails = (id) => tmdb.get(`/tv/${id}?append_to_response=videos,credits`);
 export const getTVShowImages = (id) => tmdb.get(`/tv/${id}/images?include_image_language=en,null`);
+export const getTVShowVideos = (id) => tmdb.get(`/tv/${id}/videos`);
+export const getTVVideos = getTVShowVideos;
 export const getTVShowRecommendations = (id) => tmdb.get(`/tv/${id}/recommendations`);
 export const getTVShowSimilar = (id) => tmdb.get(`/tv/${id}/similar`);
 export const getTVSeasonDetails = async (id, season) => {

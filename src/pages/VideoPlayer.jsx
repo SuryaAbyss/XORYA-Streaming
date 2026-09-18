@@ -235,6 +235,7 @@ const VideoPlayer = () => {
     // Auto-trigger full screen for mobile users coming from Play Now button
     useEffect(() => {
         const searchParams = new URLSearchParams(window.location.search);
+        const autoFS = searchParams.get('autofs');
         const isMob = isMobileDevice();
 
         if (autoFS === 'true' && isMob) {
@@ -638,6 +639,7 @@ const VideoPlayer = () => {
         console.log(`Iframe successfully loaded ${activeServer}`);
 
         const searchParams = new URLSearchParams(window.location.search);
+        const autoFS = searchParams.get('autofs');
         const isMob = isMobileDevice();
 
         if (autoFS === 'true' && isMob && !document.fullscreenElement) {

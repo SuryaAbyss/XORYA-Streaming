@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Play, Calendar, Star, Clock, Info, ChevronDown, ChevronUp, X, ChevronLeft, ChevronRight, Tv } from 'lucide-react';
 import { getSeasonDetails, getTVEpisodeCredits, getTVEpisodeImages, imageUrl } from '../api/tmdb';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -43,9 +44,38 @@ const EpisodesSidebar = ({
     const [loadingStills, setLoadingStills] = useState(false);
     const [previewImageIndex, setPreviewImageIndex] = useState(null);
 
+    const currentEp = episodes.find(e => e.episode_number === currentEpisode);
+    const displayedStills = episodeStills.length > 0
+        ? episodeStills
+        : (currentEp?.still_path ? [currentEp.still_path] : (showData?.backdrop_path ? [showData.backdrop_path] : []));
+
     useEffect(() => {
         setPreviewImageIndex(null);
     }, [currentEpisode, currentSeason]);
+
+    // Keyboard support and body lock for lightbox
+    useEffect(() => {
+        if (previewImageIndex === null) return;
+
+        const originalOverflow = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+
+        const handleKeyDown = (e) => {
+            if (e.key === 'Escape') {
+                setPreviewImageIndex(null);
+            } else if (e.key === 'ArrowLeft') {
+                setPreviewImageIndex((prev) => (prev !== null ? (prev > 0 ? prev - 1 : displayedStills.length - 1) : null));
+            } else if (e.key === 'ArrowRight') {
+                setPreviewImageIndex((prev) => (prev !== null ? (prev < displayedStills.length - 1 ? prev + 1 : 0) : null));
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => {
+            document.body.style.overflow = originalOverflow;
+            window.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [previewImageIndex, displayedStills.length]);
 
 
     useEffect(() => {
@@ -174,11 +204,6 @@ const EpisodesSidebar = ({
             currentEpIdx >= 0 ? currentEpIdx + 3 : 3
         );
 
-    const currentEp = episodes.find(e => e.episode_number === currentEpisode);
-    const displayedStills = episodeStills.length > 0
-        ? episodeStills
-        : (currentEp?.still_path ? [currentEp.still_path] : (showData?.backdrop_path ? [showData.backdrop_path] : []));
-
     const tabs = isMovie ? [
         { id: 'details', label: 'Details' },
         { id: 'cast', label: 'Cast' },
@@ -249,11 +274,7 @@ const EpisodesSidebar = ({
         }
 
         // TV Show Episode Details View
-        const currentEp = episodes.find(e => e.episode_number === currentEpisode);
         const epOverview = currentEp?.overview || 'No specific episode summary available for this episode.';
-        const displayedStills = episodeStills.length > 0
-            ? episodeStills
-            : (currentEp?.still_path ? [currentEp.still_path] : (showData?.backdrop_path ? [showData.backdrop_path] : []));
 
         return (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem', color: 'white', fontSize: '0.9rem', padding: '0.5rem 0' }}>
@@ -1096,125 +1117,143 @@ const EpisodesSidebar = ({
                     </div>
                 </div>
             )}
-            {/* Image Viewer Lightbox Modal */}
-            <AnimatePresence>
-                {previewImageIndex !== null && displayedStills && displayedStills[previewImageIndex] && (
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        onClick={() => setPreviewImageIndex(null)}
-                        style={{
-                            position: 'fixed',
-                            inset: 0,
-                            zIndex: 999999,
-                            background: 'rgba(0, 0, 0, 0.88)',
-                            backdropFilter: 'blur(16px)',
-                            WebkitBackdropFilter: 'blur(16px)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            padding: '2rem'
-                        }}
-                    >
+            {/* Image Viewer Lightbox Modal Rendered Directly to body via Portal */}
+            {typeof document !== 'undefined' && createPortal(
+                <AnimatePresence>
+                    {previewImageIndex !== null && displayedStills && displayedStills[previewImageIndex] && (
                         <motion.div
-                            initial={{ scale: 0.9, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            exit={{ scale: 0.9, opacity: 0 }}
-                            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-                            onClick={(e) => e.stopPropagation()}
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setPreviewImageIndex(null)}
                             style={{
-                                position: 'relative',
-                                maxWidth: '85vw',
-                                maxHeight: '82vh',
-                                borderRadius: '16px',
-                                overflow: 'hidden',
-                                boxShadow: '0 25px 60px rgba(0,0,0,0.95)',
-                                border: '1px solid rgba(255,255,255,0.15)',
-                                background: '#09090b',
+                                position: 'fixed',
+                                top: 0,
+                                left: 0,
+                                right: 0,
+                                bottom: 0,
+                                width: '100vw',
+                                height: '100vh',
+                                zIndex: 9999999,
+                                background: 'rgba(0, 0, 0, 0.9)',
+                                backdropFilter: 'blur(20px)',
+                                WebkitBackdropFilter: 'blur(20px)',
                                 display: 'flex',
-                                flexDirection: 'column',
                                 alignItems: 'center',
-                                justifyContent: 'center'
+                                justifyContent: 'center',
+                                padding: '1.5rem',
+                                boxSizing: 'border-box'
                             }}
                         >
-                            {/* Close Button (X) */}
-                            <button
-                                onClick={() => setPreviewImageIndex(null)}
-                                aria-label="Close image preview"
+                            <motion.div
+                                initial={{ scale: 0.92, opacity: 0, y: 15 }}
+                                animate={{ scale: 1, opacity: 1, y: 0 }}
+                                exit={{ scale: 0.92, opacity: 0, y: 15 }}
+                                transition={{ type: 'spring', damping: 28, stiffness: 350 }}
+                                onClick={(e) => e.stopPropagation()}
                                 style={{
-                                    position: 'absolute',
-                                    top: '14px',
-                                    right: '14px',
-                                    width: '38px',
-                                    height: '38px',
-                                    borderRadius: '50%',
-                                    background: 'rgba(0, 0, 0, 0.65)',
-                                    border: '1px solid rgba(255, 255, 255, 0.25)',
-                                    color: '#fff',
-                                    cursor: 'pointer',
+                                    position: 'relative',
+                                    maxWidth: '88vw',
+                                    maxHeight: '85vh',
+                                    borderRadius: '16px',
+                                    overflow: 'hidden',
+                                    boxShadow: '0 30px 80px rgba(0, 0, 0, 0.95)',
+                                    border: '1px solid rgba(255, 255, 255, 0.16)',
+                                    background: '#09090b',
                                     display: 'flex',
+                                    flexDirection: 'column',
                                     alignItems: 'center',
-                                    justifyContent: 'center',
-                                    zIndex: 10,
-                                    transition: 'all 0.2s ease',
-                                    boxShadow: '0 4px 12px rgba(0,0,0,0.5)'
+                                    justifyContent: 'center'
                                 }}
                             >
-                                <X size={20} color="#ffffff" />
-                            </button>
+                                {/* Close Button (X) */}
+                                <button
+                                    onClick={() => setPreviewImageIndex(null)}
+                                    aria-label="Close image preview"
+                                    style={{
+                                        position: 'absolute',
+                                        top: '14px',
+                                        right: '14px',
+                                        width: '40px',
+                                        height: '40px',
+                                        borderRadius: '50%',
+                                        background: 'rgba(0, 0, 0, 0.75)',
+                                        border: '1px solid rgba(255, 255, 255, 0.3)',
+                                        color: '#fff',
+                                        cursor: 'pointer',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        zIndex: 20,
+                                        transition: 'all 0.2s ease',
+                                        boxShadow: '0 4px 14px rgba(0, 0, 0, 0.6)'
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        e.currentTarget.style.background = 'rgba(255, 255, 255, 0.25)';
+                                        e.currentTarget.style.transform = 'scale(1.08)';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        e.currentTarget.style.background = 'rgba(0, 0, 0, 0.75)';
+                                        e.currentTarget.style.transform = 'scale(1)';
+                                    }}
+                                >
+                                    <X size={20} color="#ffffff" />
+                                </button>
 
-                            {/* Main Preview Image */}
-                            <img
-                                src={imageUrl(displayedStills[previewImageIndex], 'original')}
-                                alt={`Season ${currentSeason} Episode ${currentEpisode} Preview ${previewImageIndex + 1}`}
-                                style={{
-                                    width: 'auto',
-                                    height: 'auto',
-                                    maxWidth: '100%',
-                                    maxHeight: '76vh',
-                                    objectFit: 'contain',
-                                    display: 'block'
-                                }}
-                            />
+                                {/* Main Preview Image */}
+                                <img
+                                    src={imageUrl(displayedStills[previewImageIndex], 'original')}
+                                    alt={`Season ${currentSeason} Episode ${currentEpisode} Preview ${previewImageIndex + 1}`}
+                                    style={{
+                                        width: 'auto',
+                                        height: 'auto',
+                                        maxWidth: '100%',
+                                        maxHeight: '78vh',
+                                        objectFit: 'contain',
+                                        display: 'block'
+                                    }}
+                                />
 
-                            {/* Counter & Cycle Buttons */}
-                            {displayedStills.length > 1 && (
-                                <div style={{
-                                    position: 'absolute',
-                                    bottom: '16px',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '1.2rem',
-                                    background: 'rgba(0, 0, 0, 0.75)',
-                                    padding: '6px 18px',
-                                    borderRadius: '30px',
-                                    border: '1px solid rgba(255, 255, 255, 0.18)',
-                                    color: '#fff',
-                                    fontSize: '0.85rem',
-                                    fontWeight: '600',
-                                    backdropFilter: 'blur(8px)',
-                                    boxShadow: '0 8px 24px rgba(0,0,0,0.5)'
-                                }}>
-                                    <button
-                                        onClick={() => setPreviewImageIndex((prev) => (prev > 0 ? prev - 1 : displayedStills.length - 1))}
-                                        style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: 0 }}
-                                    >
-                                        <ChevronLeft size={20} />
-                                    </button>
-                                    <span>{previewImageIndex + 1} / {displayedStills.length}</span>
-                                    <button
-                                        onClick={() => setPreviewImageIndex((prev) => (prev < displayedStills.length - 1 ? prev + 1 : 0))}
-                                        style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: 0 }}
-                                    >
-                                        <ChevronRight size={20} />
-                                    </button>
-                                </div>
-                            )}
+                                {/* Counter & Cycle Buttons */}
+                                {displayedStills.length > 1 && (
+                                    <div style={{
+                                        position: 'absolute',
+                                        bottom: '16px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '1.2rem',
+                                        background: 'rgba(0, 0, 0, 0.8)',
+                                        padding: '8px 20px',
+                                        borderRadius: '30px',
+                                        border: '1px solid rgba(255, 255, 255, 0.2)',
+                                        color: '#fff',
+                                        fontSize: '0.85rem',
+                                        fontWeight: '600',
+                                        backdropFilter: 'blur(10px)',
+                                        WebkitBackdropFilter: 'blur(10px)',
+                                        boxShadow: '0 8px 24px rgba(0,0,0,0.6)'
+                                    }}>
+                                        <button
+                                            onClick={() => setPreviewImageIndex((prev) => (prev > 0 ? prev - 1 : displayedStills.length - 1))}
+                                            style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: 0 }}
+                                        >
+                                            <ChevronLeft size={20} />
+                                        </button>
+                                        <span>{previewImageIndex + 1} / {displayedStills.length}</span>
+                                        <button
+                                            onClick={() => setPreviewImageIndex((prev) => (prev < displayedStills.length - 1 ? prev + 1 : 0))}
+                                            style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: 0 }}
+                                        >
+                                            <ChevronRight size={20} />
+                                        </button>
+                                    </div>
+                                )}
+                            </motion.div>
                         </motion.div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
+                    )}
+                </AnimatePresence>,
+                document.body
+            )}
             <style>{`
                 @keyframes spin {
                     0% { transform: rotate(0deg); }

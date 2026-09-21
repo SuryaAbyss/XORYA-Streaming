@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Heart, Bookmark, ChevronLeft, ChevronRight, Tv, Languages, Settings, Share2, Download, Star, Maximize2, Minimize2 } from 'lucide-react';
+import { ArrowLeft, Heart, Bookmark, ChevronLeft, ChevronRight, Tv, Languages, Settings, Share2, Download, Star, Maximize2, Minimize2, SkipForward, Play, X } from 'lucide-react';
 import { getMovieDetails, getTVShowDetails, imageUrl, getMovieImages, getTVShowImages, getCollectionDetails, getMovieRecommendations, getMovieSimilar, getTVShowRecommendations, getTVShowSimilar, getSeasonDetails, getTrendingTVShows, getTrendingMovies, tmdb } from '../api/tmdb';
 import { useWatchlist } from '../hooks/useWatchlist';
 import { servers, getServerUrl } from '../config/servers';
@@ -99,6 +99,8 @@ const VideoPlayer = () => {
     const [recommendations, setRecommendations] = useState([]);
     const [loading, setLoading] = useState(true);
     const [currentEpisodeDetails, setCurrentEpisodeDetails] = useState(null);
+    const [showCreditsOverlay, setShowCreditsOverlay] = useState(false);
+    const [nextEpisodePrompt, setNextEpisodePrompt] = useState(null);
     const [accentColorRgb, setAccentColorRgb] = useState('0, 188, 212'); // Default cyan
     const [shareToast, setShareToast] = useState(false);
     const checkIsMobile = () => isMobileDevice();
@@ -292,6 +294,8 @@ const VideoPlayer = () => {
     // Reset nextTriggeredRef when season/episode/id changes
     useEffect(() => {
         nextTriggeredRef.current = false;
+        setShowCreditsOverlay(false);
+        setNextEpisodePrompt(null);
     }, [id, currentSeason, currentEpisode]);
 
     // Handle universal embed player postMessage events & smart credit/end-of-episode detection
@@ -299,45 +303,56 @@ const VideoPlayer = () => {
         const handlePlayerMessage = (event) => {
             if (!event.data) return;
 
+            let msg = event.data;
+            if (typeof msg === 'string') {
+                try {
+                    msg = JSON.parse(msg);
+                } catch {
+                    // Plain string, not JSON
+                }
+            }
+
+            if (!msg || typeof msg !== 'object') return;
+
             // Save raw server media progress data if present
-            if (event.data?.type === 'MEDIA_DATA') {
-                const mediaData = event.data.data;
+            if (msg.type === 'MEDIA_DATA') {
+                const mediaData = msg.data;
                 try {
                     localStorage.setItem("vidsrcwtf-Progress", JSON.stringify(mediaData));
                     localStorage.setItem("peachifyProgress", JSON.stringify(mediaData));
                 } catch (e) { }
             }
 
+            // Numerical playback status, currentTime, and duration
             let currentTime = null;
             let duration = null;
             let playerStatus = null;
 
-            // Extract status, currentTime, and duration from various embed formats
-            if (event.data.type === 'PLAYER_EVENT') {
-                const data = event.data.data || event.data;
+            if (msg.type === 'PLAYER_EVENT') {
+                const data = msg.data || msg;
                 playerStatus = data.event || data.player_status;
                 currentTime = data.currentTime ?? data.player_progress ?? data.progress ?? data.time;
                 duration = data.duration ?? data.player_duration ?? data.totalTime;
-            } else if (event.data.event || event.data.type) {
-                const typeStr = (event.data.event || event.data.type || '').toString().toLowerCase();
-                if (typeStr.includes('time') || typeStr.includes('progress') || typeStr.includes('play') || typeStr.includes('end')) {
-                    currentTime = event.data.currentTime ?? event.data.progress ?? event.data.position;
-                    duration = event.data.duration ?? event.data.total;
-                    playerStatus = event.data.status || event.data.event || event.data.type;
+            } else if (msg.event || msg.type) {
+                const typeStr = (msg.event || msg.type || '').toString().toLowerCase();
+                if (typeStr.includes('time') || typeStr.includes('progress')) {
+                    currentTime = msg.currentTime ?? msg.progress ?? msg.position;
+                    duration = msg.duration ?? msg.total;
+                    playerStatus = msg.status || msg.event || msg.type;
                 }
             }
 
-            // Check if we have numerical playback info
-            if (currentTime !== null && duration !== null && duration > 0) {
+            // Only evaluate if genuine video playback duration exists (> 3 minutes) and has played at least 2 minutes
+            if (currentTime !== null && duration !== null && duration > 180 && currentTime > 120) {
                 const remaining = duration - currentTime;
                 const percent = (currentTime / duration) * 100;
 
-                // Near End Criteria: Remaining <= 90 seconds OR Watched >= 95% OR status is ended/completed
-                const isNearEnd = remaining <= 90 || percent >= 95 || playerStatus === 'completed' || playerStatus === 'ended';
+                // Near End Criteria: Remaining <= 80 seconds OR Watched >= 96%
+                const isNearEnd = remaining <= 80 || percent >= 96;
 
                 if (isNearEnd && type === 'tv' && !nextTriggeredRef.current) {
                     nextTriggeredRef.current = true;
-                    console.log(`[Smart Credits Detection] Episode near end (${Math.round(remaining)}s remaining). Advancing progress to next episode.`);
+                    console.log(`[Smart Progress] Episode near end (${Math.round(remaining)}s remaining). Saving progress.`);
 
                     // Calculate Next Episode
                     let nextS = currentSeason;
@@ -371,17 +386,16 @@ const VideoPlayer = () => {
                         console.error('Error saving smart progress:', err);
                     }
 
-                    // If player emitted explicit ended/completed event, trigger handleNextEpisode directly
-                    if (playerStatus === 'completed' || playerStatus === 'ended') {
-                        handleNextEpisode();
-                    }
+                    // Show the synchronized floating Next Episode overlay
+                    setNextEpisodePrompt({ season: nextS, episode: nextE });
+                    setShowCreditsOverlay(true);
                 }
             }
         };
 
         window.addEventListener('message', handlePlayerMessage);
         return () => window.removeEventListener('message', handlePlayerMessage);
-    }, [id, type, currentSeason, currentEpisode, episodeCounts, seasons, handleNextEpisode]);
+    }, [id, type, currentSeason, currentEpisode, episodeCounts, seasons, handleNextEpisode, handleEpisodeSelect]);
 
     // Fetch details of the current active episode for TV Shows
     useEffect(() => {
@@ -1027,10 +1041,45 @@ const VideoPlayer = () => {
                                                     <Maximize2 size={13} />
                                                     <span>Fullscreen</span>
                                                 </button>
+
+                                                {/* Next Episode Button (TV Only) */}
+                                                {type === 'tv' && (
+                                                    <button
+                                                        onClick={handleNextEpisode}
+                                                        title="Next Episode"
+                                                        style={{
+                                                            background: 'linear-gradient(135deg, rgba(var(--theme-accent-rgb), 0.22) 0%, rgba(var(--theme-accent-rgb), 0.08) 100%)',
+                                                            border: '1px solid rgba(var(--theme-accent-rgb), 0.4)',
+                                                            color: 'white',
+                                                            cursor: 'pointer',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            gap: '0.35rem',
+                                                            padding: '0.3rem 0.65rem',
+                                                            borderRadius: '6px',
+                                                            fontSize: '0.75rem',
+                                                            fontWeight: '600',
+                                                            transition: 'all 0.2s ease'
+                                                        }}
+                                                        onMouseEnter={(e) => {
+                                                            e.currentTarget.style.background = 'var(--theme-accent)';
+                                                            e.currentTarget.style.color = '#000';
+                                                            e.currentTarget.style.borderColor = 'var(--theme-accent)';
+                                                        }}
+                                                        onMouseLeave={(e) => {
+                                                            e.currentTarget.style.background = 'linear-gradient(135deg, rgba(var(--theme-accent-rgb), 0.22) 0%, rgba(var(--theme-accent-rgb), 0.08) 100%)';
+                                                            e.currentTarget.style.color = 'white';
+                                                            e.currentTarget.style.borderColor = 'rgba(var(--theme-accent-rgb), 0.4)';
+                                                        }}
+                                                    >
+                                                        <SkipForward size={13} />
+                                                        <span>Next Ep</span>
+                                                    </button>
+                                                )}
                                             </div>
                                         </div>
 
-                                        <div style={{ width: '100%', aspectRatio: '16/9' }}>
+                                        <div style={{ width: '100%', aspectRatio: '16/9', position: 'relative', overflow: 'hidden' }}>
                                             <iframe
                                                 ref={iframeRef}
                                                 key={iframeKey}
@@ -1047,6 +1096,102 @@ const VideoPlayer = () => {
                                                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen *"
                                                 scrolling="no"
                                             />
+
+                                            {/* Floating Synchronized Next Episode Card */}
+                                            <AnimatePresence>
+                                                {showCreditsOverlay && type === 'tv' && (
+                                                    <motion.div
+                                                        initial={{ opacity: 0, y: 30, scale: 0.95 }}
+                                                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                                                        exit={{ opacity: 0, y: 20, scale: 0.95 }}
+                                                        transition={{ type: 'spring', stiffness: 350, damping: 25 }}
+                                                        style={{
+                                                            position: 'absolute',
+                                                            bottom: '1.5rem',
+                                                            right: '1.5rem',
+                                                            zIndex: 40,
+                                                            background: 'rgba(8, 12, 19, 0.92)',
+                                                            backdropFilter: 'blur(20px)',
+                                                            WebkitBackdropFilter: 'blur(20px)',
+                                                            border: '1.5px solid rgba(var(--theme-accent-rgb), 0.5)',
+                                                            borderRadius: '16px',
+                                                            padding: '0.85rem 1.25rem',
+                                                            boxShadow: '0 12px 40px rgba(0, 0, 0, 0.75), 0 0 25px rgba(var(--theme-accent-rgb), 0.25)',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            gap: '1.2rem',
+                                                            maxWidth: '360px'
+                                                        }}
+                                                    >
+                                                        <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                                            <span style={{ fontSize: '0.7rem', color: 'var(--theme-accent)', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: '800' }}>
+                                                                Up Next
+                                                            </span>
+                                                            <span style={{ fontSize: '0.88rem', color: '#ffffff', fontWeight: '700', marginTop: '0.1rem' }}>
+                                                                {nextEpisodePrompt ? `Season ${nextEpisodePrompt.season} • Episode ${nextEpisodePrompt.episode}` : 'Next Episode'}
+                                                            </span>
+                                                        </div>
+
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                            <button
+                                                                onClick={() => {
+                                                                    setShowCreditsOverlay(false);
+                                                                    handleNextEpisode();
+                                                                }}
+                                                                style={{
+                                                                    background: 'var(--theme-accent)',
+                                                                    color: '#000000',
+                                                                    border: 'none',
+                                                                    borderRadius: '9999px',
+                                                                    padding: '0.45rem 1.1rem',
+                                                                    fontSize: '0.8rem',
+                                                                    fontWeight: '700',
+                                                                    cursor: 'pointer',
+                                                                    display: 'flex',
+                                                                    alignItems: 'center',
+                                                                    gap: '0.35rem',
+                                                                    boxShadow: '0 4px 14px rgba(var(--theme-accent-rgb), 0.35)',
+                                                                    transition: 'transform 0.15s ease'
+                                                                }}
+                                                                onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+                                                                onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                                                            >
+                                                                <Play size={13} fill="#000000" />
+                                                                Play Now
+                                                            </button>
+
+                                                            <button
+                                                                onClick={() => setShowCreditsOverlay(false)}
+                                                                title="Dismiss"
+                                                                style={{
+                                                                    background: 'rgba(255, 255, 255, 0.08)',
+                                                                    border: '1px solid rgba(255, 255, 255, 0.12)',
+                                                                    borderRadius: '50%',
+                                                                    width: '28px',
+                                                                    height: '28px',
+                                                                    display: 'flex',
+                                                                    alignItems: 'center',
+                                                                    justifyContent: 'center',
+                                                                    color: 'rgba(255, 255, 255, 0.7)',
+                                                                    cursor: 'pointer',
+                                                                    transition: 'all 0.2s ease',
+                                                                    padding: 0
+                                                                }}
+                                                                onMouseEnter={(e) => {
+                                                                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)';
+                                                                    e.currentTarget.style.color = '#fff';
+                                                                }}
+                                                                onMouseLeave={(e) => {
+                                                                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)';
+                                                                    e.currentTarget.style.color = 'rgba(255, 255, 255, 0.7)';
+                                                                }}
+                                                            >
+                                                                <X size={14} />
+                                                            </button>
+                                                        </div>
+                                                    </motion.div>
+                                                )}
+                                            </AnimatePresence>
                                         </div>
                                     </div>
 

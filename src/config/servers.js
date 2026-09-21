@@ -8,7 +8,7 @@ export const servers = [
         hasDownload: true, // Known to have VidFast Downloader APK
         urlTemplate: {
             movie: (tmdbId) => `https://vidfast.vc/movie/${tmdbId}?autoPlay=true&theme=00bcd4&server=beta`,
-            tv: (tmdbId, season, episode) => `https://vidfast.vc/tv/${tmdbId}/${season}/${episode}?autoPlay=true&nextButton=true&autoNext=true&theme=00bcd4&server=beta`
+            tv: (tmdbId, season, episode) => `https://vidfast.vc/tv/${tmdbId}/${season}/${episode}?autoPlay=true&nextButton=false&autoNext=false&theme=00bcd4&server=beta`
         }
     },
     // Server #2 - VidSrc SBS (2nd Place)

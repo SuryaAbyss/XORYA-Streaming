@@ -665,14 +665,14 @@ const MovieDetailsModal = () => {
                                                 }}
                                             >
                                                 <div style={{
-                                                    width: '54px',
-                                                    height: '80px',
-                                                    borderRadius: '8px',
+                                                    width: '64px',
+                                                    height: '96px',
+                                                    borderRadius: '9px',
                                                     overflow: 'hidden',
                                                     background: '#1a1a1a',
                                                     flexShrink: 0,
-                                                    border: '1px solid rgba(255,255,255,0.12)',
-                                                    boxShadow: '0 4px 12px rgba(0,0,0,0.4)'
+                                                    border: '1px solid rgba(255,255,255,0.14)',
+                                                    boxShadow: '0 4px 14px rgba(0,0,0,0.5)'
                                                 }}>
                                                     {posterUrl ? (
                                                         <img src={posterUrl} alt={displayName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -983,7 +983,7 @@ const MovieDetailsModal = () => {
 
                 {/* Right Side Panel - Episodes/Cast */}
                 <div style={{
-                    width: '310px',
+                    width: '335px',
                     zIndex: 4,
                     background: 'rgba(30, 30, 30, 0.25)',
                     backdropFilter: 'saturate(200%) blur(60px)',
@@ -1057,31 +1057,31 @@ const MovieDetailsModal = () => {
                                                 }}
                                             >
                                                 <div style={{ textAlign: 'right' }}>
-                                                    <div style={{ fontSize: '0.95rem', fontWeight: 'bold', color: 'white', marginBottom: '0.2rem' }}>
+                                                    <div style={{ fontSize: '1.05rem', fontWeight: 'bold', color: 'white', marginBottom: '0.2rem', letterSpacing: '0.5px' }}>
                                                         {sNumFormatted}
                                                     </div>
                                                     <div style={{
-                                                        fontSize: '0.72rem', color: 'rgba(255,255,255,0.85)',
-                                                        maxWidth: '120px', whiteSpace: 'normal',
-                                                        lineHeight: '1.2', fontWeight: '600'
+                                                        fontSize: '0.8rem', color: 'rgba(255,255,255,0.9)',
+                                                        maxWidth: '135px', whiteSpace: 'normal',
+                                                        lineHeight: '1.25', fontWeight: '700'
                                                     }}>
                                                         {displayName}
                                                     </div>
                                                     {season.episode_count ? (
-                                                        <div style={{ fontSize: '0.62rem', color: 'rgba(255,255,255,0.45)', marginTop: '2px' }}>
+                                                        <div style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.5)', marginTop: '3px' }}>
                                                             {season.episode_count} Episodes
                                                         </div>
                                                     ) : null}
                                                 </div>
                                                 <div style={{
-                                                    width: '56px',
-                                                    height: '84px',
-                                                    borderRadius: '8px',
+                                                    width: '74px',
+                                                    height: '110px',
+                                                    borderRadius: '10px',
                                                     overflow: 'hidden',
                                                     background: '#1a1a1a',
                                                     flexShrink: 0,
-                                                    border: '1px solid rgba(255,255,255,0.15)',
-                                                    boxShadow: '0 6px 18px rgba(0,0,0,0.6)'
+                                                    border: '1px solid rgba(255,255,255,0.18)',
+                                                    boxShadow: '0 8px 24px rgba(0,0,0,0.65)'
                                                 }}>
                                                     {posterUrl ? (
                                                         <img src={posterUrl} alt={displayName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />

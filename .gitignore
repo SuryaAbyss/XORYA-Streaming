@@ -24,3 +24,8 @@ dist-ssr
 *.sw?
 .vercel
 server/stats_persistence.json
+
+# Reference repositories & scratch files
+MovieBox-Tui-main/
+torlink-main/
+videoplayer.txt

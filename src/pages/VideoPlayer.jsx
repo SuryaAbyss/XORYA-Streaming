@@ -10,8 +10,10 @@ import EpisodesSidebar from '../components/EpisodesSidebar';
 import MovieRow from '../components/MovieRow';
 import WatchDetailsTabs from '../components/WatchDetailsTabs';
 import LemniscateBloomLoader from '../components/LemniscateBloomLoader';
+import dashjs from 'dashjs';
 import MobileVideoPlayerView from '../components/mobile/MobileVideoPlayerView';
 import { isMobileDevice } from '../utils/deviceDetector';
+import VjsStreamPlayer from '../components/VjsStreamPlayer';
 
 
 // Genre to color mappings for atmospheric fallback themes
@@ -126,9 +128,14 @@ const VideoPlayer = () => {
 
 
     const [activeServer, setActiveServer] = useState(getInitialServer);
+    const [directStream, setDirectStream] = useState(null);
     const [iframeKey, setIframeKey] = useState(0);
     const [isTheaterMode, setIsTheaterMode] = useState(false);
     const [isMobileView, setIsMobileView] = useState(checkIsMobile);
+
+    useEffect(() => {
+        setDirectStream(null);
+    }, [id, urlSeason, urlEpisode]);
 
     useEffect(() => {
         const handleResize = () => {
@@ -144,9 +151,69 @@ const VideoPlayer = () => {
 
     const playerFrameRef = useRef(null);
     const iframeRef = useRef(null);
+    const videoRef = useRef(null);
+    const [dashError, setDashError] = useState(false);
+
+    useEffect(() => {
+        let player = null;
+        setDashError(false);
+
+        // Only use dashjs for raw DASH manifests if there is no H.264 webStreamUrl
+        if (directStream && !directStream.webStreamUrl && directStream.streamUrl?.includes('.mpd') && videoRef.current) {
+            try {
+                player = dashjs.MediaPlayer().create();
+                player.initialize(videoRef.current, directStream.streamUrl, true);
+                player.on(dashjs.MediaPlayer.events.ERROR, (e) => {
+                    console.warn('DASH playback notice:', e);
+                    setDashError(true);
+                });
+            } catch (err) {
+                console.error('Failed to init DASH player:', err);
+                setDashError(true);
+            }
+        }
+
+        return () => {
+            if (player) {
+                try { player.destroy(); } catch (_) {}
+            }
+        };
+    }, [directStream]);
+
+    const handleLaunchVlc = async (stream) => {
+        const s = stream || directStream;
+        if (!s) return;
+        try {
+            // 1. Request backend to launch desktop VLC process
+            const resp = await fetch('/api/player/vlc', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    streamId: s.id,
+                    title: s.release || s.title || `${title}`
+                })
+            });
+            const data = await resp.json().catch(() => ({}));
+
+            // If backend could not launch VLC directly (e.g. not found in standard paths), download .m3u
+            if (!data?.success) {
+                const a = document.createElement('a');
+                a.href = `/api/stream/playlist/${s.id}.m3u`;
+                a.download = `${(s.release || s.title || 'Stream').replace(/[^a-zA-Z0-9_-]/g, '_')}.m3u`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            }
+
+            setShareToast(`🎬 Opened "${s.release || s.title}" in VLC Media Player!`);
+            setTimeout(() => setShareToast(null), 4000);
+        } catch (err) {
+            console.error('Failed to launch VLC:', err);
+        }
+    };
 
     const toggleFullscreen = () => {
-        const elem = iframeRef.current || playerFrameRef.current;
+        const elem = videoRef.current || iframeRef.current || playerFrameRef.current;
         if (!elem) return;
 
         const isFS = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement;
@@ -984,10 +1051,82 @@ const VideoPlayer = () => {
                                                     display: 'inline-block',
                                                     boxShadow: '0 0 8px var(--theme-accent)'
                                                 }}></span>
-                                                {type === 'tv' ? (
-                                                    <span>Now Playing&nbsp;&nbsp; S{currentSeason} • E{currentEpisode} • {currentEpisodeDetails?.name || 'Loading Episode...'}</span>
+                                                {directStream ? (
+                                                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                                                        <span style={{
+                                                            background: 'linear-gradient(135deg, rgba(var(--theme-accent-rgb), 0.3) 0%, rgba(var(--theme-accent-rgb), 0.1) 100%)',
+                                                            border: '1px solid var(--theme-accent)',
+                                                            color: 'var(--theme-accent)',
+                                                            padding: '0.15rem 0.5rem',
+                                                            borderRadius: '6px',
+                                                            fontSize: '0.72rem',
+                                                            fontWeight: '800'
+                                                        }}>
+                                                            ⚡ MOVIEBOX {directStream.codec ? `• ${directStream.codec}` : ''}
+                                                        </span>
+                                                        <span style={{ color: 'rgba(255, 255, 255, 0.85)', fontSize: '0.78rem', maxWidth: '320px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                                            {directStream.release || directStream.title}
+                                                        </span>
+
+                                                        {/* Quick Launch in VLC button */}
+                                                        <button
+                                                            onClick={() => handleLaunchVlc(directStream)}
+                                                            title="Pop up and stream directly in VLC (Desktop Player)"
+                                                            style={{
+                                                                background: 'linear-gradient(135deg, #ea580c 0%, #c2410c 100%)',
+                                                                border: 'none',
+                                                                color: '#ffffff',
+                                                                borderRadius: '6px',
+                                                                padding: '0.18rem 0.55rem',
+                                                                fontSize: '0.72rem',
+                                                                fontWeight: '800',
+                                                                cursor: 'pointer',
+                                                                display: 'inline-flex',
+                                                                alignItems: 'center',
+                                                                gap: '0.3rem',
+                                                                boxShadow: '0 2px 10px rgba(234, 88, 12, 0.4)',
+                                                                transition: 'all 0.2s ease'
+                                                            }}
+                                                            onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.04)'}
+                                                            onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                                                        >
+                                                            <span>🎬 Open in VLC</span>
+                                                        </button>
+
+                                                        <button
+                                                            onClick={() => setDirectStream(null)}
+                                                            title="Switch back to standard embed servers"
+                                                            style={{
+                                                                background: 'rgba(255, 255, 255, 0.08)',
+                                                                border: '1px solid rgba(255, 255, 255, 0.15)',
+                                                                color: 'rgba(255, 255, 255, 0.75)',
+                                                                borderRadius: '6px',
+                                                                padding: '0.15rem 0.45rem',
+                                                                fontSize: '0.7rem',
+                                                                cursor: 'pointer',
+                                                                marginLeft: '0.3rem',
+                                                                transition: 'all 0.2s ease'
+                                                            }}
+                                                            onMouseEnter={(e) => {
+                                                                e.currentTarget.style.background = 'rgba(239, 68, 68, 0.2)';
+                                                                e.currentTarget.style.color = '#fff';
+                                                                e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.4)';
+                                                            }}
+                                                            onMouseLeave={(e) => {
+                                                                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)';
+                                                                e.currentTarget.style.color = 'rgba(255, 255, 255, 0.75)';
+                                                                e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.15)';
+                                                            }}
+                                                        >
+                                                            ✕ Switch to Embeds
+                                                        </button>
+                                                    </div>
                                                 ) : (
-                                                    <span>Now Playing • {title}</span>
+                                                    type === 'tv' ? (
+                                                        <span>Now Playing&nbsp;&nbsp; S{currentSeason} • E{currentEpisode} • {currentEpisodeDetails?.name || 'Loading Episode...'}</span>
+                                                    ) : (
+                                                        <span>Now Playing • {title}</span>
+                                                    )
                                                 )}
                                             </div>
                                             <div style={{
@@ -1080,22 +1219,50 @@ const VideoPlayer = () => {
                                         </div>
 
                                         <div style={{ width: '100%', aspectRatio: '16/9', position: 'relative', overflow: 'hidden' }}>
-                                            <iframe
-                                                ref={iframeRef}
-                                                key={iframeKey}
-                                                src={playerUrl}
-                                                onLoad={handleIframeLoad}
-                                                style={{
-                                                    width: '100%',
-                                                    height: '100%',
-                                                    border: 'none'
-                                                }}
-                                                allowFullScreen
-                                                webkitAllowFullScreen
-                                                mozAllowFullScreen
-                                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen *"
-                                                scrolling="no"
-                                            />
+                                            {directStream ? (
+                                                (directStream.streamUrl || directStream.webStreamUrl || directStream.isDirectPlayable) ? (
+                                                    <VjsStreamPlayer
+                                                        key={directStream.streamUrl || directStream.webStreamUrl}
+                                                        src={directStream.streamUrl || directStream.webStreamUrl}
+                                                        poster={contentData?.backdrop_path ? `https://image.tmdb.org/t/p/original${contentData.backdrop_path}` : undefined}
+                                                        title={directStream.release || directStream.title}
+                                                        onOpenVlc={() => handleLaunchVlc(directStream)}
+                                                    />
+                                                ) : (
+                                                    <iframe
+                                                        ref={iframeRef}
+                                                        key={directStream.streamUrl}
+                                                        src={directStream.streamUrl}
+                                                        style={{
+                                                            width: '100%',
+                                                            height: '100%',
+                                                            border: 'none'
+                                                        }}
+                                                        allowFullScreen
+                                                        webkitAllowFullScreen
+                                                        mozAllowFullScreen
+                                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen *"
+                                                        scrolling="no"
+                                                    />
+                                                )
+                                            ) : (
+                                                <iframe
+                                                    ref={iframeRef}
+                                                    key={iframeKey}
+                                                    src={playerUrl}
+                                                    onLoad={handleIframeLoad}
+                                                    style={{
+                                                        width: '100%',
+                                                        height: '100%',
+                                                        border: 'none'
+                                                    }}
+                                                    allowFullScreen
+                                                    webkitAllowFullScreen
+                                                    mozAllowFullScreen
+                                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen *"
+                                                    scrolling="no"
+                                                />
+                                            )}
 
                                             {/* Floating Synchronized Next Episode Card */}
                                             <AnimatePresence>
@@ -1479,9 +1646,20 @@ const VideoPlayer = () => {
                                                 season={currentSeason}
                                                 episode={currentEpisode}
                                                 activeServer={activeServer}
-                                                onServerChange={handleServerChange}
+                                                onServerChange={(srv) => {
+                                                    setDirectStream(null);
+                                                    handleServerChange(srv);
+                                                }}
                                                 onReload={handleReload}
                                                 onDownload={() => handleServerChange('rive-download')}
+                                                activeDirectStream={directStream}
+                                                onSelectDirectStream={(stream) => {
+                                                    setDirectStream(stream);
+                                                    const playerElem = document.querySelector('.watch-main') || document.querySelector('.watch-layout');
+                                                    if (playerElem) {
+                                                        playerElem.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                                    }
+                                                }}
                                             />
                                         </div>
                                     )}
@@ -1505,9 +1683,20 @@ const VideoPlayer = () => {
                                                 season={currentSeason}
                                                 episode={currentEpisode}
                                                 activeServer={activeServer}
-                                                onServerChange={handleServerChange}
+                                                onServerChange={(srv) => {
+                                                    setDirectStream(null);
+                                                    handleServerChange(srv);
+                                                }}
                                                 onReload={handleReload}
                                                 onDownload={() => handleServerChange('rive-download')}
+                                                activeDirectStream={directStream}
+                                                onSelectDirectStream={(stream) => {
+                                                    setDirectStream(stream);
+                                                    const playerElem = document.querySelector('.watch-main') || document.querySelector('.watch-layout');
+                                                    if (playerElem) {
+                                                        playerElem.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                                    }
+                                                }}
                                             />
                                         </div>
                                         {/* Right: Episodes Sidebar (TV) */}

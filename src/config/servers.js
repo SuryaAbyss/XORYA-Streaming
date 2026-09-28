@@ -43,12 +43,12 @@ export const servers = [
     },
 
     {
-        id: 'vidapi',
-        name: 'VidAPI',
+        id: 'cinesrc',
+        name: 'CineSrc',
         type: 'alternate',
         urlTemplate: {
-            movie: (tmdbId) => `https://vaplayer.ru/embed/movie/${tmdbId}?primaryColor=%2300bcd4&autoplay=1`,
-            tv: (tmdbId, season, episode) => `https://vaplayer.ru/embed/tv/${tmdbId}/${season}/${episode}?primaryColor=%2300bcd4&autoplay=1`
+            movie: (tmdbId) => `https://cinesrc.st/embed/movie/${tmdbId}?autoplay=true&color=%2300bcd4`,
+            tv: (tmdbId, season, episode) => `https://cinesrc.st/embed/tv/${tmdbId}?s=${season}&e=${episode}&autoplay=true&autonext=true&color=%2300bcd4`
         }
     },
     // Server #2 - VidKing
@@ -84,14 +84,23 @@ export const servers = [
             tv: (tmdbId, season, episode) => `https://vidora.su/tv/${tmdbId}/${season}/${episode}?autoplay=true&colour=00bcd4&autonextepisode=true`
         }
     },
+    {
+        id: 'vidrift',
+        name: 'VidRift',
+        type: 'alternate',
+        urlTemplate: {
+            movie: (tmdbId) => `https://embed.vidrift.in/embed/movie/${tmdbId}`,
+            tv: (tmdbId, season, episode) => `https://embed.vidrift.in/embed/tv/${tmdbId}/${season}/${episode}`
+        }
+    },
     // Server #3 - VidRock
     {
         id: 'vidrock',
         name: 'VidRock',
         type: 'alternate',
         urlTemplate: {
-            movie: (tmdbId) => `https://vidrock.ru/movie/${tmdbId}`,
-            tv: (tmdbId, season, episode) => `https://vidrock.ru/tv/${tmdbId}/${season}/${episode}`
+            movie: (tmdbId) => `https://vidrock.to/movie/${tmdbId}`,
+            tv: (tmdbId, season, episode) => `https://vidrock.to/tv/${tmdbId}/${season}/${episode}`
         }
     },
 
@@ -198,17 +207,27 @@ export const servers = [
             tv: (tmdbId, season, episode) => `https://moviesapi.club/tv/${tmdbId}-${season}-${episode}`
         }
     },
-    // Server Testing Area
     {
-        id: 'cinesrc',
-        name: 'CineSrc',
-        type: 'testing',
-        category: 'testing',
+        id: 'vidapi',
+        name: 'VidAPI',
+        type: 'alternate',
+        category: 'poor',
         urlTemplate: {
-            movie: (tmdbId) => `https://cinesrc.st/embed/movie/${tmdbId}?autoplay=true&color=%2300bcd4`,
-            tv: (tmdbId, season, episode) => `https://cinesrc.st/embed/tv/${tmdbId}?s=${season}&e=${episode}&autoplay=true&autonext=true&color=%2300bcd4`
+            movie: (tmdbId) => `https://vaplayer.ru/embed/movie/${tmdbId}?primaryColor=%2300bcd4&autoplay=1`,
+            tv: (tmdbId, season, episode) => `https://vaplayer.ru/embed/tv/${tmdbId}/${season}/${episode}?primaryColor=%2300bcd4&autoplay=1`
         }
     },
+    {
+        id: 'peachify',
+        name: 'Peachify',
+        type: 'alternate',
+        category: 'poor',
+        urlTemplate: {
+            movie: (tmdbId) => `https://peachify.top/embed/movie/${tmdbId}?accent=00bcd4&autoPlay=true`,
+            tv: (tmdbId, season, episode) => `https://peachify.top/embed/tv/${tmdbId}/${season}/${episode}?accent=00bcd4&autoPlay=true&autoNext=30`
+        }
+    },
+    // Server Testing Area
     {
         id: 'vidsrcwtf-3',
         name: 'VidSrc WTF (Embeds)',
@@ -320,16 +339,7 @@ export const servers = [
             tv: (tmdbId, season, episode) => `https://player.vidlove.cc/embed/tv/${tmdbId}/${season}/${episode}?primarycolor=00bcd4&autoplay=true`
         }
     },
-    {
-        id: 'vidrift',
-        name: 'VidRift',
-        type: 'testing',
-        category: 'testing',
-        urlTemplate: {
-            movie: (tmdbId) => `https://embed.vidrift.in/embed/movie/${tmdbId}`,
-            tv: (tmdbId, season, episode) => `https://embed.vidrift.in/embed/tv/${tmdbId}/${season}/${episode}`
-        }
-    },
+
     {
         id: 'videasy-pro',
         name: 'Videasy Pro',
@@ -340,16 +350,7 @@ export const servers = [
             tv: (tmdbId, season, episode) => `https://player.videasy.to/tv/${tmdbId}/${season}/${episode}?color=00bcd4&nextEpisode=true&autoplayNextEpisode=true`
         }
     },
-    {
-        id: 'peachify',
-        name: 'Peachify',
-        type: 'testing',
-        category: 'testing',
-        urlTemplate: {
-            movie: (tmdbId) => `https://peachify.top/embed/movie/${tmdbId}?accent=00bcd4&autoPlay=true`,
-            tv: (tmdbId, season, episode) => `https://peachify.top/embed/tv/${tmdbId}/${season}/${episode}?accent=00bcd4&autoPlay=true&autoNext=30`
-        }
-    },
+
     {
         id: 'vidup',
         name: 'VidUP',
@@ -378,6 +379,47 @@ export const servers = [
         urlTemplate: {
             movie: (tmdbId) => `https://vsembed.ru/embed/movie/${tmdbId}?autoplay=1`,
             tv: (tmdbId, season, episode) => `https://vsembed.ru/embed/tv/${tmdbId}/${season}/${episode}?autoplay=1&autonext=1`
+        }
+    },
+    {
+        id: 'streamrip',
+        name: 'StreamRip',
+        type: 'testing',
+        category: 'testing',
+        hasDownload: true,
+        urlTemplate: {
+            movie: (tmdbId) => `https://streamrip.fun/movie/${tmdbId}`,
+            tv: (tmdbId, season, episode) => `https://streamrip.fun/tv/${tmdbId}/${season}/${episode}`
+        }
+    },
+    {
+        id: 'vidbolt',
+        name: 'VidBolt',
+        type: 'testing',
+        category: 'testing',
+        urlTemplate: {
+            movie: (tmdbId) => `https://vidbolt.pro/movie/${tmdbId}?theme=00bcd4&autoPlay=true`,
+            tv: (tmdbId, season, episode) => `https://vidbolt.pro/tv/${tmdbId}/${season}/${episode}?theme=00bcd4&autoPlay=true`
+        }
+    },
+    {
+        id: 'vidrift-net',
+        name: 'VidRift (.net)',
+        type: 'testing',
+        category: 'testing',
+        urlTemplate: {
+            movie: (tmdbId) => `https://embed.vidrift.net/embed/movie/${tmdbId}?brandColor=00bcd4`,
+            tv: (tmdbId, season, episode) => `https://embed.vidrift.net/embed/tv/${tmdbId}/${season}/${episode}?brandColor=00bcd4`
+        }
+    },
+    {
+        id: 'filmu',
+        name: 'Filmu',
+        type: 'testing',
+        category: 'testing',
+        urlTemplate: {
+            movie: (tmdbId) => `https://embed.filmu.in/movie/${tmdbId}`,
+            tv: (tmdbId, season, episode) => `https://embed.filmu.in/tv/${tmdbId}/${season}/${episode}`
         }
     }
 ];

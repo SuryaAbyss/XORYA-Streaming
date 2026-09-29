@@ -55,7 +55,7 @@ export const getScienceDocs = () => tmdb.get('/discover/movie?with_genres=99,107
 
 
 export const searchMovies = (query) => tmdb.get(`/search/movie?query=${query}`);
-export const getMovieDetails = (id) => tmdb.get(`/movie/${id}?append_to_response=videos,credits`);
+export const getMovieDetails = (id) => tmdb.get(`/movie/${id}?append_to_response=videos,credits,watch/providers`);
 export const getMovieImages = (id) => tmdb.get(`/movie/${id}/images?include_image_language=en,null`);
 export const getMovieVideos = (id) => tmdb.get(`/movie/${id}/videos`);
 export const getCollectionDetails = (id) => tmdb.get(`/collection/${id}`);
@@ -67,7 +67,7 @@ export const getPersonDetails = (id) => tmdb.get(`/person/${id}`);
 export const getPersonCombinedCredits = (id) => tmdb.get(`/person/${id}/combined_credits`);
 
 // TV Show APIs
-export const getTVShowDetails = (id) => tmdb.get(`/tv/${id}?append_to_response=videos,credits`);
+export const getTVShowDetails = (id) => tmdb.get(`/tv/${id}?append_to_response=videos,credits,watch/providers`);
 export const getTVShowImages = (id) => tmdb.get(`/tv/${id}/images?include_image_language=en,null`);
 export const getTVShowVideos = (id) => tmdb.get(`/tv/${id}/videos`);
 export const getTVVideos = getTVShowVideos;

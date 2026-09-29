@@ -4963,7 +4963,7 @@ body::before {
   position: relative !important;
   isolation: isolate;
   min-height: auto !important;
-  padding: 1.2rem 3rem 3.2rem !important;
+  padding: 0.8rem 3rem 3rem !important;
   gap: 1.45rem !important;
   background: rgba(4, 6, 12, 0.35) !important;
   backdrop-filter: blur(24px) !important;

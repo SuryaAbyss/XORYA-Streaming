@@ -136,7 +136,9 @@ const MovieInfoSidebar = ({ movie }) => {
 
                 // Custom Scrollbar
                 scrollbarWidth: 'thin',
-                scrollbarColor: 'rgba(255,255,255,0.2) transparent'
+                scrollbarColor: 'rgba(255,255,255,0.2) transparent',
+                maskImage: 'linear-gradient(to bottom, black 0%, black calc(100% - 48px), transparent 100%)',
+                WebkitMaskImage: 'linear-gradient(to bottom, black 0%, black calc(100% - 48px), transparent 100%)'
             }}
                 onWheel={(e) => e.stopPropagation()}
             >
@@ -196,7 +198,7 @@ const MovieInfoSidebar = ({ movie }) => {
                                                         <img
                                                             src={`https://image.tmdb.org/t/p/w200${person.profile_path}`}
                                                             alt={person.name}
-                                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                                            style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 15%' }}
                                                         />
                                                     ) : (
                                                         <div style={{ width: '100%', height: '100%', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

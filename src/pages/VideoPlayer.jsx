@@ -14,6 +14,7 @@ import dashjs from 'dashjs';
 import MobileVideoPlayerView from '../components/mobile/MobileVideoPlayerView';
 import { isMobileDevice } from '../utils/deviceDetector';
 import VjsStreamPlayer from '../components/VjsStreamPlayer';
+import OttPlatformStrip from '../components/OttPlatformStrip';
 
 
 // Genre to color mappings for atmospheric fallback themes
@@ -330,11 +331,25 @@ const VideoPlayer = () => {
 
 
 
+    // Refs to manage credit/up-next overlay triggers and suppress stale iframe messages across episode switches
+    const nextTriggeredRef = useRef(false);
+    const episodeSwitchCooldownRef = useRef(0);
+    const dismissedEpisodesRef = useRef(new Set());
+
     const handleEpisodeSelect = useCallback((season, episode) => {
+        // Mark previous episode as dismissed so lingering postMessages cannot trigger overlay
+        const prevKey = `${id}_s${currentSeason}_e${currentEpisode}`;
+        dismissedEpisodesRef.current.add(prevKey);
+        episodeSwitchCooldownRef.current = Date.now();
+        nextTriggeredRef.current = true;
+        setShowCreditsOverlay(false);
+        setNextEpisodePrompt(null);
+        setIframeKey(k => k + 1);
+
         setCurrentSeason(season);
         setCurrentEpisode(episode);
         navigate(`/watch/tv/${id}/season/${season}/episode/${episode}`, { replace: true });
-    }, [id, navigate]);
+    }, [id, currentSeason, currentEpisode, navigate]);
 
     const handlePreviousEpisode = useCallback(() => {
         if (currentEpisode > 1) {
@@ -355,14 +370,17 @@ const VideoPlayer = () => {
         }
     }, [episodeCounts, currentSeason, currentEpisode, seasons, handleEpisodeSelect]);
 
-    // Ref to prevent multiple triggers for the same episode during postMessage stream
-    const nextTriggeredRef = useRef(false);
-
-    // Reset nextTriggeredRef when season/episode/id changes
+    // Reset overlay state when season/episode/id changes
     useEffect(() => {
-        nextTriggeredRef.current = false;
         setShowCreditsOverlay(false);
         setNextEpisodePrompt(null);
+        episodeSwitchCooldownRef.current = Date.now();
+
+        // 5s grace period before enabling next episode detection to ensure clean playback initialization
+        const timer = setTimeout(() => {
+            nextTriggeredRef.current = false;
+        }, 5000);
+        return () => clearTimeout(timer);
     }, [id, currentSeason, currentEpisode]);
 
     // Handle universal embed player postMessage events & smart credit/end-of-episode detection
@@ -411,6 +429,11 @@ const VideoPlayer = () => {
 
             // Only evaluate if genuine video playback duration exists (> 3 minutes) and has played at least 2 minutes
             if (currentTime !== null && duration !== null && duration > 180 && currentTime > 120) {
+                // Ignore events during transition cooldown (right after switching episode) or for already-dismissed episodes
+                if (Date.now() - episodeSwitchCooldownRef.current < 6000) return;
+                const currentEpKey = `${id}_s${currentSeason}_e${currentEpisode}`;
+                if (dismissedEpisodesRef.current.has(currentEpKey)) return;
+
                 const remaining = duration - currentTime;
                 const percent = (currentTime / duration) * 100;
 
@@ -518,11 +541,8 @@ const VideoPlayer = () => {
         calculateTheme();
     }, [contentData]);
 
-    // Handle Collection Reset & Resume Watch Redirect Side-Effect
+    // Handle Resume Watch Redirect Side-Effect
     useEffect(() => {
-        setCollectionData(null);
-        setRecommendations([]);
-
         // If a user clicks play without specifying episode, strictly enforce the redirect from raw localStorage.
         if (type === 'tv' && !urlSeason && !urlEpisode) {
             try {
@@ -565,6 +585,8 @@ const VideoPlayer = () => {
 
     const fetchContentData = async () => {
         setLoading(true);
+        setCollectionData(null);
+        setRecommendations([]);
         try {
             let data;
             let logo = null;
@@ -796,7 +818,7 @@ const VideoPlayer = () => {
             minHeight: '100vh',
             position: 'relative',
             backgroundColor: 'transparent', // Make transparent so fixed background shows
-            paddingTop: '55px',
+            paddingTop: '38px',
             overflow: 'hidden' // Ensure pattern doesn't cause scrollbars if it overflows
         }}>
             {/* Blurred Background Image */}
@@ -881,7 +903,7 @@ const VideoPlayer = () => {
                                 display: 'flex',
                                 flexDirection: 'column',
                                 minHeight: 'calc(100vh - 120px)',
-                                padding: isTheaterMode ? '1rem 1.2rem 2.5rem' : '1.5rem 2.5rem 2.5rem',
+                                padding: isTheaterMode ? '0.8rem 1.2rem 2.2rem' : '1rem 2.5rem 2.2rem',
                                 background: 'rgba(10, 10, 15, 0.45)',
                                 backdropFilter: 'blur(40px)',
                                 WebkitBackdropFilter: 'blur(40px)',
@@ -904,7 +926,7 @@ const VideoPlayer = () => {
                                 paddingBottom: '0px',
                                 marginBottom: '0px',
                                 gap: '1.6rem',
-                                marginTop: '0.2rem',
+                                marginTop: '-0.35rem',
                                 flexWrap: 'wrap'
                             }}>
                                 {logoPath ? (
@@ -933,7 +955,7 @@ const VideoPlayer = () => {
                                     </h1>
                                 )}
 
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem', justifyContent: 'center' }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.12rem', justifyContent: 'center' }}>
                                     <div style={{
                                         display: 'flex',
                                         alignItems: 'center',
@@ -969,6 +991,9 @@ const VideoPlayer = () => {
                                             "{contentData.tagline}"
                                         </p>
                                     )}
+
+                                    {/* OTT Platform Availability Strip */}
+                                    <OttPlatformStrip contentData={contentData} type={type} />
                                 </div>
                             </div>
 
@@ -989,7 +1014,7 @@ const VideoPlayer = () => {
                                 gap: '2.5rem',
                                 width: '100%',
                                 boxSizing: 'border-box',
-                                marginTop: '-1.2rem'
+                                marginTop: '-2rem'
                             }}>
                                 {/* Player Area */}
                                 <motion.div
@@ -1264,44 +1289,72 @@ const VideoPlayer = () => {
                                                 />
                                             )}
 
-                                            {/* Floating Synchronized Next Episode Card */}
+                                            {/* Floating Synchronized Next Episode Card - Apple Liquid Glass */}
                                             <AnimatePresence>
                                                 {showCreditsOverlay && type === 'tv' && (
                                                     <motion.div
-                                                        initial={{ opacity: 0, y: 30, scale: 0.95 }}
+                                                        initial={{ opacity: 0, y: 20, scale: 0.94 }}
                                                         animate={{ opacity: 1, y: 0, scale: 1 }}
-                                                        exit={{ opacity: 0, y: 20, scale: 0.95 }}
-                                                        transition={{ type: 'spring', stiffness: 350, damping: 25 }}
+                                                        exit={{ opacity: 0, y: 15, scale: 0.94 }}
+                                                        transition={{ duration: 0.22, ease: 'easeOut' }}
                                                         style={{
                                                             position: 'absolute',
-                                                            bottom: '1.5rem',
-                                                            right: '1.5rem',
-                                                            zIndex: 40,
-                                                            background: 'rgba(8, 12, 19, 0.92)',
-                                                            backdropFilter: 'blur(20px)',
-                                                            WebkitBackdropFilter: 'blur(20px)',
-                                                            border: '1.5px solid rgba(var(--theme-accent-rgb), 0.5)',
-                                                            borderRadius: '16px',
-                                                            padding: '0.85rem 1.25rem',
-                                                            boxShadow: '0 12px 40px rgba(0, 0, 0, 0.75), 0 0 25px rgba(var(--theme-accent-rgb), 0.25)',
+                                                            bottom: isMobileView ? '1rem' : '1.5rem',
+                                                            right: isMobileView ? '1rem' : '1.5rem',
+                                                            zIndex: 50,
+                                                            background: 'rgba(10, 14, 23, 0.65)',
+                                                            backdropFilter: 'blur(24px) saturate(190%)',
+                                                            WebkitBackdropFilter: 'blur(24px) saturate(190%)',
+                                                            border: '1px solid rgba(255, 255, 255, 0.16)',
+                                                            borderRadius: '50px',
+                                                            padding: isMobileView ? '0.45rem 0.65rem 0.45rem 1rem' : '0.55rem 0.75rem 0.55rem 1.25rem',
+                                                            boxShadow: '0 16px 40px -4px rgba(0, 0, 0, 0.65), inset 0 1px 1px rgba(255, 255, 255, 0.22), 0 0 25px rgba(var(--theme-accent-rgb), 0.12)',
                                                             display: 'flex',
                                                             alignItems: 'center',
-                                                            gap: '1.2rem',
-                                                            maxWidth: '360px'
+                                                            gap: isMobileView ? '0.65rem' : '0.9rem',
+                                                            maxWidth: 'min(92vw, 450px)'
                                                         }}
                                                     >
-                                                        <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                                            <span style={{ fontSize: '0.7rem', color: 'var(--theme-accent)', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: '800' }}>
+                                                        {/* Left Info: Up Next label & episode title */}
+                                                        <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+                                                            <span style={{
+                                                                fontSize: '0.65rem',
+                                                                color: 'var(--theme-accent)',
+                                                                textTransform: 'uppercase',
+                                                                letterSpacing: '0.12em',
+                                                                fontWeight: '800',
+                                                                lineHeight: 1.1
+                                                            }}>
                                                                 Up Next
                                                             </span>
-                                                            <span style={{ fontSize: '0.88rem', color: '#ffffff', fontWeight: '700', marginTop: '0.1rem' }}>
+                                                            <span style={{
+                                                                fontSize: isMobileView ? '0.78rem' : '0.84rem',
+                                                                color: '#ffffff',
+                                                                fontWeight: '700',
+                                                                marginTop: '0.15rem',
+                                                                whiteSpace: 'nowrap',
+                                                                overflow: 'hidden',
+                                                                textOverflow: 'ellipsis'
+                                                            }}>
                                                                 {nextEpisodePrompt ? `Season ${nextEpisodePrompt.season} • Episode ${nextEpisodePrompt.episode}` : 'Next Episode'}
                                                             </span>
                                                         </div>
 
-                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                        {/* Vertical Glass Hairline Divider */}
+                                                        <div style={{
+                                                            width: '1px',
+                                                            height: '22px',
+                                                            background: 'rgba(255, 255, 255, 0.14)',
+                                                            flexShrink: 0
+                                                        }} />
+
+                                                        {/* Right Actions: Play Now & Dismiss */}
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', flexShrink: 0 }}>
                                                             <button
                                                                 onClick={() => {
+                                                                    const currentEpKey = `${id}_s${currentSeason}_e${currentEpisode}`;
+                                                                    dismissedEpisodesRef.current.add(currentEpKey);
+                                                                    nextTriggeredRef.current = true;
                                                                     setShowCreditsOverlay(false);
                                                                     handleNextEpisode();
                                                                 }}
@@ -1310,47 +1363,63 @@ const VideoPlayer = () => {
                                                                     color: '#000000',
                                                                     border: 'none',
                                                                     borderRadius: '9999px',
-                                                                    padding: '0.45rem 1.1rem',
-                                                                    fontSize: '0.8rem',
+                                                                    padding: isMobileView ? '0.4rem 0.85rem' : '0.45rem 1.05rem',
+                                                                    fontSize: isMobileView ? '0.74rem' : '0.78rem',
                                                                     fontWeight: '700',
                                                                     cursor: 'pointer',
-                                                                    display: 'flex',
+                                                                    display: 'inline-flex',
                                                                     alignItems: 'center',
                                                                     gap: '0.35rem',
+                                                                    whiteSpace: 'nowrap',
+                                                                    flexShrink: 0,
                                                                     boxShadow: '0 4px 14px rgba(var(--theme-accent-rgb), 0.35)',
-                                                                    transition: 'transform 0.15s ease'
+                                                                    transition: 'all 0.18s ease'
                                                                 }}
-                                                                onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
-                                                                onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                                                                onMouseEnter={(e) => {
+                                                                    e.currentTarget.style.transform = 'scale(1.04)';
+                                                                    e.currentTarget.style.boxShadow = '0 6px 18px rgba(var(--theme-accent-rgb), 0.5)';
+                                                                }}
+                                                                onMouseLeave={(e) => {
+                                                                    e.currentTarget.style.transform = 'scale(1)';
+                                                                    e.currentTarget.style.boxShadow = '0 4px 14px rgba(var(--theme-accent-rgb), 0.35)';
+                                                                }}
                                                             >
-                                                                <Play size={13} fill="#000000" />
-                                                                Play Now
+                                                                <Play size={12} fill="#000000" />
+                                                                <span>Play Now</span>
                                                             </button>
 
                                                             <button
-                                                                onClick={() => setShowCreditsOverlay(false)}
+                                                                onClick={() => {
+                                                                    const currentEpKey = `${id}_s${currentSeason}_e${currentEpisode}`;
+                                                                    dismissedEpisodesRef.current.add(currentEpKey);
+                                                                    nextTriggeredRef.current = true;
+                                                                    setShowCreditsOverlay(false);
+                                                                }}
                                                                 title="Dismiss"
                                                                 style={{
                                                                     background: 'rgba(255, 255, 255, 0.08)',
-                                                                    border: '1px solid rgba(255, 255, 255, 0.12)',
+                                                                    border: '1px solid rgba(255, 255, 255, 0.14)',
                                                                     borderRadius: '50%',
                                                                     width: '28px',
                                                                     height: '28px',
                                                                     display: 'flex',
                                                                     alignItems: 'center',
                                                                     justifyContent: 'center',
-                                                                    color: 'rgba(255, 255, 255, 0.7)',
+                                                                    color: 'rgba(255, 255, 255, 0.75)',
                                                                     cursor: 'pointer',
+                                                                    flexShrink: 0,
                                                                     transition: 'all 0.2s ease',
                                                                     padding: 0
                                                                 }}
                                                                 onMouseEnter={(e) => {
-                                                                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)';
-                                                                    e.currentTarget.style.color = '#fff';
+                                                                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.22)';
+                                                                    e.currentTarget.style.color = '#ffffff';
+                                                                    e.currentTarget.style.transform = 'scale(1.08)';
                                                                 }}
                                                                 onMouseLeave={(e) => {
                                                                     e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)';
-                                                                    e.currentTarget.style.color = 'rgba(255, 255, 255, 0.7)';
+                                                                    e.currentTarget.style.color = 'rgba(255, 255, 255, 0.75)';
+                                                                    e.currentTarget.style.transform = 'scale(1)';
                                                                 }}
                                                             >
                                                                 <X size={14} />
@@ -1714,6 +1783,9 @@ const VideoPlayer = () => {
                                                     }
                                                     showData={contentData}
                                                     recommendations={recommendations}
+                                                    onRecommendationsLoaded={(recs) => {
+                                                        if (recs?.length > 0) setRecommendations(prev => (prev?.length > 0 ? prev : recs));
+                                                    }}
                                                     hideTabs={false}
                                                 />
                                             </div>
@@ -1726,6 +1798,9 @@ const VideoPlayer = () => {
                                                     mediaType="movie"
                                                     showData={contentData}
                                                     recommendations={recommendations}
+                                                    onRecommendationsLoaded={(recs) => {
+                                                        if (recs?.length > 0) setRecommendations(prev => (prev?.length > 0 ? prev : recs));
+                                                    }}
                                                     hideTabs={false}
                                                 />
                                             </div>
@@ -1765,6 +1840,9 @@ const VideoPlayer = () => {
                                             }
                                             showData={contentData}
                                             recommendations={recommendations}
+                                            onRecommendationsLoaded={(recs) => {
+                                                if (recs?.length > 0) setRecommendations(prev => (prev?.length > 0 ? prev : recs));
+                                            }}
                                             hideTabs={false}
                                         />
                                     </motion.div>
@@ -1793,6 +1871,9 @@ const VideoPlayer = () => {
                                             mediaType="movie"
                                             showData={contentData}
                                             recommendations={recommendations}
+                                            onRecommendationsLoaded={(recs) => {
+                                                if (recs?.length > 0) setRecommendations(prev => (prev?.length > 0 ? prev : recs));
+                                            }}
                                             hideTabs={false}
                                         />
                                     </motion.div>
@@ -1952,57 +2033,55 @@ const VideoPlayer = () => {
                     </div>
                 )}
 
-                {/* Recommended / Similar Content */}
-                {recommendations && recommendations.length > 0 && (
+                {/* More Like This / Recommended Content */}
+                <div style={{
+                    maxWidth: '1720px',
+                    margin: '2.5rem auto 4rem',
+                    padding: '0 1.5rem',
+                    boxSizing: 'border-box'
+                }}>
                     <div style={{
-                        maxWidth: '1720px',
-                        margin: '2rem auto 4rem',
-                        padding: '0 1.5rem',
-                        boxSizing: 'border-box'
-                    }}>
+                        background: 'rgba(10, 10, 15, 0.35)',
+                        backdropFilter: 'blur(30px)',
+                        WebkitBackdropFilter: 'blur(30px)',
+                        border: '1px solid rgba(255, 255, 255, 0.06)',
+                        borderRadius: '24px',
+                        padding: '2rem',
+                        boxShadow: '0 20px 50px rgba(0,0,0,0.5)',
+                        position: 'relative',
+                        overflow: 'hidden'
+                    }}
+                        className="watch-recommendations-row"
+                    >
+                        {/* Ambient glow in matching theme color */}
                         <div style={{
-                            background: 'rgba(10, 10, 15, 0.3)',
-                            backdropFilter: 'blur(30px)',
-                            WebkitBackdropFilter: 'blur(30px)',
-                            border: '1px solid rgba(255, 255, 255, 0.05)',
-                            borderRadius: '24px',
-                            padding: '2rem',
-                            boxShadow: '0 20px 50px rgba(0,0,0,0.5)',
-                            position: 'relative',
-                            overflow: 'hidden'
-                        }}
-                            className="watch-recommendations-row"
-                        >
-                            {/* Ambient glow in matching theme color */}
-                            <div style={{
-                                position: 'absolute',
-                                top: '-50%',
-                                left: '-10%',
-                                width: '120%',
-                                height: '200%',
-                                background: 'radial-gradient(circle at top right, rgba(var(--theme-accent-rgb), 0.05) 0%, transparent 60%)',
-                                pointerEvents: 'none',
-                                zIndex: 0
-                            }} />
+                            position: 'absolute',
+                            top: '-50%',
+                            left: '-10%',
+                            width: '120%',
+                            height: '200%',
+                            background: 'radial-gradient(circle at top right, rgba(var(--theme-accent-rgb), 0.05) 0%, transparent 60%)',
+                            pointerEvents: 'none',
+                            zIndex: 0
+                        }} />
 
-                            <div style={{ position: 'relative', zIndex: 1 }}>
-                                <MovieRow
-                                    title={`Because You Watched ${title}`}
-                                    movies={recommendations}
-                                />
-                            </div>
+                        <div style={{ position: 'relative', zIndex: 1 }}>
+                            <MovieRow
+                                title="More Like This"
+                                movies={recommendations}
+                            />
                         </div>
-
-                        <style>{`
-                            .watch-recommendations-row {
-                                transition: border-color 0.3s ease;
-                            }
-                            .watch-recommendations-row:hover {
-                                border-color: rgba(var(--theme-accent-rgb), 0.15) !important;
-                            }
-                        `}</style>
                     </div>
-                )}
+
+                    <style>{`
+                        .watch-recommendations-row {
+                            transition: border-color 0.3s ease;
+                        }
+                        .watch-recommendations-row:hover {
+                            border-color: rgba(var(--theme-accent-rgb), 0.15) !important;
+                        }
+                    `}</style>
+                </div>
 
                 {/* Spin animation for loading */}
                 <style>

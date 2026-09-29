@@ -436,7 +436,7 @@ const WatchDetailsTabs = ({
                                                                 <img
                                                                     src={`https://image.tmdb.org/t/p/w200${person.profile_path}`}
                                                                     alt={person.name}
-                                                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                                                    style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 15%' }}
                                                                 />
                                                             ) : (
                                                                 <div style={{ width: '100%', height: '100%', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem' }}>👤</div>

@@ -104,6 +104,38 @@ const ServerSelector = ({ servers, activeServer, onServerChange, onReload }) => 
         );
     };
 
+    const renderShowLessButton = () => (
+        <motion.button
+            key="show-less-btn"
+            onClick={() => setIsExpanded(false)}
+            whileHover={{ scale: 1.05, background: 'rgba(255, 255, 255, 0.08)' }}
+            whileTap={{ scale: 0.95 }}
+            style={{
+                padding: isMobile ? '0.7rem 0.5rem' : '0.8rem 1.5rem',
+                background: 'rgba(255, 255, 255, 0.03)',
+                backdropFilter: 'blur(16px)',
+                WebkitBackdropFilter: 'blur(16px)',
+                border: '1px solid rgba(255, 255, 255, 0.15)',
+                borderRadius: isMobile ? '14px' : '30px',
+                color: 'rgba(255, 255, 255, 0.8)',
+                fontSize: isMobile ? '0.85rem' : '0.9rem',
+                fontWeight: '500',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                boxShadow: '0 4px 30px rgba(0, 0, 0, 0.1)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                minWidth: isMobile ? 'unset' : '110px',
+                width: isMobile ? '100%' : 'auto',
+                minHeight: isMobile ? '48px' : 'auto',
+                gridColumn: isMobile ? '1 / -1' : undefined,
+            }}
+        >
+            Show Less
+        </motion.button>
+    );
+
     return (
         <div style={{
             marginTop: '0.5rem',
@@ -182,12 +214,13 @@ const ServerSelector = ({ servers, activeServer, onServerChange, onReload }) => 
                 gridTemplateColumns: isMobile ? '1fr' : undefined,
                 flexWrap: isMobile ? undefined : 'wrap',
                 gap: isMobile ? '0.55rem' : '0.8rem',
-                marginBottom: (isExpanded && poorServers.length > 0) || testingServers.length > 0 ? '2rem' : '0'
+                marginBottom: isExpanded && (testingServers.length > 0 || poorServers.length > 0) ? '2rem' : '0'
             }}>
                 {displayedGood.map((server) => renderServerButton(server, false, false))}
 
-                {!isExpanded && (
+                {!isExpanded && (goodServers.length > 6 || poorServers.length > 0 || testingServers.length > 0) && (
                     <motion.button
+                        key="more-servers-btn"
                         onClick={() => setIsExpanded(true)}
                         whileHover={{ scale: 1.05, background: 'rgba(255, 255, 255, 0.08)' }}
                         whileTap={{ scale: 0.95 }}
@@ -217,11 +250,13 @@ const ServerSelector = ({ servers, activeServer, onServerChange, onReload }) => 
                         More Servers
                     </motion.button>
                 )}
+
+                {isExpanded && testingServers.length === 0 && poorServers.length === 0 && renderShowLessButton()}
             </div>
 
-            {/* Testing Servers Section */}
-            {displayedTesting.length > 0 && (
-                <div style={{ marginBottom: isExpanded && poorServers.length > 0 ? '2rem' : '0' }}>
+            {/* Testing Servers Section - only visible when expanded */}
+            {isExpanded && displayedTesting.length > 0 && (
+                <div style={{ marginBottom: poorServers.length > 0 ? '2rem' : '0' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.2rem' }}>
                         <div style={{
                             background: 'rgba(245, 158, 11, 0.1)',
@@ -268,12 +303,13 @@ const ServerSelector = ({ servers, activeServer, onServerChange, onReload }) => 
                         gap: isMobile ? '0.55rem' : '0.8rem'
                     }}>
                         {displayedTesting.map((server) => renderServerButton(server, false, true))}
+                        {poorServers.length === 0 && renderShowLessButton()}
                     </div>
                 </div>
             )}
 
-            {poorServers.length > 0 && (
-
+            {/* Poor Quality Servers Section - only visible when expanded */}
+            {isExpanded && poorServers.length > 0 && (
                 <>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.2rem' }}>
                         <div style={{
@@ -321,38 +357,11 @@ const ServerSelector = ({ servers, activeServer, onServerChange, onReload }) => 
                         gap: isMobile ? '0.55rem' : '0.8rem'
                     }}>
                         {displayedPoor.map((server) => renderServerButton(server, true, false))}
-
-                        <motion.button
-                            onClick={() => setIsExpanded(false)}
-                            whileHover={{ scale: 1.05, background: 'rgba(255, 255, 255, 0.08)' }}
-                            whileTap={{ scale: 0.95 }}
-                            style={{
-                                padding: isMobile ? '0.7rem 0.5rem' : '0.8rem 1.5rem',
-                                background: 'rgba(255, 255, 255, 0.03)',
-                                backdropFilter: 'blur(16px)',
-                                WebkitBackdropFilter: 'blur(16px)',
-                                border: '1px solid rgba(255, 255, 255, 0.15)',
-                                borderRadius: isMobile ? '14px' : '30px',
-                                color: 'rgba(255, 255, 255, 0.8)',
-                                fontSize: isMobile ? '0.85rem' : '0.9rem',
-                                fontWeight: '500',
-                                cursor: 'pointer',
-                                transition: 'all 0.3s ease',
-                                boxShadow: '0 4px 30px rgba(0, 0, 0, 0.1)',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                minWidth: isMobile ? 'unset' : '110px',
-                                width: isMobile ? '100%' : 'auto',
-                                minHeight: isMobile ? '48px' : 'auto',
-                                gridColumn: isMobile ? '1 / -1' : undefined,
-                            }}
-                        >
-                            Show Less
-                        </motion.button>
+                        {renderShowLessButton()}
                     </div>
                 </>
             )}
+
         </div>
     );
 };

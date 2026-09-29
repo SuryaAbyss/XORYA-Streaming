@@ -42,7 +42,7 @@ const MovieRow = ({ title, movies, onMovieClick, isUpcoming, isTrendingRow, isLa
         if (rowTitle) {
             tl.fromTo(rowTitle,
                 { opacity: 0, x: -20 },
-                { opacity: 1, x: 0, duration: 0.6, ease: "power2.out" }
+                { opacity: 1, x: 0, duration: 0.6, ease: "power2.out", immediateRender: false }
             );
         }
 
@@ -55,7 +55,8 @@ const MovieRow = ({ title, movies, onMovieClick, isUpcoming, isTrendingRow, isLa
                     y: 0,
                     duration: 0.8,
                     stagger: 0.04,
-                    ease: "power3.out"
+                    ease: "power3.out",
+                    immediateRender: false
                 },
                 "-=0.4"
             );

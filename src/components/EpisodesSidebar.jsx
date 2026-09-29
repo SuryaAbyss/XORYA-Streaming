@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Play, Calendar, Star, Clock, Info, ChevronDown, ChevronUp, X, ChevronLeft, ChevronRight, Tv } from 'lucide-react';
-import { getSeasonDetails, getTVEpisodeCredits, getTVEpisodeImages, imageUrl } from '../api/tmdb';
+import { getSeasonDetails, getTVEpisodeCredits, getTVEpisodeImages, getTVShowRecommendations, getTVShowSimilar, getMovieRecommendations, getMovieSimilar, imageUrl } from '../api/tmdb';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 
@@ -15,6 +15,7 @@ const EpisodesSidebar = ({
     onEpisodesLoaded,
     showData,
     recommendations = [],
+    onRecommendationsLoaded,
     hideTabs = false,
     mediaType = 'tv'
 }) => {
@@ -43,6 +44,58 @@ const EpisodesSidebar = ({
     const [episodeStills, setEpisodeStills] = useState([]);
     const [loadingStills, setLoadingStills] = useState(false);
     const [previewImageIndex, setPreviewImageIndex] = useState(null);
+    const [internalRecs, setInternalRecs] = useState([]);
+    const [loadingRecs, setLoadingRecs] = useState(false);
+
+    useEffect(() => {
+        if ((!recommendations || recommendations.length === 0) && showId) {
+            let isCancelled = false;
+            const fetchFallback = async () => {
+                setLoadingRecs(true);
+                try {
+                    let list = [];
+                    if (isMovie) {
+                        try {
+                            const res = await getMovieRecommendations(showId);
+                            list = res.data?.results || [];
+                        } catch (e) {}
+                        if (list.length === 0) {
+                            try {
+                                const sim = await getMovieSimilar(showId);
+                                list = sim.data?.results || [];
+                            } catch (e) {}
+                        }
+                    } else {
+                        try {
+                            const res = await getTVShowRecommendations(showId);
+                            list = res.data?.results || [];
+                        } catch (e) {}
+                        if (list.length === 0) {
+                            try {
+                                const sim = await getTVShowSimilar(showId);
+                                list = sim.data?.results || [];
+                            } catch (e) {}
+                        }
+                    }
+                    if (!isCancelled) {
+                        const filtered = list.filter(r => r.backdrop_path || r.poster_path);
+                        setInternalRecs(filtered);
+                        if (typeof onRecommendationsLoaded === 'function' && filtered.length > 0) {
+                            onRecommendationsLoaded(filtered);
+                        }
+                    }
+                } catch (err) {
+                    console.warn('Failed to fetch fallback recommendations in sidebar:', err);
+                } finally {
+                    if (!isCancelled) setLoadingRecs(false);
+                }
+            };
+            fetchFallback();
+            return () => { isCancelled = true; };
+        }
+    }, [showId, recommendations, isMovie]);
+
+    const activeRecs = (recommendations && recommendations.length > 0) ? recommendations : internalRecs;
 
     const currentEp = episodes.find(e => e.episode_number === currentEpisode);
     const displayedStills = episodeStills.length > 0
@@ -430,32 +483,42 @@ const EpisodesSidebar = ({
                             <span style={{ width: '4px', height: '4px', background: 'var(--theme-accent)', borderRadius: '50%' }}></span>
                             {isMovie ? 'Movie Main Cast' : 'Series Main Cast'}
                         </div>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(90px, 1fr))', gap: '1rem', color: 'white' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(96px, 1fr))', gap: '0.9rem', color: 'white' }}>
                             {regulars.slice(0, 18).map(person => (
                                 <div key={person.id || person.credit_id} style={{ textAlign: 'center' }}>
                                     <div style={{
-                                        width: '56px',
-                                        height: '56px',
-                                        borderRadius: '10px',
+                                        width: '78px',
+                                        height: '78px',
+                                        borderRadius: '14px',
                                         overflow: 'hidden',
                                         margin: '0 auto 0.4rem',
-                                        border: '1.5px solid rgba(var(--theme-accent-rgb), 0.3)',
-                                        boxShadow: '0 4px 10px rgba(0,0,0,0.3)'
-                                    }}>
+                                        border: '1.5px solid rgba(var(--theme-accent-rgb), 0.35)',
+                                        boxShadow: '0 4px 12px rgba(0,0,0,0.35)',
+                                        transition: 'transform 0.2s ease, border-color 0.2s ease'
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        e.currentTarget.style.transform = 'scale(1.05)';
+                                        e.currentTarget.style.borderColor = 'var(--theme-accent)';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        e.currentTarget.style.transform = 'scale(1)';
+                                        e.currentTarget.style.borderColor = 'rgba(var(--theme-accent-rgb), 0.35)';
+                                    }}
+                                    >
                                         {person.profile_path ? (
                                             <img
                                                 src={`https://image.tmdb.org/t/p/w200${person.profile_path}`}
                                                 alt={person.name}
-                                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                                style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 15%' }}
                                             />
                                         ) : (
-                                            <div style={{ width: '100%', height: '100%', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem' }}>👤</div>
+                                            <div style={{ width: '100%', height: '100%', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem' }}>👤</div>
                                         )}
                                     </div>
-                                    <p style={{ fontSize: '0.75rem', fontWeight: '600', margin: '0 0 0.1rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                    <p style={{ fontSize: '0.78rem', fontWeight: '600', margin: '0 0 0.1rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                         {person.name}
                                     </p>
-                                    <p style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.5)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                    <p style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.5)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                         {person.character || (person.roles && person.roles[0]?.character)}
                                     </p>
                                 </div>
@@ -481,32 +544,42 @@ const EpisodesSidebar = ({
                                 <span style={{ width: '4px', height: '4px', background: 'rgba(255, 255, 255, 0.35)', borderRadius: '50%' }}></span>
                                 Guest Appearances (Season {currentSeason} Episode {currentEpisode})
                             </div>
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(90px, 1fr))', gap: '1rem', color: 'white' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(96px, 1fr))', gap: '0.9rem', color: 'white' }}>
                                 {guests.map(person => (
                                     <div key={person.id || person.credit_id} style={{ textAlign: 'center' }}>
                                         <div style={{
-                                            width: '56px',
-                                            height: '56px',
-                                            borderRadius: '10px',
+                                            width: '78px',
+                                            height: '78px',
+                                            borderRadius: '14px',
                                             overflow: 'hidden',
                                             margin: '0 auto 0.4rem',
-                                            border: '1.5px solid rgba(255, 255, 255, 0.15)',
-                                            boxShadow: '0 4px 10px rgba(0,0,0,0.3)'
-                                        }}>
+                                            border: '1.5px solid rgba(255, 255, 255, 0.2)',
+                                            boxShadow: '0 4px 12px rgba(0,0,0,0.35)',
+                                            transition: 'transform 0.2s ease, border-color 0.2s ease'
+                                        }}
+                                        onMouseEnter={(e) => {
+                                            e.currentTarget.style.transform = 'scale(1.05)';
+                                            e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.4)';
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            e.currentTarget.style.transform = 'scale(1)';
+                                            e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+                                        }}
+                                        >
                                             {person.profile_path ? (
                                                 <img
                                                     src={`https://image.tmdb.org/t/p/w200${person.profile_path}`}
                                                     alt={person.name}
-                                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                                    style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 15%' }}
                                                 />
                                             ) : (
-                                                <div style={{ width: '100%', height: '100%', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem' }}>👤</div>
+                                                <div style={{ width: '100%', height: '100%', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem' }}>👤</div>
                                             )}
                                         </div>
-                                        <p style={{ fontSize: '0.75rem', fontWeight: '600', margin: '0 0 0.1rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                        <p style={{ fontSize: '0.78rem', fontWeight: '600', margin: '0 0 0.1rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                             {person.name}
                                         </p>
-                                        <p style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.5)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                        <p style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.5)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                             {person.character || (person.roles && person.roles[0]?.character)}
                                         </p>
                                     </div>
@@ -520,10 +593,27 @@ const EpisodesSidebar = ({
     };
 
     const renderSimilarTab = () => {
-        if (recommendations.length === 0) return <div style={{ color: 'rgba(255,255,255,0.4)', padding: '1.5rem 0.5rem' }}>No recommendations available</div>;
+        if (loadingRecs) {
+            return (
+                <div style={{ textAlign: 'center', padding: '2.5rem 1rem', color: 'rgba(255,255,255,0.4)', fontSize: '0.85rem' }}>
+                    <div style={{
+                        width: '28px',
+                        height: '28px',
+                        border: '2px solid rgba(var(--theme-accent-rgb), 0.3)',
+                        borderTop: '2px solid var(--theme-accent)',
+                        borderRadius: '50%',
+                        animation: 'spin 1s linear infinite',
+                        margin: '0 auto 0.8rem'
+                    }} />
+                    Loading recommendations...
+                </div>
+            );
+        }
+
+        if (activeRecs.length === 0) return <div style={{ color: 'rgba(255,255,255,0.4)', padding: '1.5rem 0.5rem' }}>No recommendations available</div>;
         return (
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', color: 'white', padding: '0.5rem 0' }}>
-                {recommendations.slice(0, 8).map(show => (
+                {activeRecs.slice(0, 12).map(show => (
                     <div
                         key={show.id}
                         onClick={() => navigate(isMovie ? `/watch/movie/${show.id}` : `/watch/tv/${show.id}`)}
@@ -627,11 +717,13 @@ const EpisodesSidebar = ({
                 style={{
                     flex: 1,
                     overflowY: 'auto',
-                    padding: '0 0.2rem 2rem',
+                    padding: '0 0.2rem 2.4rem',
                     boxSizing: 'border-box',
                     overscrollBehavior: 'contain',
                     scrollbarWidth: 'none', // Hide standard scrollbar
-                    msOverflowStyle: 'none'
+                    msOverflowStyle: 'none',
+                    maskImage: 'linear-gradient(to bottom, black 0%, black calc(100% - 55px), transparent 100%)',
+                    WebkitMaskImage: 'linear-gradient(to bottom, black 0%, black calc(100% - 55px), transparent 100%)'
                 }}
                 onWheel={(e) => e.stopPropagation()}
             >
@@ -996,7 +1088,9 @@ const EpisodesSidebar = ({
                     borderTop: '1px solid rgba(255, 255, 255, 0.08)',
                     paddingTop: '1.2rem',
                     padding: '1.2rem 0.2rem 0',
-                    flexShrink: 0
+                    flexShrink: 0,
+                    position: 'relative',
+                    zIndex: 15
                 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.8rem' }}>
                         <span style={{ fontSize: '0.9rem', fontWeight: '700', color: 'white' }}>Up Next</span>
@@ -1254,6 +1348,23 @@ const EpisodesSidebar = ({
                 </AnimatePresence>,
                 document.body
             )}
+
+            {/* Soft Ambient Bottom Fade-out Vignette */}
+            <div
+                style={{
+                    position: 'absolute',
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    height: '46px',
+                    background: 'linear-gradient(to bottom, rgba(4, 6, 10, 0) 0%, rgba(4, 6, 10, 0.92) 100%)',
+                    pointerEvents: 'none',
+                    zIndex: 10,
+                    borderBottomLeftRadius: '16px',
+                    borderBottomRightRadius: '16px'
+                }}
+            />
+
             <style>{`
                 @keyframes spin {
                     0% { transform: rotate(0deg); }

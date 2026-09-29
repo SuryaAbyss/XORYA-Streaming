@@ -65,7 +65,7 @@ const MovieRow = ({ title, movies, onMovieClick, isUpcoming, isTrendingRow, isLa
 
     if (!movies || movies.length === 0) {
         return (
-            <div style={{ marginBottom: '2.5rem', position: 'relative' }}>
+            <div style={{ marginBottom: title ? '1.5rem' : '0rem', position: 'relative' }}>
                 {title && (
                     <h2 className="movie-row-title" style={{ opacity: 0.3, marginTop: 0 }}>
                         {title.split(' ').map((word, i) => (
@@ -91,7 +91,7 @@ const MovieRow = ({ title, movies, onMovieClick, isUpcoming, isTrendingRow, isLa
     return (
         <div
             ref={containerRef}
-            style={{ marginBottom: '2.5rem', position: 'relative' }}
+            style={{ marginBottom: title ? '1.5rem' : '0rem', position: 'relative' }}
         >
             {title && (
                 <h2 className="movie-row-title">

@@ -245,8 +245,8 @@ const Navbar = () => {
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
-                                        width: '45px',
-                                        height: '45px',
+                                        width: '36px',
+                                        height: '36px',
                                         borderRadius: '50%',
                                         border: 'none',
                                         background: 'rgba(255, 255, 255, 0.05)',
@@ -265,7 +265,7 @@ const Navbar = () => {
                                         e.currentTarget.style.transform = 'scale(1)';
                                     } : undefined}
                                 >
-                                    <Icon size={isMobile ? 22 : 20} />
+                                    <Icon size={isMobile ? 22 : 16} />
                                     {isMobile && <span className="nav-label">Search</span>}
                                 </button>
                             </div>
@@ -297,8 +297,8 @@ const Navbar = () => {
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
-                                        width: '45px',
-                                        height: '45px',
+                                        width: '36px',
+                                        height: '36px',
                                         borderRadius: '50%',
                                         background: active
                                             ? 'rgba(255, 255, 255, 0.15)'
@@ -321,7 +321,7 @@ const Navbar = () => {
                                         e.currentTarget.style.transform = 'scale(1)';
                                     } : undefined}
                                 >
-                                    <Icon size={isMobile ? 22 : 20} />
+                                    <Icon size={isMobile ? 22 : 16} />
                                     {isMobile && <span className="nav-label">{item.label}</span>}
                                 </Link>
                             </div>
@@ -351,20 +351,20 @@ const Navbar = () => {
                                     background: 'transparent',
                                     border: '1px solid transparent',
                                     color: active ? '#fff' : 'rgba(255, 255, 255, 0.65)',
-                                    padding: '0.6rem 0.85rem',
+                                    padding: '0.42rem 0.72rem',
                                     borderRadius: '30px',
                                     transition: 'color 0.25s ease',
                                 }}
                             >
                                 <span style={{ position: 'relative', zIndex: 2, display: 'inline-flex', alignItems: 'center' }}>
-                                    <Icon size={isMobile ? 22 : 18} />
+                                    <Icon size={isMobile ? 22 : 16} />
                                 </span>
                                 <span 
                                     className="nav-label" 
                                     style={isMobile ? {} : {
                                         position: 'relative',
                                         zIndex: 2,
-                                        fontSize: '0.9rem',
+                                        fontSize: '0.82rem',
                                         fontWeight: '600',
                                         whiteSpace: 'nowrap',
                                         overflow: 'hidden',
@@ -372,7 +372,7 @@ const Navbar = () => {
                                         verticalAlign: 'middle',
                                         maxWidth: (active || hoveredItem === item.path) ? '120px' : '0px',
                                         opacity: (active || hoveredItem === item.path) ? 1 : 0,
-                                        marginLeft: (active || hoveredItem === item.path) ? '0.45rem' : '0px',
+                                        marginLeft: (active || hoveredItem === item.path) ? '0.4rem' : '0px',
                                         transition: 'max-width 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.2s ease, margin-left 0.25s ease'
                                     }}
                                 >
@@ -422,7 +422,7 @@ const Navbar = () => {
                         width="120"
                         height="40"
                         style={{
-                            height: '50px',
+                            height: '38px',
                             width: 'auto',
                             objectFit: 'contain',
                             filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.3))',

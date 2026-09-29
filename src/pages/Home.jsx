@@ -291,7 +291,7 @@ const Home = ({ category = 'all' }) => {
                         </div>
 
                         <div style={{
-                            paddingTop: '2rem',
+                            paddingTop: '1rem',
                             paddingBottom: '8rem',
                             pointerEvents: 'auto'
                         }}>

@@ -351,6 +351,12 @@ const VideoPlayer = () => {
         navigate(`/watch/tv/${id}/season/${season}/episode/${episode}`, { replace: true });
     }, [id, currentSeason, currentEpisode, navigate]);
 
+    const handleSeasonChange = useCallback((newSeason) => {
+        if (newSeason === currentSeason) return;
+        // When changing season from the selector, start from the first episode of that season
+        handleEpisodeSelect(newSeason, 1);
+    }, [currentSeason, handleEpisodeSelect]);
+
     const handlePreviousEpisode = useCallback(() => {
         if (currentEpisode > 1) {
             handleEpisodeSelect(currentSeason, currentEpisode - 1);
@@ -358,7 +364,7 @@ const VideoPlayer = () => {
     }, [currentEpisode, currentSeason, handleEpisodeSelect]);
 
     const handleNextEpisode = useCallback(() => {
-        const totalEpisodesInCurrentSeason = episodeCounts[currentSeason];
+        const totalEpisodesInCurrentSeason = episodeCounts[currentSeason] || seasons.find(s => s.season_number === currentSeason)?.episode_count;
         if (totalEpisodesInCurrentSeason && currentEpisode >= totalEpisodesInCurrentSeason) {
             const currentSeasonIndex = seasons.findIndex(s => s.season_number === currentSeason);
             const nextSeason = seasons[currentSeasonIndex + 1];
@@ -1776,7 +1782,7 @@ const VideoPlayer = () => {
                                                     seasons={seasons}
                                                     currentSeason={currentSeason}
                                                     currentEpisode={currentEpisode}
-                                                    onSeasonChange={setCurrentSeason}
+                                                    onSeasonChange={handleSeasonChange}
                                                     onEpisodeSelect={handleEpisodeSelect}
                                                     onEpisodesLoaded={(season, count) =>
                                                         setEpisodeCounts(prev => ({ ...prev, [season]: count }))
@@ -1833,7 +1839,7 @@ const VideoPlayer = () => {
                                             seasons={seasons}
                                             currentSeason={currentSeason}
                                             currentEpisode={currentEpisode}
-                                            onSeasonChange={setCurrentSeason}
+                                            onSeasonChange={handleSeasonChange}
                                             onEpisodeSelect={handleEpisodeSelect}
                                             onEpisodesLoaded={(season, count) =>
                                                 setEpisodeCounts(prev => ({ ...prev, [season]: count }))

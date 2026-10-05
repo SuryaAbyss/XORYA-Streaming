@@ -46,9 +46,9 @@
 
 /* ── Card Skeleton: matches .interactive-movie-card size ── */
 .skeleton-card {
-  width: 380px;
-  min-width: 380px;
-  height: 214px;
+  width: 310px;
+  min-width: 310px;
+  height: 174px;
   background: linear-gradient(90deg,
       rgba(255, 255, 255, 0.04) 0px,
       rgba(255, 255, 255, 0.09) 40px,
@@ -62,17 +62,17 @@
 
 @media (max-width: 1400px) {
   .skeleton-card {
-    width: 330px;
-    min-width: 330px;
-    height: 186px;
+    width: 280px;
+    min-width: 280px;
+    height: 157px;
   }
 }
 
 @media (max-width: 1024px) {
   .skeleton-card {
-    width: 270px;
-    min-width: 270px;
-    height: 152px;
+    width: 240px;
+    min-width: 240px;
+    height: 135px;
   }
 }
 
@@ -888,23 +888,23 @@ body::before {
   z-index: 1000;
   display: flex;
   align-items: center;
-  gap: 0.3rem;
-  padding: 0.28rem 0.38rem;
+  gap: 0.35rem;
+  padding: 0.35rem 0.45rem;
   border-radius: 50px;
   border: 1px solid rgba(255, 255, 255, 0.15);
-  top: 1.1rem;
-  right: 1.25rem;
+  top: 1.35rem;
+  right: 1.45rem;
   background: rgba(10, 14, 23, 0.65);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.38);
 }
 
 .nav-link-pill {
   display: flex;
   align-items: center;
-  gap: 0.35rem;
-  padding: 0.42rem 0.72rem;
+  gap: 0.38rem;
+  padding: 0.5rem 0.8rem;
   border-radius: 30px;
   text-decoration: none;
   position: relative;
@@ -919,7 +919,7 @@ body::before {
 
 .navbar-logo-container {
   position: fixed;
-  top: 0.8rem;
+  top: 0.75rem;
   left: 0.8rem;
   z-index: 1000;
 }
@@ -1250,7 +1250,7 @@ body::before {
   bottom: 0;
   left: 0;
   right: 0;
-  padding: 12px 14px;
+  padding: 9px 12px;
   z-index: 3;
   opacity: 0;
   transform: translateY(4px);
@@ -1260,9 +1260,9 @@ body::before {
 
 .imc-info h3 {
   color: #ffffff;
-  font-size: 0.92rem;
+  font-size: 0.81rem;
   font-weight: 700;
-  margin: 0 0 4px;
+  margin: 0 0 3px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1272,32 +1272,32 @@ body::before {
 .imc-meta {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   flex-wrap: wrap;
 }
 
 .imc-match {
   color: #46D369;
-  font-size: 0.72rem;
+  font-size: 0.65rem;
   font-weight: 700;
 }
 
 .imc-year {
   color: rgba(255, 255, 255, 0.75);
-  font-size: 0.72rem;
+  font-size: 0.65rem;
 }
 
 /* ---- Rating badge: top-left, always visible ---- */
 .imc-rating {
   position: absolute;
-  top: 8px;
-  left: 8px;
+  top: 7px;
+  left: 7px;
   background: rgba(0, 0, 0, 0.72);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
-  padding: 3px 7px;
+  padding: 2.5px 6px;
   border-radius: 5px;
-  font-size: 0.72rem;
+  font-size: 0.66rem;
   font-weight: 800;
   color: #fff;
   display: flex;
@@ -1339,7 +1339,7 @@ body::before {
 
 .imc-title-fallback {
   color: #ffffff;
-  font-size: 0.82rem;
+  font-size: 0.74rem;
   font-weight: 700;
   margin: 0;
   line-height: 1.25;
@@ -5718,4 +5718,22 @@ iframe[id^="yt-player-"] {
 
 .mobile-card-touch:active {
   transform: scale(0.96);
+}
+
+/* Season Dropdown Custom Scrollbar */
+.season-dropdown-menu::-webkit-scrollbar {
+  width: 5px;
+}
+
+.season-dropdown-menu::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.season-dropdown-menu::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+}
+
+.season-dropdown-menu::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.4);
 }

@@ -245,8 +245,8 @@ const Navbar = () => {
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
-                                        width: '36px',
-                                        height: '36px',
+                                        width: '40px',
+                                        height: '40px',
                                         borderRadius: '50%',
                                         border: 'none',
                                         background: 'rgba(255, 255, 255, 0.05)',
@@ -265,7 +265,7 @@ const Navbar = () => {
                                         e.currentTarget.style.transform = 'scale(1)';
                                     } : undefined}
                                 >
-                                    <Icon size={isMobile ? 22 : 16} />
+                                    <Icon size={isMobile ? 22 : 18} />
                                     {isMobile && <span className="nav-label">Search</span>}
                                 </button>
                             </div>
@@ -297,8 +297,8 @@ const Navbar = () => {
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
-                                        width: '36px',
-                                        height: '36px',
+                                        width: '40px',
+                                        height: '40px',
                                         borderRadius: '50%',
                                         background: active
                                             ? 'rgba(255, 255, 255, 0.15)'
@@ -321,7 +321,7 @@ const Navbar = () => {
                                         e.currentTarget.style.transform = 'scale(1)';
                                     } : undefined}
                                 >
-                                    <Icon size={isMobile ? 22 : 16} />
+                                    <Icon size={isMobile ? 22 : 18} />
                                     {isMobile && <span className="nav-label">{item.label}</span>}
                                 </Link>
                             </div>
@@ -351,20 +351,20 @@ const Navbar = () => {
                                     background: 'transparent',
                                     border: '1px solid transparent',
                                     color: active ? '#fff' : 'rgba(255, 255, 255, 0.65)',
-                                    padding: '0.42rem 0.72rem',
+                                    padding: '0.5rem 0.8rem',
                                     borderRadius: '30px',
                                     transition: 'color 0.25s ease',
                                 }}
                             >
                                 <span style={{ position: 'relative', zIndex: 2, display: 'inline-flex', alignItems: 'center' }}>
-                                    <Icon size={isMobile ? 22 : 16} />
+                                    <Icon size={isMobile ? 22 : 17} />
                                 </span>
                                 <span 
                                     className="nav-label" 
                                     style={isMobile ? {} : {
                                         position: 'relative',
                                         zIndex: 2,
-                                        fontSize: '0.82rem',
+                                        fontSize: '0.86rem',
                                         fontWeight: '600',
                                         whiteSpace: 'nowrap',
                                         overflow: 'hidden',
@@ -422,7 +422,7 @@ const Navbar = () => {
                         width="120"
                         height="40"
                         style={{
-                            height: '38px',
+                            height: '44px',
                             width: 'auto',
                             objectFit: 'contain',
                             filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.3))',

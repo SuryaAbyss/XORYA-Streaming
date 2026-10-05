@@ -421,6 +421,16 @@ export const servers = [
             movie: (tmdbId) => `https://embed.filmu.in/movie/${tmdbId}`,
             tv: (tmdbId, season, episode) => `https://embed.filmu.in/tv/${tmdbId}/${season}/${episode}`
         }
+    },
+    {
+        id: 'nxsha',
+        name: 'Nxsha',
+        type: 'testing',
+        category: 'testing',
+        urlTemplate: {
+            movie: (tmdbId) => `https://nxsha.space/embed/movie/${tmdbId}`,
+            tv: (tmdbId, season, episode) => `https://nxsha.space/embed/tv/${tmdbId}/${season}/${episode}`
+        }
     }
 ];
 

@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { Play, Calendar, Star, Clock, Info, ChevronDown, ChevronUp, X, ChevronLeft, ChevronRight, Tv } from 'lucide-react';
+import { Play, Calendar, Star, Clock, Info, ChevronDown, ChevronUp, X, ChevronLeft, ChevronRight, Tv, Check } from 'lucide-react';
 import { getSeasonDetails, getTVEpisodeCredits, getTVEpisodeImages, getTVShowRecommendations, getTVShowSimilar, getMovieRecommendations, getMovieSimilar, imageUrl } from '../api/tmdb';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -46,6 +46,51 @@ const EpisodesSidebar = ({
     const [previewImageIndex, setPreviewImageIndex] = useState(null);
     const [internalRecs, setInternalRecs] = useState([]);
     const [loadingRecs, setLoadingRecs] = useState(false);
+    const [isSeasonDropdownOpen, setIsSeasonDropdownOpen] = useState(false);
+    const seasonDropdownRef = useRef(null);
+    const dropdownListRef = useRef(null);
+    const activeSeasonItemRef = useRef(null);
+
+    // Auto-scroll dropdown so currently watched season is centered when opened
+    useEffect(() => {
+        if (isSeasonDropdownOpen) {
+            const timer = setTimeout(() => {
+                if (dropdownListRef.current && activeSeasonItemRef.current) {
+                    const menu = dropdownListRef.current;
+                    const item = activeSeasonItemRef.current;
+                    const itemTop = item.offsetTop;
+                    const itemHeight = item.offsetHeight;
+                    const menuHeight = menu.clientHeight;
+                    menu.scrollTop = Math.max(0, itemTop - (menuHeight / 2) + (itemHeight / 2));
+                }
+            }, 30);
+            return () => clearTimeout(timer);
+        }
+    }, [isSeasonDropdownOpen, currentSeason]);
+
+    // Close season dropdown on click outside or escape
+    useEffect(() => {
+        const handleClickOutside = (e) => {
+            if (seasonDropdownRef.current && !seasonDropdownRef.current.contains(e.target)) {
+                setIsSeasonDropdownOpen(false);
+            }
+        };
+        const handleKeyDown = (e) => {
+            if (e.key === 'Escape') setIsSeasonDropdownOpen(false);
+        };
+        if (isSeasonDropdownOpen) {
+            document.addEventListener('mousedown', handleClickOutside);
+            document.addEventListener('keydown', handleKeyDown);
+        }
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+            document.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [isSeasonDropdownOpen]);
+
+    useEffect(() => {
+        setIsSeasonDropdownOpen(false);
+    }, [currentSeason]);
 
     useEffect(() => {
         if ((!recommendations || recommendations.length === 0) && showId) {
@@ -209,12 +254,18 @@ const EpisodesSidebar = ({
             const nextEp = episodes.find(e => e.episode_number === currentEpisode + 1);
             if (nextEp) {
                 onEpisodeSelect(currentSeason, nextEp.episode_number);
+            } else {
+                const currentSeasonIdx = seasons.findIndex(s => s.season_number === currentSeason);
+                const nextSeason = seasons[currentSeasonIdx + 1];
+                if (nextSeason) {
+                    onEpisodeSelect(nextSeason.season_number, 1);
+                }
             }
             setIsCounting(false);
             setCountdown(10);
         }
         return () => clearInterval(timer);
-    }, [isCounting, countdown, autoplay, episodes, currentEpisode, currentSeason, onEpisodeSelect]);
+    }, [isCounting, countdown, autoplay, episodes, currentEpisode, currentSeason, seasons, onEpisodeSelect]);
 
     // Reset countdown when current episode changes
     useEffect(() => {
@@ -734,41 +785,167 @@ const EpisodesSidebar = ({
                             gridTemplateColumns: '1fr auto',
                             gap: '0.8rem',
                             alignItems: 'center',
-                            marginBottom: '1rem'
+                            marginBottom: '1rem',
+                            position: 'relative',
+                            zIndex: 40
                         }}>
-                            <div style={{ position: 'relative' }}>
-                                <select
-                                    value={currentSeason}
-                                    onChange={(e) => onSeasonChange(parseInt(e.target.value))}
+                            <div ref={seasonDropdownRef} style={{ position: 'relative' }}>
+                                {/* Custom Trigger Button */}
+                                <button
+                                    type="button"
+                                    aria-haspopup="listbox"
+                                    aria-expanded={isSeasonDropdownOpen}
+                                    onClick={() => setIsSeasonDropdownOpen(prev => !prev)}
                                     style={{
                                         width: '100%',
-                                        padding: '0.82rem 2.5rem 0.82rem 1rem',
-                                        background: 'rgba(255, 255, 255, 0.06)',
-                                        border: '1px solid rgba(255, 255, 255, 0.12)',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'space-between',
+                                        padding: '0.82rem 1.1rem',
+                                        background: isSeasonDropdownOpen ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.06)',
+                                        border: isSeasonDropdownOpen ? '1px solid rgba(var(--theme-accent-rgb), 0.5)' : '1px solid rgba(255, 255, 255, 0.12)',
                                         borderRadius: '10px',
                                         color: 'white',
                                         fontSize: '0.9rem',
                                         fontWeight: '650',
                                         cursor: 'pointer',
-                                        appearance: 'none'
+                                        boxShadow: isSeasonDropdownOpen ? '0 0 16px rgba(var(--theme-accent-rgb), 0.2)' : 'none',
+                                        transition: 'all 0.2s ease',
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        if (!isSeasonDropdownOpen) {
+                                            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.09)';
+                                            e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.22)';
+                                        }
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        if (!isSeasonDropdownOpen) {
+                                            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.06)';
+                                            e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.12)';
+                                        }
                                     }}
                                 >
-                                    {seasons.map((season) => (
-                                        <option key={season.id} value={season.season_number} style={{ background: '#10131a', color: 'white' }}>
-                                            {season.name}
-                                        </option>
-                                    ))}
-                                </select>
-                                <div style={{
-                                    position: 'absolute',
-                                    right: '1rem',
-                                    top: '50%',
-                                    transform: 'translateY(-50%)',
-                                    pointerEvents: 'none',
-                                    color: 'rgba(255,255,255,0.65)'
-                                }}>
-                                    <ChevronDown size={16} />
-                                </div>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                                        <Tv size={15} style={{ color: 'var(--theme-accent)', opacity: 0.9 }} />
+                                        <span>
+                                            {seasons.find(s => s.season_number === currentSeason)?.name || `Season ${currentSeason}`}
+                                        </span>
+                                    </div>
+                                    <motion.div
+                                        animate={{ rotate: isSeasonDropdownOpen ? 180 : 0 }}
+                                        transition={{ duration: 0.2 }}
+                                        style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            color: isSeasonDropdownOpen ? 'var(--theme-accent)' : 'rgba(255,255,255,0.65)'
+                                        }}
+                                    >
+                                        <ChevronDown size={16} />
+                                    </motion.div>
+                                </button>
+
+                                {/* Custom Glassmorphism Dropdown Menu */}
+                                <AnimatePresence>
+                                    {isSeasonDropdownOpen && (
+                                        <motion.div
+                                            ref={dropdownListRef}
+                                            className="season-dropdown-menu"
+                                            role="listbox"
+                                            initial={{ opacity: 0, y: -6, scale: 0.98 }}
+                                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                                            exit={{ opacity: 0, y: -6, scale: 0.98 }}
+                                            transition={{ duration: 0.16, ease: [0.16, 1, 0.3, 1] }}
+                                            style={{
+                                                position: 'absolute',
+                                                top: 'calc(100% + 6px)',
+                                                left: 0,
+                                                right: 0,
+                                                zIndex: 90,
+                                                background: 'rgba(13, 16, 23, 0.96)',
+                                                backdropFilter: 'blur(24px)',
+                                                WebkitBackdropFilter: 'blur(24px)',
+                                                border: '1px solid rgba(255, 255, 255, 0.14)',
+                                                borderRadius: '12px',
+                                                padding: '0.4rem',
+                                                boxShadow: '0 16px 40px rgba(0, 0, 0, 0.85), 0 0 20px rgba(var(--theme-accent-rgb), 0.12)',
+                                                maxHeight: '260px',
+                                                overflowY: 'auto',
+                                                overscrollBehavior: 'contain',
+                                                scrollbarWidth: 'thin',
+                                                scrollbarColor: 'rgba(255, 255, 255, 0.2) transparent'
+                                            }}
+                                        >
+                                            {seasons.map((season) => {
+                                                const isSelected = season.season_number === currentSeason;
+                                                return (
+                                                    <button
+                                                        key={season.id}
+                                                        ref={isSelected ? activeSeasonItemRef : null}
+                                                        type="button"
+                                                        role="option"
+                                                        aria-selected={isSelected}
+                                                        onClick={() => {
+                                                            onSeasonChange(season.season_number);
+                                                            setIsSeasonDropdownOpen(false);
+                                                        }}
+                                                        style={{
+                                                            width: '100%',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'space-between',
+                                                            padding: '0.65rem 0.85rem',
+                                                            borderRadius: '8px',
+                                                            background: isSelected ? 'rgba(var(--theme-accent-rgb), 0.15)' : 'transparent',
+                                                            border: isSelected ? '1px solid rgba(var(--theme-accent-rgb), 0.35)' : '1px solid transparent',
+                                                            color: isSelected ? '#ffffff' : 'rgba(255, 255, 255, 0.8)',
+                                                            fontSize: '0.88rem',
+                                                            fontWeight: isSelected ? '700' : '500',
+                                                            cursor: 'pointer',
+                                                            textAlign: 'left',
+                                                            transition: 'all 0.18s ease',
+                                                            marginBottom: '2px'
+                                                        }}
+                                                        onMouseEnter={(e) => {
+                                                            if (!isSelected) {
+                                                                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)';
+                                                                e.currentTarget.style.color = '#ffffff';
+                                                            }
+                                                        }}
+                                                        onMouseLeave={(e) => {
+                                                            if (!isSelected) {
+                                                                e.currentTarget.style.background = 'transparent';
+                                                                e.currentTarget.style.color = 'rgba(255, 255, 255, 0.8)';
+                                                            }
+                                                        }}
+                                                    >
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                                                            <span style={{ color: isSelected ? 'var(--theme-accent)' : 'inherit' }}>
+                                                                {season.name}
+                                                            </span>
+                                                        </div>
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                                                            {season.episode_count ? (
+                                                                <span style={{
+                                                                    fontSize: '0.74rem',
+                                                                    fontWeight: '500',
+                                                                    color: isSelected ? 'var(--theme-accent)' : 'rgba(255, 255, 255, 0.45)',
+                                                                    background: isSelected ? 'rgba(var(--theme-accent-rgb), 0.2)' : 'rgba(255, 255, 255, 0.05)',
+                                                                    padding: '0.15rem 0.45rem',
+                                                                    borderRadius: '6px'
+                                                                }}>
+                                                                    {season.episode_count} eps
+                                                                </span>
+                                                            ) : null}
+                                                            {isSelected && (
+                                                                <Check size={15} style={{ color: 'var(--theme-accent)', flexShrink: 0 }} />
+                                                            )}
+                                                        </div>
+                                                    </button>
+                                                );
+                                            })}
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
                             </div>
 
                             <button

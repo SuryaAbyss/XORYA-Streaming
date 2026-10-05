@@ -192,7 +192,7 @@ const Hero = ({ movie, onPlay, onInfo, onTrailerStart, isTrailerPlaying, onTrail
             if (logos && logos.length > 0) {
                 setLogoPath(logos[0].file_path);
             }
-        }).catch(() => {});
+        }).catch(() => { });
 
         // Fetch Video - Skip entirely on mobile devices
         if (!isMobile) {
@@ -276,7 +276,7 @@ const Hero = ({ movie, onPlay, onInfo, onTrailerStart, isTrailerPlaying, onTrail
                                     if (currentTime >= stopTime) {
                                         try {
                                             player.pauseVideo();
-                                        } catch (e) {}
+                                        } catch (e) { }
                                         triggerTrailerEnd();
                                     }
                                 }

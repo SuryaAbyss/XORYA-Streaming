@@ -31,7 +31,17 @@ export const servers = [
             tv: (tmdbId, season, episode) => `https://111movies.net/tv/${tmdbId}/${season}/${episode}`
         }
     },
-    // Server #4 - Videasy Net
+    // Server #4 - Nxsha (Hindi) (4th Place)
+    {
+        id: 'nxsha',
+        name: 'Nxsha (Hindi)',
+        type: 'alternate',
+        urlTemplate: {
+            movie: (tmdbId) => `https://nxsha.space/embed/movie/${tmdbId}`,
+            tv: (tmdbId, season, episode) => `https://nxsha.space/embed/tv/${tmdbId}/${season}/${episode}`
+        }
+    },
+    // Server #5 - Videasy Net
     {
         id: 'videasy-net',
         name: 'Videasy',
@@ -420,16 +430,6 @@ export const servers = [
         urlTemplate: {
             movie: (tmdbId) => `https://embed.filmu.in/movie/${tmdbId}`,
             tv: (tmdbId, season, episode) => `https://embed.filmu.in/tv/${tmdbId}/${season}/${episode}`
-        }
-    },
-    {
-        id: 'nxsha',
-        name: 'Nxsha',
-        type: 'testing',
-        category: 'testing',
-        urlTemplate: {
-            movie: (tmdbId) => `https://nxsha.space/embed/movie/${tmdbId}`,
-            tv: (tmdbId, season, episode) => `https://nxsha.space/embed/tv/${tmdbId}/${season}/${episode}`
         }
     }
 ];

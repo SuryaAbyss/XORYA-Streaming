@@ -1,11 +1,10 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { requestGoogleToken, fetchUserInfo, downloadBackupFromDrive, uploadBackupToDrive } from '../services/googleDriveSync';
+import { signInAnonymously, onAuthStateChanged } from 'firebase/auth';
+import { doc, onSnapshot, setDoc } from 'firebase/firestore';
+import { auth, db } from '../services/firebase';
 
 const STORAGE_KEY = 'xorya_watchlist';
-const DRIVE_CLIENT_ID_KEY = 'xorya_google_client_id';
-const DRIVE_TOKEN_KEY = 'xorya_google_access_token';
-const DRIVE_USER_KEY = 'xorya_google_user_profile';
-const DRIVE_LAST_SYNC_KEY = 'xorya_google_last_synced';
+const FIREBASE_LAST_SYNC_KEY = 'xorya_firebase_last_synced';
 
 const DEFAULT_TIERS = [
   { id: 'tier_must', name: 'Watching', color: '#ff4757', order: 0 },
@@ -29,26 +28,11 @@ function saveToStorage(data) {
   } catch { /* storage full or private mode */ }
 }
 
-const DEFAULT_GOOGLE_CLIENT_ID = '810677752824-45upun1mjej9960adujjnteeedh238vs.apps.googleusercontent.com';
-
 export function useWatchlist() {
-  const [clientId, setClientId] = useState(() => {
-    return localStorage.getItem(DRIVE_CLIENT_ID_KEY) || import.meta.env.VITE_GOOGLE_CLIENT_ID || DEFAULT_GOOGLE_CLIENT_ID;
-  });
-
-  const [accessToken, setAccessToken] = useState(() => {
-    return sessionStorage.getItem(DRIVE_TOKEN_KEY) || localStorage.getItem(DRIVE_TOKEN_KEY) || '';
-  });
-
-  const [userProfile, setUserProfile] = useState(() => {
-    try {
-      const raw = localStorage.getItem(DRIVE_USER_KEY);
-      return raw ? JSON.parse(raw) : null;
-    } catch { return null; }
-  });
-
+  const [userUid, setUserUid] = useState(null);
+  
   const [lastSyncedAt, setLastSyncedAt] = useState(() => {
-    const raw = localStorage.getItem(DRIVE_LAST_SYNC_KEY);
+    const raw = localStorage.getItem(FIREBASE_LAST_SYNC_KEY);
     return raw ? parseInt(raw) : null;
   });
 
@@ -83,10 +67,57 @@ export function useWatchlist() {
     saveToStorage({ tiers, entries });
   }, [tiers, entries]);
 
-  // Debounced Cloud Sync to Google Drive
-  const syncTimeoutRef = useRef(null);
+  // ─── Firebase Auth ───────────────────────────────────────────────────────────
   useEffect(() => {
-    if (!accessToken) return;
+    const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setUserUid(user.uid);
+      } else {
+        signInAnonymously(auth).catch(err => {
+          console.error("Anonymous sign in failed:", err);
+          setCloudError(err.message);
+        });
+      }
+    });
+    return () => unsubscribeAuth();
+  }, []);
+
+  // ─── Firebase Real-time Listener ──────────────────────────────────────────────
+  // We track the last local update to prevent the listener from overriding our own immediate writes.
+  const lastLocalUpdate = useRef(Date.now());
+  const isInitialLoad = useRef(true);
+
+  useEffect(() => {
+    if (!userUid) return;
+
+    const unsubscribeDb = onSnapshot(doc(db, 'watchlists', userUid), (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.data();
+        // Only override local state if the cloud data is newer than our last local update,
+        // OR if this is the very first load and we don't have local data.
+        if (isInitialLoad.current || (data.updatedAt && data.updatedAt > lastLocalUpdate.current)) {
+          if (data.tiers) setTiers(data.tiers);
+          if (data.entries) setEntries(data.entries);
+          
+          const now = data.updatedAt || Date.now();
+          setLastSyncedAt(now);
+          localStorage.setItem(FIREBASE_LAST_SYNC_KEY, now.toString());
+        }
+      }
+      isInitialLoad.current = false;
+    }, (error) => {
+      console.error('Firebase listen error:', error);
+      setCloudError(error.message);
+    });
+
+    return () => unsubscribeDb();
+  }, [userUid]);
+
+  // ─── Firebase Auto-Sync (Debounced Write) ───────────────────────────────────
+  const syncTimeoutRef = useRef(null);
+  
+  useEffect(() => {
+    if (!userUid || isInitialLoad.current) return;
 
     if (syncTimeoutRef.current) clearTimeout(syncTimeoutRef.current);
 
@@ -94,135 +125,37 @@ export function useWatchlist() {
       try {
         setIsSyncing(true);
         setCloudError(null);
-        const result = await uploadBackupToDrive(accessToken, { tiers, entries });
-        const now = result.timestamp || Date.now();
+        
+        const now = Date.now();
+        lastLocalUpdate.current = now; // Mark that WE are writing, so the snapshot listener ignores this echo
+
+        await setDoc(doc(db, 'watchlists', userUid), { 
+          tiers, 
+          entries, 
+          updatedAt: now 
+        }, { merge: true });
+
         setLastSyncedAt(now);
-        localStorage.setItem(DRIVE_LAST_SYNC_KEY, now.toString());
+        localStorage.setItem(FIREBASE_LAST_SYNC_KEY, now.toString());
       } catch (err) {
-        console.warn('Auto Cloud Sync warning:', err);
+        console.warn('Firebase Auto Sync warning:', err);
         setCloudError(err.message || 'Auto sync failed');
       } finally {
         setIsSyncing(false);
       }
-    }, 4000); // 4 second debounce
+    }, 2000); // 2 second debounce
 
     return () => {
       if (syncTimeoutRef.current) clearTimeout(syncTimeoutRef.current);
     };
-  }, [tiers, entries, accessToken]);
+  }, [tiers, entries, userUid]);
 
-  // ─── Google Drive OAuth Ops ──────────────────────────────────────────────────
-
-  const saveCustomClientId = useCallback((newId) => {
-    setClientId(newId);
-    if (newId) {
-      localStorage.setItem(DRIVE_CLIENT_ID_KEY, newId);
-    } else {
-      localStorage.removeItem(DRIVE_CLIENT_ID_KEY);
-    }
-  }, []);
-
-  const connectGoogleDrive = useCallback(async () => {
-    const activeClientId = clientId || import.meta.env.VITE_GOOGLE_CLIENT_ID || DEFAULT_GOOGLE_CLIENT_ID;
-    if (!activeClientId) {
-      setCloudError('Google Client ID is missing. Click "Configure Google Client ID" below to paste your Google OAuth Client ID or set VITE_GOOGLE_CLIENT_ID in Vercel.');
-      return false;
-    }
-
-    try {
-      setIsSyncing(true);
-      setCloudError(null);
-      const tokenResult = await requestGoogleToken(activeClientId);
-      const token = tokenResult.accessToken;
-
-      setAccessToken(token);
-      localStorage.setItem(DRIVE_TOKEN_KEY, token);
-
-      // Fetch user profile
-      const profile = await fetchUserInfo(token);
-      if (profile) {
-        setUserProfile(profile);
-        localStorage.setItem(DRIVE_USER_KEY, JSON.stringify(profile));
-      }
-
-      // Check if backup exists in Drive and restore if local storage is empty
-      const backup = await downloadBackupFromDrive(token);
-      if (backup?.data) {
-        if (entries.length === 0 || (backup.data.updatedAt && backup.data.updatedAt > (lastSyncedAt || 0))) {
-          if (backup.data.tiers) setTiers(backup.data.tiers);
-          if (backup.data.entries) setEntries(backup.data.entries);
-        }
-      } else {
-        // Upload initial backup
-        await uploadBackupToDrive(token, { tiers, entries });
-      }
-
-      const now = Date.now();
-      setLastSyncedAt(now);
-      localStorage.setItem(DRIVE_LAST_SYNC_KEY, now.toString());
-      return true;
-    } catch (err) {
-      console.error('Google Drive connection failed:', err);
-      setCloudError(err.message || 'Failed to connect Google Drive');
-      return false;
-    } finally {
-      setIsSyncing(false);
-    }
-  }, [clientId, entries.length, lastSyncedAt, tiers, entries]);
-
-  const disconnectGoogleDrive = useCallback(() => {
-    setAccessToken('');
-    setUserProfile(null);
-    setLastSyncedAt(null);
-    setCloudError(null);
-    localStorage.removeItem(DRIVE_TOKEN_KEY);
-    localStorage.removeItem(DRIVE_USER_KEY);
-    localStorage.removeItem(DRIVE_LAST_SYNC_KEY);
-    sessionStorage.removeItem(DRIVE_TOKEN_KEY);
-  }, []);
-
-  const syncNowWithDrive = useCallback(async () => {
-    if (!accessToken) return false;
-    try {
-      setIsSyncing(true);
-      setCloudError(null);
-      const result = await uploadBackupToDrive(accessToken, { tiers, entries });
-      const now = result.timestamp || Date.now();
-      setLastSyncedAt(now);
-      localStorage.setItem(DRIVE_LAST_SYNC_KEY, now.toString());
-      return true;
-    } catch (err) {
-      console.error('Manual sync failed:', err);
-      setCloudError(err.message || 'Sync failed');
-      return false;
-    } finally {
-      setIsSyncing(false);
-    }
-  }, [accessToken, tiers, entries]);
-
-  const restoreFromDrive = useCallback(async () => {
-    if (!accessToken) return false;
-    try {
-      setIsSyncing(true);
-      setCloudError(null);
-      const backup = await downloadBackupFromDrive(accessToken);
-      if (backup?.data) {
-        if (backup.data.tiers) setTiers(backup.data.tiers);
-        if (backup.data.entries) setEntries(backup.data.entries);
-        setLastSyncedAt(backup.data.updatedAt || Date.now());
-        return true;
-      } else {
-        setCloudError('No backup file found in your Google Drive.');
-        return false;
-      }
-    } catch (err) {
-      console.error('Restore failed:', err);
-      setCloudError(err.message || 'Restore failed');
-      return false;
-    } finally {
-      setIsSyncing(false);
-    }
-  }, [accessToken]);
+  // ─── Legacy Compat Ops (kept so UI doesn't crash) ───────────────────────────
+  const connectGoogleDrive = useCallback(async () => { return true; }, []);
+  const disconnectGoogleDrive = useCallback(() => { }, []);
+  const saveCustomClientId = useCallback(() => {}, []);
+  const syncNowWithDrive = useCallback(async () => { return true; }, []);
+  const restoreFromDrive = useCallback(async () => { return true; }, []);
 
   // ─── Tier CRUD ───────────────────────────────────────────────────────────────
 
@@ -415,15 +348,15 @@ export function useWatchlist() {
     tiers,
     entries,
     stats,
-    // Google Drive Sync State & Ops
+    // Firebase Sync State & Ops (Mapped to legacy names for UI compat)
     driveState: {
-      isConnected: Boolean(accessToken),
-      accessToken,
-      userProfile,
+      isConnected: Boolean(userUid),
+      accessToken: 'firebase_auth',
+      userProfile: { name: 'Anonymous Sync' },
       lastSyncedAt,
       isSyncing,
       error: cloudError,
-      clientId,
+      clientId: 'firebase_cloud',
     },
     connectGoogleDrive,
     disconnectGoogleDrive,

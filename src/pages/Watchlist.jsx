@@ -653,7 +653,7 @@ const Watchlist = () => {
             }}
           >
             <Cloud size={15} />
-            <span>{driveState.isConnected ? 'Cloud Sync' : 'Drive Backup'}</span>
+            <span>{driveState.isConnected ? 'Cloud Sync (Live)' : 'Connect Cloud'}</span>
             {driveState.isConnected && (
               <span style={{
                 width: '6px',

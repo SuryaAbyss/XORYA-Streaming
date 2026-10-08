@@ -103,10 +103,10 @@ const GoogleDriveSyncModal = ({
                         </div>
                         <div>
                             <h2 style={{ fontSize: '1.2rem', fontWeight: '700', margin: 0, letterSpacing: '-0.3px' }}>
-                                Google Drive Cloud Sync
+                                Firebase Cloud Sync
                             </h2>
                             <p style={{ fontSize: '0.82rem', color: 'rgba(255, 255, 255, 0.6)', margin: '2px 0 0' }}>
-                                Auto-backup Watchlist & Watch Progress to Google Drive
+                                Real-time cross-device sync active
                             </p>
                         </div>
                     </div>

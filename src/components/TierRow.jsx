@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Plus, Pencil, Trash2, Check, X, ChevronUp, ChevronDown, Eye, EyeOff, ArrowUpDown, CheckCircle2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, Check, X, ChevronUp, ChevronDown, Eye, EyeOff, ArrowUpDown, CheckCircle2, Clapperboard } from 'lucide-react';
 import WatchlistCard from './WatchlistCard';
 import WatchlistSearchModal from './WatchlistSearchModal';
 import { ExpandingCards } from './ui/expanding-cards';
@@ -101,8 +101,21 @@ const TierRow = ({
       <div
         ref={rowRef}
         className="wl-tier-row"
-        style={{ '--tier-color': tier.color, opacity: 0 }}
+        style={{
+          '--tier-color': tier.color,
+          '--tier-border': `${tier.color}33`,
+          '--tier-glow': `${tier.color}18`,
+          opacity: 0
+        }}
       >
+        {/* Ambient subtle artwork for populated tiers or gradient */}
+        {entries.length > 0 && entries[0]?.backdrop && (
+          <div 
+            className="wl-tier-bg-art" 
+            style={{ backgroundImage: `url(${imageUrl(entries[0].backdrop, 'w780')})` }} 
+          />
+        )}
+
         {/* ── Tier Header ── */}
         <div className="wl-tier-header">
           {/* Left: color swatch + name */}
@@ -288,6 +301,9 @@ const TierRow = ({
           {entries.length === 0 ? (
             isSearching ? (
               <div className="wl-tier-empty">
+                <div className="wl-clapper-icon">
+                  <Clapperboard size={24} />
+                </div>
                 <p>No matching titles</p>
                 <span className="wl-tier-empty-hint">Try searching for something else</span>
               </div>
@@ -297,6 +313,9 @@ const TierRow = ({
                 onClick={() => setShowSearch(true)}
                 style={{ cursor: 'pointer' }}
               >
+                <div className="wl-clapper-icon">
+                  <Clapperboard size={24} />
+                </div>
                 <p>This tier is empty</p>
                 <span className="wl-tier-empty-hint">Click <strong>Add</strong> to add movies or series</span>
               </div>

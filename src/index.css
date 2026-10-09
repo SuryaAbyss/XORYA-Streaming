@@ -2191,75 +2191,108 @@ body::before {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   WATCHLIST / TIER LIST STYLES
+   WATCHLIST / TIER LIST STYLES (Design 6 Color-Coded System)
 ═══════════════════════════════════════════════════════════════ */
 
-/* ── Page Shell ── */
+/* ── Watchlist Design 6 Tokens & Theme ── */
+:root {
+  --wl-bg: #080B14;
+  --wl-surface: #101522;
+  --wl-surface-raised: #151A29;
+  --wl-text-primary: #F8FAFC;
+  --wl-text-secondary: #9CA3B8;
+  --wl-purple: #8B5CF6;
+  --wl-green: #10B981;
+  --wl-amber: #F59E0B;
+  --wl-rose: #F43F5E;
+  --wl-cyan: #38BDF8;
+  --wl-blue: #2563EB;
+}
+
 .wl-page {
   min-height: 100vh;
-  background: #000;
-  color: #fff;
+  background-color: var(--wl-bg, #080B14);
+  position: relative;
+  overflow-x: hidden;
   padding-bottom: 5rem;
-  background-image:
-    radial-gradient(circle at 50% -20%, rgba(112, 161, 255, 0.08), transparent 50%),
-    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
-  background-size: 100% 100%, 40px 40px, 40px 40px;
+}
+
+/* Atmospheric page background using user cinematic artwork */
+.wl-page-backdrop {
+  position: fixed;
+  inset: 0;
+  background-image: 
+    radial-gradient(ellipse 90% 60% at 50% 0%, rgba(139, 92, 246, 0.12) 0%, transparent 70%),
+    radial-gradient(ellipse 70% 50% at 80% 30%, rgba(56, 189, 248, 0.08) 0%, transparent 60%),
+    radial-gradient(ellipse 80% 50% at 10% 70%, rgba(244, 63, 94, 0.08) 0%, transparent 60%),
+    url('/watchlist-bg.jpg');
+  background-size: cover;
+  background-position: center top;
+  background-repeat: no-repeat;
+  opacity: 0.22;
+  pointer-events: none;
+  z-index: 0;
+  mix-blend-mode: luminosity;
+  filter: contrast(1.15) brightness(0.7);
+}
+
+.wl-page-overlay {
+  position: fixed;
+  inset: 0;
+  background: 
+    linear-gradient(to bottom, rgba(8, 11, 20, 0.6) 0%, rgba(8, 11, 20, 0.85) 40%, rgba(8, 11, 20, 0.98) 100%),
+    radial-gradient(circle at 50% 20%, transparent 30%, rgba(8, 11, 20, 0.95) 90%);
+  pointer-events: none;
+  z-index: 0;
 }
 
 /* ── Hero ── */
 .wl-hero {
   position: relative;
-  padding: 7rem 2rem 3rem;
+  padding: 6.5rem 5% 2rem;
   overflow: hidden;
-  text-align: center;
+  text-align: left;
+  z-index: 1;
 }
 
 .wl-hero-bg {
   position: absolute;
   inset: 0;
-  background:
-    radial-gradient(ellipse 80% 60% at 50% 0%, rgba(112, 161, 255, 0.08) 0%, transparent 70%),
-    radial-gradient(ellipse 60% 40% at 20% 100%, rgba(162, 155, 254, 0.06) 0%, transparent 60%);
   pointer-events: none;
 }
 
 .wl-hero-content {
   position: relative;
-  max-width: 680px;
-  margin: 0 auto;
+  max-width: 1200px;
+  margin: 0;
 }
 
-.wl-hero-badge {
+.wl-hero-eyebrow {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  padding: 0.35rem 0.9rem;
-  border-radius: 50px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.05);
-  font-size: 0.75rem;
-  color: #aaa;
-  margin-bottom: 1rem;
-  letter-spacing: 0.05em;
+  gap: 0.5rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
+  color: var(--wl-purple, #8B5CF6);
+  margin-bottom: 0.5rem;
 }
 
 .wl-hero-title {
-  font-size: clamp(2.5rem, 6vw, 4rem);
+  font-size: clamp(2.8rem, 5.5vw, 4.5rem);
   font-weight: 900;
-  letter-spacing: -0.03em;
-  background: linear-gradient(135deg, #fff 0%, #888 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  margin: 0 0 0.75rem;
+  letter-spacing: -0.035em;
+  color: var(--wl-text-primary, #F8FAFC);
+  margin: 0 0 0.5rem;
+  line-height: 1.05;
 }
 
 .wl-hero-subtitle {
-  color: #666;
-  font-size: 1rem;
-  margin: 0 0 1.5rem;
+  color: var(--wl-text-secondary, #9CA3B8);
+  font-size: 1.05rem;
+  font-weight: 400;
+  margin: 0 0 1.25rem;
 }
 
 /* Overall progress */
@@ -2294,116 +2327,24 @@ body::before {
 /* ── Stats Row ── */
 .wl-stats-row {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1rem;
-  padding: 0 5% 2rem;
-  margin-top: -2rem;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.25rem;
+  padding: 0 5% 1.75rem;
   position: relative;
   z-index: 10;
 }
 
-.wl-stat-card {
-  position: relative;
-  background: rgba(15, 15, 15, 0.6);
-  backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 20px;
-  padding: 1.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  overflow: hidden;
+@media (max-width: 1024px) {
+  .wl-stats-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
-.wl-stat-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: radial-gradient(circle at top right, var(--stat-color), transparent 80%);
-  opacity: 0.05;
-  pointer-events: none;
-}
-
-.wl-stat-card.clickable:hover {
-  background: rgba(25, 25, 25, 0.8);
-  border-color: rgba(255, 255, 255, 0.12);
-  transform: translateY(-6px);
-  box-shadow: 0 20px 40px -20px rgba(0, 0, 0, 0.8);
-}
-
-.wl-stat-card.active {
-  background: rgba(30, 30, 30, 0.9);
-  border-color: var(--stat-color);
-  box-shadow: 0 0 30px -10px var(--stat-color);
-}
-
-.wl-stat-card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-}
-
-.wl-stat-icon-box {
-  width: 42px;
-  height: 42px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--stat-color-bg);
-  color: var(--stat-color);
-  box-shadow: 0 8px 16px -4px var(--stat-color-glow);
-}
-
-.wl-stat-badge {
-  font-size: 0.65rem;
-  font-weight: 700;
-  padding: 0.25rem 0.6rem;
-  border-radius: 6px;
-  background: rgba(255, 255, 255, 0.05);
-  color: rgba(255, 255, 255, 0.4);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.wl-stat-info {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.wl-stat-value {
-  font-size: 2.25rem;
-  font-weight: 800;
-  color: #fff;
-  margin: 0;
-  line-height: 1;
-  letter-spacing: -1px;
-}
-
-.wl-stat-label {
-  font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.5);
-  font-weight: 500;
-  margin: 0;
-}
-
-.wl-stat-arrow {
-  position: absolute;
-  top: 1.5rem;
-  right: 1.5rem;
-  opacity: 0;
-  transition: all 0.3s;
-  color: var(--stat-color);
-}
-
-.wl-stat-card:hover .wl-stat-arrow {
-  opacity: 1;
-  transform: translateX(2px);
+@media (max-width: 640px) {
+  .wl-stats-row {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
 }
 
 /* ── Toolbar ── */
@@ -2411,18 +2352,23 @@ body::before {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 5% 2rem;
-  gap: 2rem;
+  padding: 0 5% 1.75rem;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+  position: relative;
+  z-index: 10;
 }
 
 .wl-toolbar-group {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  background: rgba(255, 255, 255, 0.03);
-  padding: 0.35rem;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(16, 21, 34, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  padding: 0.35rem 0.5rem;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .wl-btn-tool {
@@ -2430,28 +2376,214 @@ body::before {
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 0.9rem;
-  border-radius: 8px;
-  border: none;
+  border-radius: 10px;
+  border: 1px solid transparent;
   background: transparent;
-  color: rgba(255, 255, 255, 0.5);
-  font-size: 0.8rem;
+  color: var(--wl-text-secondary, #9CA3B8);
+  font-size: 0.82rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
 }
 
 .wl-btn-tool:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.06);
   color: #fff;
+  border-color: rgba(255, 255, 255, 0.1);
 }
 
 .wl-btn-tool.danger:hover {
-  background: rgba(255, 71, 87, 0.1);
-  color: #ff4757;
+  background: rgba(244, 63, 94, 0.12);
+  color: #f43f5e;
+  border-color: rgba(244, 63, 94, 0.25);
 }
 
 .wl-btn-tool span {
   display: inline;
+}
+
+/* ── Redesigned Sync & Restore Banner (Design 6) ── */
+.wl-restore-panel {
+  margin: 0 5% 2rem;
+  position: relative;
+  border-radius: 20px;
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  background: linear-gradient(135deg, rgba(16, 21, 34, 0.85) 0%, rgba(15, 23, 42, 0.75) 100%);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  overflow: hidden;
+  box-shadow: 0 16px 40px -12px rgba(0, 0, 0, 0.5), 0 0 35px -5px rgba(56, 189, 248, 0.12);
+  z-index: 10;
+  transition: all 0.3s ease;
+}
+
+.wl-restore-panel:hover {
+  border-color: rgba(56, 189, 248, 0.4);
+  box-shadow: 0 20px 48px -10px rgba(0, 0, 0, 0.6), 0 0 45px 0px rgba(56, 189, 248, 0.18);
+}
+
+.wl-restore-art {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle at 100% 50%, rgba(56, 189, 248, 0.15), transparent 60%),
+                    radial-gradient(circle at 0% 100%, rgba(37, 99, 235, 0.12), transparent 50%),
+                    url('/watchlist-smoke.jpg');
+  background-size: cover;
+  background-position: center;
+  opacity: 0.12;
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+
+.wl-restore-content {
+  position: relative;
+  z-index: 2;
+  padding: 1.5rem 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.wl-restore-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+}
+
+.wl-restore-left {
+  display: flex;
+  align-items: center;
+  gap: 1.1rem;
+}
+
+.wl-restore-icon-box {
+  width: 54px;
+  height: 54px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.15) 0%, rgba(37, 99, 235, 0.25) 100%);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 24px -4px rgba(37, 99, 235, 0.35);
+  flex-shrink: 0;
+}
+
+.wl-restore-header-text h3 {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #F8FAFC;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  letter-spacing: -0.01em;
+}
+
+.wl-restore-badge {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 0.2rem 0.55rem;
+  border-radius: 50px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  text-transform: uppercase;
+}
+
+.wl-restore-badge.safe {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10B981;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.wl-restore-badge.connected {
+  background: rgba(56, 189, 248, 0.15);
+  color: #38BDF8;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+}
+
+.wl-restore-header-text p {
+  color: var(--wl-text-secondary, #9CA3B8);
+  font-size: 0.85rem;
+  margin: 0.25rem 0 0;
+  max-width: 540px;
+  line-height: 1.4;
+}
+
+.wl-restore-action-btn {
+  background: linear-gradient(135deg, #2563EB 0%, #059669 100%);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  padding: 0.75rem 1.4rem;
+  color: #fff;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  box-shadow: 0 8px 24px -4px rgba(37, 99, 235, 0.4);
+  transition: all 0.25s ease;
+  white-space: nowrap;
+}
+
+.wl-restore-action-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px -4px rgba(37, 99, 235, 0.6);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.wl-restore-features {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+@media (max-width: 768px) {
+  .wl-restore-features {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+}
+
+.wl-restore-feat {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.wl-restore-feat-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #38BDF8;
+  flex-shrink: 0;
+}
+
+.wl-restore-feat-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.wl-restore-feat-title {
+  color: #F8FAFC;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.wl-restore-feat-desc {
+  color: #9CA3B8;
+  font-size: 0.72rem;
 }
 
 /* Buttons */
@@ -2552,26 +2684,43 @@ body::before {
   font-size: 0.95rem;
 }
 
-/* ── Tier Row ── */
+/* ── Tier Row (Design 6 Color-Coded System) ── */
 .wl-tier-row {
-  background: rgba(255, 255, 255, 0.025);
-  border: 1px solid rgba(255, 255, 255, 0.07);
+  position: relative;
+  background: rgba(16, 21, 34, 0.7);
+  border: 1px solid var(--tier-border, rgba(255, 255, 255, 0.08));
   border-radius: 20px;
   overflow: hidden;
-  transition: border-color 0.3s;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 12px 32px -10px rgba(0, 0, 0, 0.5), 0 0 20px var(--tier-glow, transparent);
+  transition: all 0.3s ease;
 }
 
 .wl-tier-row:hover {
-  border-color: rgba(255, 255, 255, 0.12);
+  border-color: var(--tier-color, rgba(255, 255, 255, 0.2));
+  box-shadow: 0 16px 40px -10px rgba(0, 0, 0, 0.6), 0 0 28px var(--tier-glow, transparent);
+}
+
+.wl-tier-bg-art {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  opacity: 0.12;
+  pointer-events: none;
+  filter: contrast(1.2) brightness(0.65);
 }
 
 /* Tier Header */
 .wl-tier-header {
+  position: relative;
+  z-index: 2;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1rem 1.25rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  padding: 1.1rem 1.4rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   gap: 1rem;
   flex-wrap: wrap;
 }
@@ -2579,7 +2728,7 @@ body::before {
 .wl-tier-header-left {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.85rem;
   flex: 1;
   min-width: 0;
 }
@@ -2598,11 +2747,12 @@ body::before {
 }
 
 .wl-tier-color-dot {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
-  border: 2px solid rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.25);
   cursor: pointer;
+  box-shadow: 0 0 12px var(--tier-glow, rgba(255, 255, 255, 0.2));
   transition: transform 0.2s, box-shadow 0.2s;
 }
 
@@ -2616,14 +2766,14 @@ body::before {
   top: 28px;
   left: 0;
   z-index: 100;
-  background: rgba(12, 12, 12, 0.97);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(16, 21, 34, 0.98);
+  border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 14px;
   padding: 0.75rem;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 6px;
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.7);
   backdrop-filter: blur(20px);
 }
 
@@ -2649,17 +2799,18 @@ body::before {
 .wl-tier-name-display {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.5rem;
 }
 
 .wl-tier-name {
-  font-size: 1rem;
+  font-size: 1.05rem;
   font-weight: 700;
-  color: #fff;
+  color: #F8FAFC;
   margin: 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  letter-spacing: -0.01em;
 }
 
 .wl-tier-name-edit {
@@ -2682,13 +2833,13 @@ body::before {
 
 /* Count badge */
 .wl-tier-count-badge {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 50px;
-  padding: 0.1rem 0.55rem;
+  padding: 0.15rem 0.65rem;
   font-size: 0.75rem;
-  color: #888;
-  font-weight: 600;
+  color: var(--wl-text-secondary, #9CA3B8);
+  font-weight: 700;
 }
 
 /* Progress */
@@ -2722,19 +2873,19 @@ body::before {
 .wl-tier-actions {
   display: flex;
   align-items: center;
-  gap: 0.35rem;
+  gap: 0.4rem;
 }
 
 .wl-tier-icon-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 30px;
-  height: 30px;
-  border-radius: 8px;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  color: #666;
+  color: #9CA3B8;
   cursor: pointer;
   transition: all 0.2s;
 }
@@ -2742,24 +2893,25 @@ body::before {
 .wl-tier-icon-btn:hover {
   background: rgba(255, 255, 255, 0.1);
   color: #fff;
+  border-color: rgba(255, 255, 255, 0.15);
 }
 
 .wl-tier-icon-btn.confirm:hover {
-  background: rgba(123, 237, 159, 0.15);
-  color: #7bed9f;
-  border-color: rgba(123, 237, 159, 0.3);
+  background: rgba(16, 185, 129, 0.15);
+  color: #10B981;
+  border-color: rgba(16, 185, 129, 0.3);
 }
 
 .wl-tier-icon-btn.cancel:hover {
-  background: rgba(255, 71, 87, 0.12);
-  color: #ff4757;
-  border-color: rgba(255, 71, 87, 0.2);
+  background: rgba(244, 63, 94, 0.12);
+  color: #f43f5e;
+  border-color: rgba(244, 63, 94, 0.2);
 }
 
 .wl-tier-icon-btn.danger:hover {
-  background: rgba(255, 71, 87, 0.12);
-  color: #ff4757;
-  border-color: rgba(255, 71, 87, 0.2);
+  background: rgba(244, 63, 94, 0.12);
+  color: #f43f5e;
+  border-color: rgba(244, 63, 94, 0.2);
 }
 
 .wl-tier-icon-btn.edit {
@@ -2767,86 +2919,88 @@ body::before {
   border-color: transparent;
   width: 24px;
   height: 24px;
-  color: #444;
+  color: #64748B;
 }
 
 .wl-tier-icon-btn.edit:hover {
   background: rgba(255, 255, 255, 0.08);
-  color: #aaa;
+  color: #9CA3B8;
   border-color: rgba(255, 255, 255, 0.1);
 }
 
 .wl-tier-add-btn {
   display: inline-flex;
   align-items: center;
-  gap: 0.3rem;
-  padding: 0.4rem 0.9rem;
-  border-radius: 50px;
-  border: 1px solid transparent;
+  gap: 0.35rem;
+  padding: 0.45rem 1rem;
+  border-radius: 10px;
+  border: 1px solid;
   cursor: pointer;
   font-family: var(--font-main);
-  font-size: 0.8rem;
-  font-weight: 600;
+  font-size: 0.82rem;
+  font-weight: 700;
   transition: all 0.2s;
 }
 
-.wl-tier-add-row {
-  margin-top: 0;
-  display: flex;
-  justify-content: center;
+.wl-tier-add-btn:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.15);
 }
 
-.wl-tier-cards-new {
-  margin-bottom: 0.2rem;
-}
-
-.wl-btn-add-compact {
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
-  color: var(--tier-color, #70a1ff);
-  cursor: pointer;
-  transition: all 0.2s;
-  margin: 0.15rem auto 0.5rem;
-  /* Even smaller margins */
-}
-
-.wl-btn-add-compact:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.2);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-}
-
-/* Empty tier */
+/* Empty tier state with clapperboard graphic */
 .wl-tier-empty {
+  position: relative;
+  z-index: 2;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.5rem;
-  padding: 2.5rem;
-  color: #444;
+  gap: 0.6rem;
+  padding: 3.5rem 2rem;
+  color: #9CA3B8;
   cursor: pointer;
-  transition: color 0.2s;
+  transition: all 0.25s;
+  background: 
+    linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+  background-size: 28px 28px;
 }
 
 .wl-tier-empty:hover {
-  color: #666;
+  color: #F8FAFC;
+  background-color: rgba(255, 255, 255, 0.015);
+}
+
+.wl-clapper-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px dashed rgba(255, 255, 255, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.5);
+  margin-bottom: 0.25rem;
+  transition: transform 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+}
+
+.wl-tier-empty:hover .wl-clapper-icon {
+  transform: scale(1.1);
+  border-color: var(--tier-color, #8B5CF6);
+  color: var(--tier-color, #8B5CF6);
 }
 
 .wl-tier-empty p {
-  font-size: 0.95rem;
-  color: #555;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #F8FAFC;
+  margin: 0;
 }
 
 .wl-tier-empty-hint {
-  font-size: 0.8rem;
-  color: #3a3a3a;
+  font-size: 0.85rem;
+  color: var(--wl-text-secondary, #9CA3B8);
+  margin: 0;
 }
 
 /* Cards grid */

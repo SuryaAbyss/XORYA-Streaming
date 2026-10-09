@@ -432,61 +432,54 @@ const FilterPanel = ({ isOpen, onClose, filter, entries, tiers, onProgress, onSt
 };
 
 // ── Clickable Stats Card ────────────────────────────────────────────────────────
-const StatsCard = ({ label, value, icon: Icon, color, onClick, filterKey, activeFilter, badge }) => {
+// ── Clickable Stats Card (Design 6) ─────────────────────────────────────────────
+const StatsCard = ({ label, value, icon: Icon, color, tint, glow, onClick, filterKey, activeFilter, bgImage }) => {
   const isActive = activeFilter === filterKey;
 
   return (
     <div 
       className={`hl-card-wrapper ${isActive ? 'active' : ''} ${onClick ? 'clickable' : ''}`} 
       onClick={onClick} 
-      style={{ '--card-color': color, opacity: 0, transform: 'translateY(20px)' }}
+      style={{
+        '--card-color': color,
+        '--card-tint': tint || `${color}18`,
+        '--card-glow': glow || `${color}33`,
+        opacity: 0,
+        transform: 'translateY(20px)'
+      }}
     >
       <div className="hl-card">
+        {/* Subtle background artwork */}
+        {bgImage && (
+          <div 
+            className="hl-card-bg-art" 
+            style={{ backgroundImage: `url(${bgImage})` }} 
+          />
+        )}
+        
         <div className="hl-bg-elements">
-          <div className="hl-bg-gradient"></div>
-          <div className="hl-glow-bot"></div>
-          <div className="hl-ping-top"></div>
-          <div className="hl-ping-bot"></div>
-          <div className="hl-shine"></div>
+          <div className="hl-bg-gradient" />
+          <div className="hl-glow-bot" />
+          <div className="hl-shine" />
         </div>
 
         <div className="hl-content">
-          <div className="hl-badge-container">
-            {badge && (
-              <span className="hl-badge" style={{ color: color }}>
-                {badge}
-              </span>
-            )}
-          </div>
-
-          <div className="hl-icon-container">
-            <div className="hl-icon-ring-1"></div>
-            <div className="hl-icon-ring-2"></div>
-            <div className="hl-icon-inner">
-              <div className="hl-icon-spin">
-                <Icon size={24} />
-              </div>
+          <div className="hl-top-row">
+            <div className="hl-icon-badge">
+              <Icon size={20} />
+            </div>
+            <div className="hl-arrow-btn">
+              <span style={{ fontSize: '11px', fontWeight: 900 }}>→</span>
             </div>
           </div>
 
           <h3 className="hl-title">{value}</h3>
-          
-          <div className="hl-desc">
-            {label}
-          </div>
-
-          <div className="hl-divider"></div>
-
-          <div className="hl-dots">
-            <div className="hl-dot"></div>
-            <div className="hl-dot"></div>
-            <div className="hl-dot"></div>
-          </div>
+          <div className="hl-desc">{label}</div>
         </div>
 
-        <div className="hl-corners">
-          <div className="hl-corner-tl"></div>
-          <div className="hl-corner-br"></div>
+        {/* Bottom accent progress line */}
+        <div className="hl-progress-bar">
+          <div className="hl-progress-fill" />
         </div>
       </div>
     </div>
@@ -540,7 +533,7 @@ const Watchlist = () => {
   // Main Page Entrance Load Timeline
   useGSAP(() => {
     const tl = gsap.timeline();
-    tl.fromTo('.wl-hero-badge', { opacity: 0, y: 15 }, { opacity: 1, y: 0, duration: 0.4 })
+    tl.fromTo('.wl-hero-eyebrow', { opacity: 0, y: 15 }, { opacity: 1, y: 0, duration: 0.4 })
       .fromTo('.wl-hero-title', { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, "-=0.25")
       .fromTo('.wl-hero-subtitle', { opacity: 0, y: 15 }, { opacity: 1, y: 0, duration: 0.4 }, "-=0.3")
       .fromTo('.wl-overall-progress', { opacity: 0, scaleX: 0.95 }, { opacity: 1, scaleX: 1, duration: 0.4 }, "-=0.2")
@@ -550,10 +543,15 @@ const Watchlist = () => {
         { opacity: 1, y: 0, duration: 0.5, stagger: 0.08, ease: "power3.out" }, 
         "-=0.5"
       )
-      .fromTo('.wl-toolbar-group > *, .wl-toolbar > button', 
+      .fromTo('.wl-toolbar-group > *, .wl-toolbar > button, .wl-search-local-container', 
         { opacity: 0, y: 10 }, 
         { opacity: 1, y: 0, duration: 0.4, stagger: 0.04 }, 
         "-=0.3"
+      )
+      .fromTo('.wl-restore-panel',
+        { opacity: 0, y: 20 },
+        { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" },
+        "-=0.2"
       )
       .fromTo('.wl-tier-row', 
         { opacity: 0, y: 30 }, 
@@ -564,17 +562,21 @@ const Watchlist = () => {
 
   return (
     <div className="wl-page">
+      {/* ── Atmospheric Page Background (Design 6) ── */}
+      <div className="wl-page-backdrop" />
+      <div className="wl-page-overlay" />
+
       {/* ── Hero ── */}
       <div className="wl-hero">
         <div className="wl-hero-bg" />
         <div className="wl-hero-content">
-          <div className="wl-hero-badge" style={{ opacity: 0 }}>
-            <LayoutList size={14} />
-            <span>Personal Watchlist</span>
+          <div className="wl-hero-eyebrow" style={{ opacity: 0 }}>
+            <span style={{ fontSize: '10px' }}>◈</span>
+            <span>WATCHLIST</span>
           </div>
-          <h1 className="wl-hero-title" style={{ opacity: 0 }}>My Tier List</h1>
+          <h1 className="wl-hero-title" style={{ opacity: 0 }}>Your Watchlist</h1>
           <p className="wl-hero-subtitle" style={{ opacity: 0 }}>
-            Organise, rank &amp; track every movie and series you plan to watch.
+            Organize by your mood, genre or priority.
           </p>
           {stats.total > 0 && (
             <div className="wl-overall-progress" style={{ opacity: 0 }}>
@@ -589,12 +591,56 @@ const Watchlist = () => {
         </div>
       </div>
 
-      {/* ── Stats Row ── */}
+      {/* ── Stats Row (Design 6 Exact Color System) ── */}
       <div className="wl-stats-row">
-        <StatsCard label="Total Titles" value={stats.total} icon={LayoutList} color="#70a1ff" filterKey="all" activeFilter={activeFilter} onClick={() => openFilter('all')} badge="Collection" />
-        <StatsCard label="Watched" value={stats.watched} icon={CheckCircle2} color="#7bed9f" filterKey="watched" activeFilter={activeFilter} onClick={() => openFilter('watched')} badge="Done" />
-        <StatsCard label="Watching" value={stats.watching} icon={Eye} color="#ffa502" filterKey="watching" activeFilter={activeFilter} onClick={() => openFilter('watching')} badge="Live" />
-        <StatsCard label="To Watch" value={stats.pending} icon={Clock} color="#aaa" filterKey="pending" activeFilter={activeFilter} onClick={() => openFilter('pending')} badge="Queue" />
+        <StatsCard 
+          label="Total Titles" 
+          value={stats.total} 
+          icon={LayoutList} 
+          color="#8B5CF6" 
+          tint="rgba(139, 92, 246, 0.16)"
+          glow="rgba(139, 92, 246, 0.35)"
+          bgImage="/watchlist-bg.jpg"
+          filterKey="all" 
+          activeFilter={activeFilter} 
+          onClick={() => openFilter('all')} 
+        />
+        <StatsCard 
+          label="Watched" 
+          value={stats.watched} 
+          icon={CheckCircle2} 
+          color="#10B981" 
+          tint="rgba(16, 185, 129, 0.16)"
+          glow="rgba(16, 185, 129, 0.35)"
+          bgImage="/watchlist-smoke.jpg"
+          filterKey="watched" 
+          activeFilter={activeFilter} 
+          onClick={() => openFilter('watched')} 
+        />
+        <StatsCard 
+          label="Watching" 
+          value={stats.watching} 
+          icon={Eye} 
+          color="#F59E0B" 
+          tint="rgba(245, 158, 11, 0.16)"
+          glow="rgba(245, 158, 11, 0.35)"
+          bgImage="/watchlist-bg.jpg"
+          filterKey="watching" 
+          activeFilter={activeFilter} 
+          onClick={() => openFilter('watching')} 
+        />
+        <StatsCard 
+          label="To Watch" 
+          value={stats.pending} 
+          icon={Clock} 
+          color="#F43F5E" 
+          tint="rgba(244, 63, 94, 0.16)"
+          glow="rgba(244, 63, 94, 0.35)"
+          bgImage="/watchlist-smoke.jpg"
+          filterKey="pending" 
+          activeFilter={activeFilter} 
+          onClick={() => openFilter('pending')} 
+        />
       </div>
 
       {/* ── Toolbar ── */}
@@ -688,63 +734,90 @@ const Watchlist = () => {
         </div>
       )}
 
-      {/* ── Cache Restoration Banner if Empty ── */}
-      {entries.length === 0 && (
-        <div style={{
-          margin: '1.5rem 2rem 0',
-          padding: '1.2rem 1.5rem',
-          background: 'linear-gradient(135deg, rgba(66, 133, 244, 0.12) 0%, rgba(52, 168, 83, 0.08) 100%)',
-          border: '1px solid rgba(66, 133, 244, 0.25)',
-          borderRadius: '20px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          flexWrap: 'wrap',
-          gap: '1rem'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
-            <div style={{
-              width: '40px',
-              height: '40px',
-              borderRadius: '12px',
-              background: 'rgba(66, 133, 244, 0.2)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: '#4285F4'
-            }}>
-              <Cloud size={20} />
-            </div>
-            <div>
-              <div style={{ color: 'white', fontWeight: '700', fontSize: '0.92rem' }}>
-                Cleared browser cache or history?
+      {/* ── Redesigned Sync & Restore Your Watchlist Panel (Design 6) ── */}
+      <div className="wl-restore-panel">
+        <div className="wl-restore-art" />
+        <div className="wl-restore-content">
+          <div className="wl-restore-top">
+            <div className="wl-restore-left">
+              <div className="wl-restore-icon-box">
+                {/* SVG Google Drive iconic colors or Cloud */}
+                <svg width="28" height="28" viewBox="0 0 87.3 78" xmlns="http://www.w3.org/2000/svg">
+                  <path d="m6.6 66.85 3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3l13.75-23.8h-27.5c0 1.55.4 3.1 1.2 4.5z" fill="#0066da"/>
+                  <path d="m43.65 25-13.75-23.8c-1.35.8-2.5 1.9-3.3 3.3l-25.4 44c-.8 1.4-1.2 2.95-1.2 4.5h27.5z" fill="#00ac47"/>
+                  <path d="m73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.6-2.75 7.65-13.25c.8-1.4 1.2-2.95 1.2-4.5h-27.502l5.852 11.5z" fill="#ea4335"/>
+                  <path d="m43.65 25 13.75-23.8c-1.35-.8-2.9-1.2-4.5-1.2h-18.5c-1.6 0-3.15.45-4.5 1.2z" fill="#00832d"/>
+                  <path d="m59.8 53h-32.3l-13.75 23.8c1.35.8 2.9 1.2 4.5 1.2h50.8c1.6 0 3.15-.45 4.5-1.2z" fill="#2684fc"/>
+                  <path d="m73.4 26.5-12.7-22c-.8-1.4-1.95-2.5-3.3-3.3l-13.75 23.8 16.15 28h27.45c0-1.55-.4-3.1-1.2-4.5z" fill="#ffba00"/>
+                </svg>
               </div>
-              <div style={{ color: 'rgba(255, 255, 255, 0.65)', fontSize: '0.8rem', marginTop: '2px' }}>
-                Connect your Google Drive to instantly restore your Watchlist titles, tiers, and episode progress.
+              <div className="wl-restore-header-text">
+                <h3>
+                  <span>Sync &amp; Restore Your Watchlist</span>
+                  {driveState.isConnected ? (
+                    <span className="wl-restore-badge connected">
+                      <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#38BDF8', display: 'inline-block' }} />
+                      Connected
+                    </span>
+                  ) : (
+                    <span className="wl-restore-badge safe">
+                      <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#10B981', display: 'inline-block' }} />
+                      Safe &amp; Secure
+                    </span>
+                  )}
+                </h3>
+                <p>
+                  Connect your Google Drive to backup your watchlist, tier settings and episode progress. Access it on any device, anytime.
+                </p>
+              </div>
+            </div>
+
+            <button
+              className="wl-restore-action-btn"
+              onClick={() => setShowDriveModal(true)}
+            >
+              <svg width="18" height="18" viewBox="0 0 87.3 78" xmlns="http://www.w3.org/2000/svg">
+                <path d="m6.6 66.85 3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3l13.75-23.8h-27.5c0 1.55.4 3.1 1.2 4.5z" fill="#fff" opacity="0.9"/>
+                <path d="m43.65 25-13.75-23.8c-1.35.8-2.5 1.9-3.3 3.3l-25.4 44c-.8 1.4-1.2 2.95-1.2 4.5h27.5z" fill="#fff" opacity="0.95"/>
+                <path d="m73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.6-2.75 7.65-13.25c.8-1.4 1.2-2.95 1.2-4.5h-27.502l5.852 11.5z" fill="#fff" opacity="0.85"/>
+              </svg>
+              <span>{driveState.isConnected ? 'Manage Google Sync →' : 'Restore from Google Drive →'}</span>
+            </button>
+          </div>
+
+          <div className="wl-restore-features">
+            <div className="wl-restore-feat">
+              <div className="wl-restore-feat-icon">
+                <Cloud size={16} />
+              </div>
+              <div className="wl-restore-feat-text">
+                <span className="wl-restore-feat-title">Auto Sync</span>
+                <span className="wl-restore-feat-desc">Keep your data updated in real-time</span>
+              </div>
+            </div>
+
+            <div className="wl-restore-feat">
+              <div className="wl-restore-feat-icon">
+                <Tv size={16} />
+              </div>
+              <div className="wl-restore-feat-text">
+                <span className="wl-restore-feat-title">Cross Device</span>
+                <span className="wl-restore-feat-desc">Access on phone, tablet &amp; PC</span>
+              </div>
+            </div>
+
+            <div className="wl-restore-feat">
+              <div className="wl-restore-feat-icon">
+                <CheckCircle2 size={16} />
+              </div>
+              <div className="wl-restore-feat-text">
+                <span className="wl-restore-feat-title">No Data Loss</span>
+                <span className="wl-restore-feat-desc">Your watchlist is always protected</span>
               </div>
             </div>
           </div>
-          <button
-            onClick={() => setShowDriveModal(true)}
-            style={{
-              background: 'linear-gradient(135deg, #4285F4 0%, #34A853 100%)',
-              border: 'none',
-              borderRadius: '12px',
-              padding: '0.65rem 1.2rem',
-              color: 'white',
-              fontSize: '0.82rem',
-              fontWeight: '700',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-              boxShadow: '0 4px 15px rgba(66, 133, 244, 0.3)'
-            }}
-          >
-            <Cloud size={15} /> Restore from Google Drive
-          </button>
         </div>
-      )}
+      </div>
 
       {/* ── Tier Rows ── */}
       <div className="wl-tiers-container">

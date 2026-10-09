@@ -2,146 +2,197 @@
   perspective: 1000px;
   cursor: pointer;
   width: 100%;
-  max-width: 280px;
+  max-width: 320px;
   margin: 0 auto;
 }
 
 .hl-card {
   width: 100%;
-  aspect-ratio: 1 / 1;
-  min-height: 240px;
-  border-radius: 1.5rem;
+  min-height: 180px;
+  border-radius: 1.25rem;
   border: 1px solid rgba(255, 255, 255, 0.08);
-  background: linear-gradient(to bottom right, #010101, #0a0a0a, #010101);
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  background: rgba(16, 21, 34, 0.75);
+  box-shadow: 0 16px 36px -10px rgba(0, 0, 0, 0.6);
   position: relative;
   overflow: hidden;
-  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-  backdrop-filter: blur(24px);
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
 }
 
 .hl-card-wrapper:hover .hl-card {
-  transform: scale(1.05) rotate(-1.5deg);
-  border-color: rgba(255, 255, 255, 0.2);
-  box-shadow: 0 0 40px rgba(255,255,255,0.08);
+  transform: translateY(-5px);
+  border-color: var(--card-color, rgba(255, 255, 255, 0.3));
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.7), 0 0 24px var(--card-glow, rgba(139, 92, 246, 0.25));
 }
 
 .hl-card-wrapper.active .hl-card {
   border-color: var(--card-color);
-  box-shadow: 0 0 30px var(--card-color);
+  box-shadow: 0 0 30px var(--card-glow, rgba(139, 92, 246, 0.35));
+}
+
+.hl-card-bg-art {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  opacity: 0.16;
+  filter: contrast(1.15) saturate(1.2);
+  transition: opacity 0.4s ease, transform 0.6s ease;
+  pointer-events: none;
+}
+
+.hl-card-wrapper:hover .hl-card-bg-art {
+  opacity: 0.28;
+  transform: scale(1.05);
 }
 
 .hl-bg-elements {
   position: absolute;
   inset: 0;
-  z-index: 0;
+  z-index: 1;
   overflow: hidden;
+  pointer-events: none;
 }
 
 .hl-bg-gradient {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to top right, rgba(255,255,255,0.02), rgba(255,255,255,0.06));
-  opacity: 0.4;
-  transition: opacity 0.5s;
+  background: radial-gradient(circle at top left, var(--card-glow, rgba(255, 255, 255, 0.06)), transparent 70%),
+              linear-gradient(to bottom, transparent 20%, rgba(8, 11, 20, 0.85) 100%);
+  opacity: 0.7;
+  transition: opacity 0.4s;
 }
 
 .hl-card-wrapper:hover .hl-bg-gradient {
-  opacity: 0.8;
+  opacity: 0.9;
 }
 
 .hl-glow-bot {
   position: absolute;
-  bottom: -4rem;
-  left: -4rem;
-  width: 10rem;
-  height: 10rem;
+  bottom: -3rem;
+  right: -3rem;
+  width: 8rem;
+  height: 8rem;
   border-radius: 50%;
-  background: linear-gradient(to top right, rgba(255,255,255,0.1), transparent);
-  filter: blur(20px);
-  opacity: 0.3;
-  transition: all 0.7s;
-  animation: hl-bounce 3s infinite;
+  background: radial-gradient(circle, var(--card-glow, rgba(255, 255, 255, 0.15)), transparent 70%);
+  filter: blur(25px);
+  opacity: 0.35;
+  transition: all 0.5s;
 }
 
 .hl-card-wrapper:hover .hl-glow-bot {
-  opacity: 0.5;
-  transform: scale(1.2);
-}
-
-.hl-ping-top {
-  position: absolute;
-  top: 2rem;
-  left: 2rem;
-  width: 3rem;
-  height: 3rem;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.05);
-  filter: blur(12px);
-  animation: hl-ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
-}
-
-.hl-ping-bot {
-  position: absolute;
-  bottom: 3rem;
-  right: 3rem;
-  width: 2.5rem;
-  height: 2.5rem;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.05);
-  filter: blur(10px);
-  animation: hl-ping 2s cubic-bezier(0, 0, 0.2, 1) infinite 1s;
+  opacity: 0.7;
+  transform: scale(1.3);
 }
 
 .hl-shine {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to right, transparent, rgba(255,255,255,0.05), transparent);
-  transform: skewX(-12deg) translateX(100%);
-  transition: transform 1s ease;
+  background: linear-gradient(105deg, transparent 20%, rgba(255, 255, 255, 0.05) 50%, transparent 80%);
+  transform: translateX(-100%);
+  transition: transform 0.75s ease;
 }
 
 .hl-card-wrapper:hover .hl-shine {
-  transform: skewX(-12deg) translateX(-200%);
+  transform: translateX(100%);
 }
 
 .hl-content {
-  padding: 1.2rem;
+  padding: 1.25rem 1.4rem;
   position: relative;
   z-index: 10;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  text-align: center;
+  align-items: flex-start;
+  text-align: left;
   height: 100%;
 }
 
-.hl-badge-container {
+.hl-top-row {
   width: 100%;
   display: flex;
-  justify-content: flex-end;
-  height: 24px;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.85rem;
 }
 
-.hl-badge {
-  font-size: 0.65rem;
-  font-weight: 800;
-  letter-spacing: 0.05em;
-  padding: 0.2rem 0.6rem;
-  border-radius: 4px;
-  text-transform: uppercase;
-  background: rgba(255,255,255,0.1);
-  color: #aaa;
-  transition: all 0.3s;
-  display: inline-flex;
+.hl-icon-badge {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
   align-items: center;
   justify-content: center;
-  line-height: 1;
+  background: var(--card-tint, rgba(255, 255, 255, 0.06));
+  border: 1px solid var(--card-glow, rgba(255, 255, 255, 0.15));
+  color: var(--card-color, #fff);
+  box-shadow: 0 4px 14px var(--card-glow, rgba(0, 0, 0, 0.2));
+  transition: transform 0.3s ease, border-color 0.3s ease;
 }
 
-.hl-card-wrapper.active .hl-badge {
+.hl-card-wrapper:hover .hl-icon-badge {
+  transform: scale(1.08);
+  border-color: var(--card-color);
+}
+
+.hl-arrow-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.5);
+  transition: all 0.25s ease;
+}
+
+.hl-card-wrapper:hover .hl-arrow-btn {
   background: var(--card-color);
   color: #000;
+  border-color: var(--card-color);
+  transform: translateX(2px);
+}
+
+.hl-title {
+  margin: 0;
+  font-size: 2.25rem;
+  font-weight: 800;
+  color: #F8FAFC;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.hl-desc {
+  color: #9CA3B8;
+  font-size: 0.85rem;
+  font-weight: 500;
+  margin-top: 0.3rem;
+  letter-spacing: 0.01em;
+}
+
+.hl-progress-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.05);
+  overflow: hidden;
+}
+
+.hl-progress-fill {
+  height: 100%;
+  background: var(--card-color);
+  box-shadow: 0 0 10px var(--card-color);
+  width: 35%;
+  transition: width 0.4s ease;
+}
+
+.hl-card-wrapper:hover .hl-progress-fill {
+  width: 100%;
 }
 
 .hl-icon-container {

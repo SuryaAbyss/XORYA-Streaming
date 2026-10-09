@@ -503,7 +503,7 @@ const Watchlist = () => {
     exportData, importData, clearAll,
     driveState, connectGoogleDrive, disconnectGoogleDrive,
     syncNowWithDrive, restoreFromDrive, saveCustomClientId,
-    linkWithGoogle, generateSyncCode, useSyncCode
+    linkWithGoogle, generateSyncCode, useSyncCode, clearCloudError
   } = useWatchlist();
 
   const [showNewTier, setShowNewTier] = useState(false);
@@ -821,6 +821,7 @@ const Watchlist = () => {
         linkWithGoogle={linkWithGoogle}
         generateSyncCode={generateSyncCode}
         useSyncCode={useSyncCode}
+        clearCloudError={clearCloudError}
       />
     </div>
   );

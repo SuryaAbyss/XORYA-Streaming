@@ -8,27 +8,35 @@ const GoogleDriveSyncModal = ({
     driveState,
     linkWithGoogle,
     generateSyncCode,
-    useSyncCode
+    useSyncCode,
+    clearCloudError
 }) => {
     const [codeInput, setCodeInput] = useState('');
     const [generatedCode, setGeneratedCode] = useState(null);
     const [isCopied, setIsCopied] = useState(false);
     const [localError, setLocalError] = useState('');
 
+    React.useEffect(() => {
+        if (isOpen) {
+            setLocalError('');
+            if (clearCloudError) clearCloudError();
+        }
+    }, [isOpen, clearCloudError]);
+
     if (!isOpen) return null;
 
     const handleGoogleLink = async () => {
         setLocalError('');
+        if (clearCloudError) clearCloudError();
         const success = await linkWithGoogle();
         if (success) {
             onClose();
-        } else {
-            setLocalError('Failed to link Google account.');
         }
     };
 
     const handleGenerate = async () => {
         setLocalError('');
+        if (clearCloudError) clearCloudError();
         const code = await generateSyncCode();
         if (code) {
             setGeneratedCode(code);
@@ -43,6 +51,7 @@ const GoogleDriveSyncModal = ({
             return;
         }
         setLocalError('');
+        if (clearCloudError) clearCloudError();
         const success = await useSyncCode(codeInput);
         if (success) {
             onClose();
@@ -133,8 +142,44 @@ const GoogleDriveSyncModal = ({
                     </div>
 
                     {(driveState.error || localError) && (
-                        <div style={{ background: 'rgba(239, 68, 68, 0.12)', border: '1px solid rgba(239, 68, 68, 0.3)', borderRadius: '12px', padding: '0.75rem 1rem', fontSize: '0.78rem', color: '#f87171', marginBottom: '1.2rem' }}>
-                            ⚠️ {localError || driveState.error}
+                        <div style={{
+                            background: 'rgba(239, 68, 68, 0.12)',
+                            border: '1px solid rgba(239, 68, 68, 0.3)',
+                            borderRadius: '12px',
+                            padding: '0.85rem 1rem',
+                            fontSize: '0.78rem',
+                            color: '#f87171',
+                            marginBottom: '1.2rem',
+                            display: 'flex',
+                            alignItems: 'flex-start',
+                            justifyContent: 'space-between',
+                            gap: '0.6rem'
+                        }}>
+                            <div>
+                                <div style={{ fontWeight: '700', marginBottom: '2px' }}>⚠️ Sync Notice</div>
+                                <div>{localError || driveState.error}</div>
+                                {(localError || driveState.error)?.includes('Authorized domains') && (
+                                    <div style={{ marginTop: '6px', fontSize: '0.74rem', color: '#fca5a5', lineHeight: '1.4' }}>
+                                        👉 In your <strong>Firebase Console &gt; Authentication &gt; Settings &gt; Authorized domains</strong>, click <strong>Add domain</strong> and enter: <code>{typeof window !== 'undefined' ? window.location.hostname : 'localhost'}</code>.
+                                    </div>
+                                )}
+                            </div>
+                            <button
+                                onClick={() => {
+                                    setLocalError('');
+                                    if (clearCloudError) clearCloudError();
+                                }}
+                                style={{
+                                    background: 'transparent',
+                                    border: 'none',
+                                    color: '#f87171',
+                                    cursor: 'pointer',
+                                    padding: '2px',
+                                    opacity: 0.8
+                                }}
+                            >
+                                <X size={14} />
+                            </button>
                         </div>
                     )}
 

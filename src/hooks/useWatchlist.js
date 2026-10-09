@@ -145,10 +145,15 @@ export function useWatchlist() {
 
   // ─── Cloud Linking Methods ──────────────────────────────────────────────────
 
+  const clearCloudError = useCallback(() => {
+    setCloudError(null);
+  }, []);
+
   const linkWithGoogle = useCallback(async () => {
     if (!firebaseUser) return false;
     try {
       setIsSyncing(true);
+      setCloudError(null);
       const provider = new GoogleAuthProvider();
       // If the user is already anonymous, we try to upgrade the account
       if (firebaseUser.isAnonymous) {
@@ -160,7 +165,25 @@ export function useWatchlist() {
       return true;
     } catch (err) {
       console.error("Google link failed:", err);
-      setCloudError(err.message);
+      if (err.code === 'auth/unauthorized-domain' || err.message?.includes('unauthorized-domain')) {
+        const domain = typeof window !== 'undefined' ? window.location.hostname : 'current domain';
+        setCloudError(`Domain '${domain}' is not authorized. Add '${domain}' in Firebase Console > Authentication > Settings > Authorized domains.`);
+      } else if (err.code === 'auth/popup-closed-by-user') {
+        setCloudError("Sign-in popup closed before completing.");
+      } else if (err.code === 'auth/credential-already-in-use') {
+        try {
+          const provider = new GoogleAuthProvider();
+          const result = await signInWithPopup(auth, provider);
+          if (result.user) {
+            setCloudError(null);
+            return true;
+          }
+        } catch (signInErr) {
+          setCloudError("This Google account is already linked to another session.");
+        }
+      } else {
+        setCloudError(err.message || "Failed to link Google account.");
+      }
       return false;
     } finally {
       setIsSyncing(false);
@@ -170,6 +193,7 @@ export function useWatchlist() {
   const generateSyncCode = useCallback(async () => {
     if (!activeUid) return null;
     try {
+      setCloudError(null);
       // Create a 6-digit code
       const code = Math.floor(100000 + Math.random() * 900000).toString();
       await setDoc(doc(db, 'sync_codes', code), { 
@@ -179,7 +203,7 @@ export function useWatchlist() {
       return code;
     } catch (err) {
       console.error("Sync code generation failed:", err);
-      setCloudError("Could not generate sync code");
+      setCloudError(err.message || "Could not generate sync code");
       return null;
     }
   }, [activeUid]);
@@ -187,6 +211,7 @@ export function useWatchlist() {
   const useSyncCode = useCallback(async (code) => {
     try {
       setIsSyncing(true);
+      setCloudError(null);
       const codeDoc = await getDoc(doc(db, 'sync_codes', code.trim()));
       if (codeDoc.exists()) {
         const targetUid = codeDoc.data().targetUid;
@@ -421,6 +446,7 @@ export function useWatchlist() {
     linkWithGoogle,
     generateSyncCode,
     useSyncCode,
+    clearCloudError,
     // Legacy ops for compat
     connectGoogleDrive,
     disconnectGoogleDrive,

@@ -8,6 +8,7 @@ import SEO from '../components/SEO';
 import LemniscateBloomLoader from '../components/LemniscateBloomLoader';
 import { getReleaseInfo } from '../utils/releaseStatus';
 import { isMobileDevice } from '../utils/deviceDetector';
+import { selectBestTrailer } from '../utils/trailerSelector';
 
 
 const MovieDetails = () => {
@@ -17,6 +18,7 @@ const MovieDetails = () => {
     const [cast, setCast] = useState([]);
     const [trailerKey, setTrailerKey] = useState(null);
     const [showTrailer, setShowTrailer] = useState(false);
+    const [isVideoPlaying, setIsVideoPlaying] = useState(false);
     const [hideUI, setHideUI] = useState(false);
     const [hasScrolled, setHasScrolled] = useState(false);
     const inactivityTimerRef = useRef(null);
@@ -33,6 +35,11 @@ const MovieDetails = () => {
     const { isMuted, toggleMute } = useYouTubePlayer(trailerKey, playerContainerRef, {
         active: showTrailer && !!trailerKey,
         onEnd: handleTrailerEnd,
+        onPlaying: () => {
+            setTimeout(() => {
+                setIsVideoPlaying(true);
+            }, 1800);
+        },
         loop: true,
     });
 
@@ -43,19 +50,22 @@ const MovieDetails = () => {
                 setMovie(response.data);
                 setCast(response.data.credits?.cast?.slice(0, 9) || []);
 
-                // Fetch trailer
+                // Fetch trailer with smart scoring
                 const videosResponse = await getMovieVideos(id);
-                const trailer = videosResponse.data.results.find(
-                    video => video.type === 'Trailer' && video.site === 'YouTube'
-                );
-                if (trailer) {
-                    setTrailerKey(trailer.key);
+                const videos = videosResponse.data.results || [];
+                const bestTrailer = selectBestTrailer(videos);
+                if (bestTrailer?.key) {
+                    setTrailerKey(bestTrailer.key);
+                } else {
+                    setTrailerKey(null);
                 }
             } catch (error) {
                 console.error('Failed to fetch movie details:', error);
             }
         };
 
+        setIsVideoPlaying(false);
+        setShowTrailer(false);
         fetchMovieDetails();
     }, [id]);
 
@@ -141,7 +151,7 @@ const MovieDetails = () => {
                     backgroundImage: `linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 40%), url(${imageUrl(movie.backdrop_path, 'original')})`,
                     backgroundSize: 'cover',
                     backgroundPosition: 'center',
-                    opacity: showTrailer && trailerKey ? 0 : 1,
+                    opacity: showTrailer && trailerKey && isVideoPlaying ? 0 : 1,
                     transition: 'opacity 1s ease',
                     maskImage: 'linear-gradient(to bottom, black 50%, transparent 100%)',
                     WebkitMaskImage: 'linear-gradient(to bottom, black 50%, transparent 100%)'
@@ -158,6 +168,8 @@ const MovieDetails = () => {
                             height: '100%',
                             overflow: 'hidden',
                             zIndex: 1,
+                            opacity: isVideoPlaying ? 1 : 0,
+                            transition: 'opacity 0.8s ease',
                             maskImage: 'linear-gradient(to bottom, black 50%, transparent 100%)',
                             WebkitMaskImage: 'linear-gradient(to bottom, black 50%, transparent 100%)'
                         }}

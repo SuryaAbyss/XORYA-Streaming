@@ -111,7 +111,11 @@ const MovieDetailsModal = () => {
     const { isMuted, toggleMute } = useYouTubePlayer(trailerKey, playerContainerRef, {
         active: showTrailer && !!trailerKey,
         onEnd: handleTrailerEnd,
-        onPlaying: () => setIsVideoPlaying(true),
+        onPlaying: () => {
+            setTimeout(() => {
+                setIsVideoPlaying(true);
+            }, 1800);
+        },
         loop: true,
     });
 
@@ -764,7 +768,7 @@ const MovieDetailsModal = () => {
                         <div style={{
                             position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
                             overflow: 'hidden', zIndex: 1,
-                            opacity: isVideoPlaying ? 0.8 : 0, transition: 'opacity 0.5s ease',
+                            opacity: isVideoPlaying ? 0.95 : 0, transition: 'opacity 0.8s ease',
                             pointerEvents: 'none'
                         }}>
                             <div ref={playerContainerRef} className="yt-player-container" style={{
@@ -778,13 +782,19 @@ const MovieDetailsModal = () => {
                     {/* Gradients */}
                     <div style={{
                         position: 'absolute', top: 0, left: 0, width: '70%', height: '100%',
-                        background: 'linear-gradient(to right, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.7) 40%, rgba(0,0,0,0) 100%)',
-                        zIndex: 2, pointerEvents: 'none'
+                        background: isVideoPlaying
+                            ? 'linear-gradient(to right, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.3) 45%, rgba(0,0,0,0) 100%)'
+                            : 'linear-gradient(to right, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.7) 40%, rgba(0,0,0,0) 100%)',
+                        zIndex: 2, pointerEvents: 'none',
+                        transition: 'background 0.8s ease'
                     }} />
                     <div style={{
                         position: 'absolute', bottom: 0, left: 0, width: '100%', height: '50%',
-                        background: 'linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 100%)',
-                        zIndex: 2, pointerEvents: 'none'
+                        background: isVideoPlaying
+                            ? 'linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 100%)'
+                            : 'linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 100%)',
+                        zIndex: 2, pointerEvents: 'none',
+                        transition: 'background 0.8s ease'
                     }} />
 
                     {preloadingUrl && (

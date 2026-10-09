@@ -155,7 +155,7 @@ export default function useYouTubePlayer(videoKey, containerRef, options = {}) {
                 width: '100%',
                 height: '100%',
                 videoId: videoKey,
-                host: 'https://www.youtube-nocookie.com',
+                host: 'https://www.youtube.com',
                 playerVars: {
                     autoplay: 1,
                     mute: 1,
@@ -189,11 +189,8 @@ export default function useYouTubePlayer(videoKey, containerRef, options = {}) {
                         const playVideo = () => {
                             if (destroyed || !event.target) return;
                             try {
-                                if (typeof event.target.loadVideoById === 'function') {
-                                    event.target.loadVideoById({
-                                        videoId: videoKey,
-                                        suggestedQuality: 'hd1080',
-                                    });
+                                if (typeof event.target.playVideo === 'function') {
+                                    event.target.playVideo();
                                 }
                             } catch (e) {
                                 // ignore

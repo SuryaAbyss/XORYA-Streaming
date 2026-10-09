@@ -5630,6 +5630,7 @@ iframe[id^="yt-player-"] {
   border: none !important;
   pointer-events: none !important;
   object-fit: cover !important;
+  filter: brightness(1.08) contrast(1.04) saturate(1.08) !important;
 }
 
 /* =====================================================================

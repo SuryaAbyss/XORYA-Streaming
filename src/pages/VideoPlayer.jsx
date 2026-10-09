@@ -117,7 +117,7 @@ const VideoPlayer = () => {
                 const saved = JSON.parse(raw);
                 const entry = saved.entries?.find(e => String(e.tmdbId) === String(id));
                 if (entry?.lastServer) {
-                    return entry.lastServer;
+                    return entry.lastServer === 'vidsrc-sbs' ? 'embedwave' : entry.lastServer;
                 }
             }
         } catch {
@@ -1291,6 +1291,7 @@ const VideoPlayer = () => {
                                                     webkitAllowFullScreen
                                                     mozAllowFullScreen
                                                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen *"
+                                                    referrerPolicy={servers.find(s => s.id === activeServer)?.referrerPolicy || undefined}
                                                     scrolling="no"
                                                 />
                                             )}

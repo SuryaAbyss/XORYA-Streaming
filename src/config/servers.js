@@ -11,17 +11,28 @@ export const servers = [
             tv: (tmdbId, season, episode) => `https://vidfast.vc/tv/${tmdbId}/${season}/${episode}?autoPlay=true&nextButton=false&autoNext=false&theme=00bcd4&server=beta`
         }
     },
-    // Server #2 - VidSrc SBS (2nd Place)
+    // Server #2 - VidRift (2nd Place)
     {
-        id: 'vidsrc-sbs',
-        name: 'VidSrc SBS',
+        id: 'vidrift',
+        name: 'VidRift',
         type: 'alternate',
         urlTemplate: {
-            movie: (tmdbId) => `https://vidsrc.sbs/embed/movie/${tmdbId}`,
-            tv: (tmdbId, season, episode) => `https://vidsrc.sbs/embed/tv/${tmdbId}/${season}/${episode}`
+            movie: (tmdbId) => `https://embed.vidrift.in/embed/movie/${tmdbId}`,
+            tv: (tmdbId, season, episode) => `https://embed.vidrift.in/embed/tv/${tmdbId}/${season}/${episode}`
         }
     },
-    // Server #3 - 111Movies (3rd Place)
+    // Server #3 - EmbedWave (3rd Place)
+    {
+        id: 'embedwave',
+        name: 'EmbedWave',
+        type: 'alternate',
+        referrerPolicy: 'no-referrer',
+        urlTemplate: {
+            movie: (tmdbId) => `https://embedwave.cc/embed/movie/${tmdbId}`,
+            tv: (tmdbId, season, episode) => `https://embedwave.cc/embed/tv/${tmdbId}/${season}/${episode}`
+        }
+    },
+    // Server #4 - 111Movies (4th Place)
     {
         id: '111movies',
         name: '111Movies',
@@ -94,16 +105,6 @@ export const servers = [
             tv: (tmdbId, season, episode) => `https://vidora.su/tv/${tmdbId}/${season}/${episode}?autoplay=true&colour=00bcd4&autonextepisode=true`
         }
     },
-    {
-        id: 'vidrift',
-        name: 'VidRift',
-        type: 'alternate',
-        urlTemplate: {
-            movie: (tmdbId) => `https://embed.vidrift.in/embed/movie/${tmdbId}`,
-            tv: (tmdbId, season, episode) => `https://embed.vidrift.in/embed/tv/${tmdbId}/${season}/${episode}`
-        }
-    },
-    // Server #3 - VidRock
     {
         id: 'vidrock',
         name: 'VidRock',
@@ -438,7 +439,10 @@ export const servers = [
  * Generate embed URL for a given server
  */
 export function getServerUrl(serverId, contentType, tmdbId, season = null, episode = null) {
-    const server = servers.find(s => s.id === serverId);
+    let server = servers.find(s => s.id === serverId);
+    if (!server && (serverId === 'vidsrc-sbs' || serverId === 'vidsrc_sbs')) {
+        server = servers.find(s => s.id === 'embedwave');
+    }
     if (!server) return null;
 
     if (contentType === 'tv' && season && episode) {

@@ -291,6 +291,7 @@ const MobileVideoPlayerView = ({
               title={`${title} Stream`}
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
               allowFullScreen
+              referrerPolicy={currentServerObj?.referrerPolicy || undefined}
               loading="eager"
               className="w-full h-full border-0 bg-black"
               style={{ width: '100%', height: '100%', border: 'none', backgroundColor: '#000000' }}

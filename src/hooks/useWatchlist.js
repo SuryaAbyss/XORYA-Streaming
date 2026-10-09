@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { signInAnonymously, onAuthStateChanged } from 'firebase/auth';
-import { doc, onSnapshot, setDoc } from 'firebase/firestore';
+import { signInAnonymously, onAuthStateChanged, GoogleAuthProvider, linkWithPopup, signInWithPopup } from 'firebase/auth';
+import { doc, onSnapshot, setDoc, getDoc } from 'firebase/firestore';
 import { auth, db } from '../services/firebase';
 
 const STORAGE_KEY = 'xorya_watchlist';
 const FIREBASE_LAST_SYNC_KEY = 'xorya_firebase_last_synced';
+const CUSTOM_SYNC_UID_KEY = 'xorya_custom_sync_uid';
 
 const DEFAULT_TIERS = [
   { id: 'tier_must', name: 'Watching', color: '#ff4757', order: 0 },
@@ -29,7 +30,8 @@ function saveToStorage(data) {
 }
 
 export function useWatchlist() {
-  const [userUid, setUserUid] = useState(null);
+  const [firebaseUser, setFirebaseUser] = useState(null);
+  const [activeUid, setActiveUid] = useState(() => localStorage.getItem(CUSTOM_SYNC_UID_KEY) || null);
   
   const [lastSyncedAt, setLastSyncedAt] = useState(() => {
     const raw = localStorage.getItem(FIREBASE_LAST_SYNC_KEY);
@@ -42,15 +44,11 @@ export function useWatchlist() {
   const [tiers, setTiers] = useState(() => {
     const saved = loadFromStorage();
     let initialTiers = saved?.tiers ?? DEFAULT_TIERS;
-    
-    // Migrate old names
     initialTiers = initialTiers.map(t => {
       if (t.id === 'tier_must' && t.name === 'Must Watch') return { ...t, name: 'Watching' };
       if (t.id === 'tier_good' && t.name === 'Looks Good') return { ...t, name: 'Must Watch' };
       return t;
     });
-
-    // Strip all emojis from existing tier names
     return initialTiers.map(t => ({
       ...t,
       name: t.name.replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F700}-\u{1F77F}\u{1F780}-\u{1F7FF}\u{1F800}-\u{1F8FF}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '').trim()
@@ -62,7 +60,6 @@ export function useWatchlist() {
     return saved?.entries ?? [];
   });
 
-  // Persist local storage on every change
   useEffect(() => {
     saveToStorage({ tiers, entries });
   }, [tiers, entries]);
@@ -71,7 +68,10 @@ export function useWatchlist() {
   useEffect(() => {
     const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
       if (user) {
-        setUserUid(user.uid);
+        setFirebaseUser(user);
+        if (!localStorage.getItem(CUSTOM_SYNC_UID_KEY)) {
+          setActiveUid(user.uid);
+        }
       } else {
         signInAnonymously(auth).catch(err => {
           console.error("Anonymous sign in failed:", err);
@@ -88,17 +88,14 @@ export function useWatchlist() {
   const isInitialLoad = useRef(true);
 
   useEffect(() => {
-    if (!userUid) return;
+    if (!activeUid) return;
 
-    const unsubscribeDb = onSnapshot(doc(db, 'watchlists', userUid), (snapshot) => {
+    const unsubscribeDb = onSnapshot(doc(db, 'watchlists', activeUid), (snapshot) => {
       if (snapshot.exists()) {
         const data = snapshot.data();
-        // Only override local state if the cloud data is newer than our last local update,
-        // OR if this is the very first load and we don't have local data.
         if (isInitialLoad.current || (data.updatedAt && data.updatedAt > lastLocalUpdate.current)) {
           if (data.tiers) setTiers(data.tiers);
           if (data.entries) setEntries(data.entries);
-          
           const now = data.updatedAt || Date.now();
           setLastSyncedAt(now);
           localStorage.setItem(FIREBASE_LAST_SYNC_KEY, now.toString());
@@ -111,28 +108,24 @@ export function useWatchlist() {
     });
 
     return () => unsubscribeDb();
-  }, [userUid]);
+  }, [activeUid]);
 
   // ─── Firebase Auto-Sync (Debounced Write) ───────────────────────────────────
   const syncTimeoutRef = useRef(null);
   
   useEffect(() => {
-    if (!userUid || isInitialLoad.current) return;
-
+    if (!activeUid || isInitialLoad.current) return;
     if (syncTimeoutRef.current) clearTimeout(syncTimeoutRef.current);
 
     syncTimeoutRef.current = setTimeout(async () => {
       try {
         setIsSyncing(true);
         setCloudError(null);
-        
         const now = Date.now();
-        lastLocalUpdate.current = now; // Mark that WE are writing, so the snapshot listener ignores this echo
-
-        await setDoc(doc(db, 'watchlists', userUid), { 
-          tiers, 
-          entries, 
-          updatedAt: now 
+        lastLocalUpdate.current = now; 
+        
+        await setDoc(doc(db, 'watchlists', activeUid), { 
+          tiers, entries, updatedAt: now 
         }, { merge: true });
 
         setLastSyncedAt(now);
@@ -143,12 +136,75 @@ export function useWatchlist() {
       } finally {
         setIsSyncing(false);
       }
-    }, 2000); // 2 second debounce
+    }, 2000);
 
     return () => {
       if (syncTimeoutRef.current) clearTimeout(syncTimeoutRef.current);
     };
-  }, [tiers, entries, userUid]);
+  }, [tiers, entries, activeUid]);
+
+  // ─── Cloud Linking Methods ──────────────────────────────────────────────────
+
+  const linkWithGoogle = useCallback(async () => {
+    if (!firebaseUser) return false;
+    try {
+      setIsSyncing(true);
+      const provider = new GoogleAuthProvider();
+      // If the user is already anonymous, we try to upgrade the account
+      if (firebaseUser.isAnonymous) {
+        await linkWithPopup(firebaseUser, provider);
+      } else {
+        // If not anonymous (already signed in some other way), just sign in
+        await signInWithPopup(auth, provider);
+      }
+      return true;
+    } catch (err) {
+      console.error("Google link failed:", err);
+      setCloudError(err.message);
+      return false;
+    } finally {
+      setIsSyncing(false);
+    }
+  }, [firebaseUser]);
+
+  const generateSyncCode = useCallback(async () => {
+    if (!activeUid) return null;
+    try {
+      // Create a 6-digit code
+      const code = Math.floor(100000 + Math.random() * 900000).toString();
+      await setDoc(doc(db, 'sync_codes', code), { 
+        targetUid: activeUid,
+        createdAt: Date.now() 
+      });
+      return code;
+    } catch (err) {
+      console.error("Sync code generation failed:", err);
+      setCloudError("Could not generate sync code");
+      return null;
+    }
+  }, [activeUid]);
+
+  const useSyncCode = useCallback(async (code) => {
+    try {
+      setIsSyncing(true);
+      const codeDoc = await getDoc(doc(db, 'sync_codes', code.trim()));
+      if (codeDoc.exists()) {
+        const targetUid = codeDoc.data().targetUid;
+        localStorage.setItem(CUSTOM_SYNC_UID_KEY, targetUid);
+        setActiveUid(targetUid);
+        return true;
+      } else {
+        setCloudError("Invalid or expired Sync Code");
+        return false;
+      }
+    } catch (err) {
+      console.error("Sync code use failed:", err);
+      setCloudError(err.message);
+      return false;
+    } finally {
+      setIsSyncing(false);
+    }
+  }, []);
 
   // ─── Legacy Compat Ops (kept so UI doesn't crash) ───────────────────────────
   const connectGoogleDrive = useCallback(async () => { return true; }, []);
@@ -350,14 +406,22 @@ export function useWatchlist() {
     stats,
     // Firebase Sync State & Ops (Mapped to legacy names for UI compat)
     driveState: {
-      isConnected: Boolean(userUid),
-      accessToken: 'firebase_auth',
-      userProfile: { name: 'Anonymous Sync' },
+      isConnected: Boolean(activeUid),
+      accessToken: firebaseUser ? firebaseUser.uid : null,
+      userProfile: { 
+        name: firebaseUser && !firebaseUser.isAnonymous ? firebaseUser.displayName : 'Anonymous Sync',
+        email: firebaseUser && !firebaseUser.isAnonymous ? firebaseUser.email : 'Device-only sync'
+      },
       lastSyncedAt,
       isSyncing,
       error: cloudError,
       clientId: 'firebase_cloud',
     },
+    // New Firebase Link Ops
+    linkWithGoogle,
+    generateSyncCode,
+    useSyncCode,
+    // Legacy ops for compat
     connectGoogleDrive,
     disconnectGoogleDrive,
     syncNowWithDrive,

@@ -502,7 +502,8 @@ const Watchlist = () => {
     entriesForTier,
     exportData, importData, clearAll,
     driveState, connectGoogleDrive, disconnectGoogleDrive,
-    syncNowWithDrive, restoreFromDrive, saveCustomClientId
+    syncNowWithDrive, restoreFromDrive, saveCustomClientId,
+    linkWithGoogle, generateSyncCode, useSyncCode
   } = useWatchlist();
 
   const [showNewTier, setShowNewTier] = useState(false);
@@ -817,6 +818,9 @@ const Watchlist = () => {
         onRestore={restoreFromDrive}
         clientId={driveState.clientId}
         onSaveClientId={saveCustomClientId}
+        linkWithGoogle={linkWithGoogle}
+        generateSyncCode={generateSyncCode}
+        useSyncCode={useSyncCode}
       />
     </div>
   );

@@ -108,13 +108,20 @@ const TierRow = ({
           opacity: 0
         }}
       >
-        {/* Ambient subtle artwork for populated tiers or gradient */}
-        {entries.length > 0 && entries[0]?.backdrop && (
-          <div 
-            className="wl-tier-bg-art" 
-            style={{ backgroundImage: `url(${imageUrl(entries[0].backdrop, 'w780')})` }} 
-          />
-        )}
+        {/* Ambient subtle artwork for tiers: uses entry backdrop or rotates through iconic posters */}
+        <div 
+          className="wl-tier-bg-art" 
+          style={{
+            backgroundImage: entries.length > 0 && entries[0]?.backdrop 
+              ? `url(${imageUrl(entries[0].backdrop, 'w780')})`
+              : `url(${[
+                  '/watchlist-cinema-grid.jpg',
+                  '/watchlist-broken-glass.jpg',
+                  '/watchlist-pulp-fiction.jpg',
+                  '/watchlist-horror.jpg'
+                ][(index || 0) % 4]})`
+          }} 
+        />
 
         {/* ── Tier Header ── */}
         <div className="wl-tier-header">
@@ -165,12 +172,10 @@ const TierRow = ({
                 <button className="wl-tier-icon-btn cancel" onClick={() => { setIsEditing(false); setEditName(tier.name); }}><X size={14} /></button>
               </div>
             ) : (
-              <HoverBorderGradient>
-                <div className="wl-tier-name-display">
-                  <h3 className="wl-tier-name" style={{ margin: 0 }}>{tier.name}</h3>
-                  <button className="wl-tier-icon-btn edit" onClick={() => { setIsEditing(true); }} title="Rename"><Pencil size={13} /></button>
-                </div>
-              </HoverBorderGradient>
+              <div className="wl-tier-name-display">
+                <span className="wl-tier-name">{tier.name}</span>
+                <button className="wl-tier-icon-btn edit" onClick={() => { setIsEditing(true); }} title="Rename"><Pencil size={12} /></button>
+              </div>
             )}
 
             {/* Count badge */}

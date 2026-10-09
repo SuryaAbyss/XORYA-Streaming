@@ -591,7 +591,7 @@ const Watchlist = () => {
         </div>
       </div>
 
-      {/* ── Stats Row (Design 6 Exact Color System) ── */}
+      {/* ── Stats Row (Design 6 Exact Color System with Iconic Posters) ── */}
       <div className="wl-stats-row">
         <StatsCard 
           label="Total Titles" 
@@ -600,7 +600,7 @@ const Watchlist = () => {
           color="#8B5CF6" 
           tint="rgba(139, 92, 246, 0.16)"
           glow="rgba(139, 92, 246, 0.35)"
-          bgImage="/watchlist-bg.jpg"
+          bgImage="/watchlist-cinema-grid.jpg"
           filterKey="all" 
           activeFilter={activeFilter} 
           onClick={() => openFilter('all')} 
@@ -612,7 +612,7 @@ const Watchlist = () => {
           color="#10B981" 
           tint="rgba(16, 185, 129, 0.16)"
           glow="rgba(16, 185, 129, 0.35)"
-          bgImage="/watchlist-smoke.jpg"
+          bgImage="/watchlist-pulp-fiction.jpg"
           filterKey="watched" 
           activeFilter={activeFilter} 
           onClick={() => openFilter('watched')} 
@@ -624,7 +624,7 @@ const Watchlist = () => {
           color="#F59E0B" 
           tint="rgba(245, 158, 11, 0.16)"
           glow="rgba(245, 158, 11, 0.35)"
-          bgImage="/watchlist-bg.jpg"
+          bgImage="/watchlist-broken-glass.jpg"
           filterKey="watching" 
           activeFilter={activeFilter} 
           onClick={() => openFilter('watching')} 
@@ -636,7 +636,7 @@ const Watchlist = () => {
           color="#F43F5E" 
           tint="rgba(244, 63, 94, 0.16)"
           glow="rgba(244, 63, 94, 0.35)"
-          bgImage="/watchlist-smoke.jpg"
+          bgImage="/watchlist-horror.jpg"
           filterKey="pending" 
           activeFilter={activeFilter} 
           onClick={() => openFilter('pending')} 
@@ -734,15 +734,15 @@ const Watchlist = () => {
         </div>
       )}
 
-      {/* ── Redesigned Sync & Restore Your Watchlist Panel (Design 6) ── */}
+      {/* ── Redesigned Compact Sync & Restore Your Watchlist Panel (Design 6) ── */}
       <div className="wl-restore-panel">
         <div className="wl-restore-art" />
         <div className="wl-restore-content">
           <div className="wl-restore-top">
             <div className="wl-restore-left">
               <div className="wl-restore-icon-box">
-                {/* SVG Google Drive iconic colors or Cloud */}
-                <svg width="28" height="28" viewBox="0 0 87.3 78" xmlns="http://www.w3.org/2000/svg">
+                {/* SVG Google Drive iconic colors */}
+                <svg width="24" height="24" viewBox="0 0 87.3 78" xmlns="http://www.w3.org/2000/svg">
                   <path d="m6.6 66.85 3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3l13.75-23.8h-27.5c0 1.55.4 3.1 1.2 4.5z" fill="#0066da"/>
                   <path d="m43.65 25-13.75-23.8c-1.35.8-2.5 1.9-3.3 3.3l-25.4 44c-.8 1.4-1.2 2.95-1.2 4.5h27.5z" fill="#00ac47"/>
                   <path d="m73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.6-2.75 7.65-13.25c.8-1.4 1.2-2.95 1.2-4.5h-27.502l5.852 11.5z" fill="#ea4335"/>
@@ -756,18 +756,18 @@ const Watchlist = () => {
                   <span>Sync &amp; Restore Your Watchlist</span>
                   {driveState.isConnected ? (
                     <span className="wl-restore-badge connected">
-                      <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#38BDF8', display: 'inline-block' }} />
+                      <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#38BDF8', display: 'inline-block' }} />
                       Connected
                     </span>
                   ) : (
                     <span className="wl-restore-badge safe">
-                      <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#10B981', display: 'inline-block' }} />
+                      <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#10B981', display: 'inline-block' }} />
                       Safe &amp; Secure
                     </span>
                   )}
                 </h3>
                 <p>
-                  Connect your Google Drive to backup your watchlist, tier settings and episode progress. Access it on any device, anytime.
+                  Backup watchlist, tier settings and episode progress across devices anytime.
                 </p>
               </div>
             </div>
@@ -776,45 +776,13 @@ const Watchlist = () => {
               className="wl-restore-action-btn"
               onClick={() => setShowDriveModal(true)}
             >
-              <svg width="18" height="18" viewBox="0 0 87.3 78" xmlns="http://www.w3.org/2000/svg">
+              <svg width="15" height="15" viewBox="0 0 87.3 78" xmlns="http://www.w3.org/2000/svg">
                 <path d="m6.6 66.85 3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3l13.75-23.8h-27.5c0 1.55.4 3.1 1.2 4.5z" fill="#fff" opacity="0.9"/>
                 <path d="m43.65 25-13.75-23.8c-1.35.8-2.5 1.9-3.3 3.3l-25.4 44c-.8 1.4-1.2 2.95-1.2 4.5h27.5z" fill="#fff" opacity="0.95"/>
                 <path d="m73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.6-2.75 7.65-13.25c.8-1.4 1.2-2.95 1.2-4.5h-27.502l5.852 11.5z" fill="#fff" opacity="0.85"/>
               </svg>
-              <span>{driveState.isConnected ? 'Manage Google Sync →' : 'Restore from Google Drive →'}</span>
+              <span>{driveState.isConnected ? 'Manage Sync →' : 'Restore from Google Drive →'}</span>
             </button>
-          </div>
-
-          <div className="wl-restore-features">
-            <div className="wl-restore-feat">
-              <div className="wl-restore-feat-icon">
-                <Cloud size={16} />
-              </div>
-              <div className="wl-restore-feat-text">
-                <span className="wl-restore-feat-title">Auto Sync</span>
-                <span className="wl-restore-feat-desc">Keep your data updated in real-time</span>
-              </div>
-            </div>
-
-            <div className="wl-restore-feat">
-              <div className="wl-restore-feat-icon">
-                <Tv size={16} />
-              </div>
-              <div className="wl-restore-feat-text">
-                <span className="wl-restore-feat-title">Cross Device</span>
-                <span className="wl-restore-feat-desc">Access on phone, tablet &amp; PC</span>
-              </div>
-            </div>
-
-            <div className="wl-restore-feat">
-              <div className="wl-restore-feat-icon">
-                <CheckCircle2 size={16} />
-              </div>
-              <div className="wl-restore-feat-text">
-                <span className="wl-restore-feat-title">No Data Loss</span>
-                <span className="wl-restore-feat-desc">Your watchlist is always protected</span>
-              </div>
-            </div>
           </div>
         </div>
       </div>

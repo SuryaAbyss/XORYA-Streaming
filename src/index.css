@@ -2215,6 +2215,16 @@ body::before {
   position: relative;
   overflow-x: hidden;
   padding-bottom: 5rem;
+  zoom: 0.85;
+}
+
+@supports not (zoom: 0.85) {
+  .wl-page {
+    transform: scale(0.85);
+    transform-origin: top center;
+    width: 117.6%;
+    margin-left: -8.8%;
+  }
 }
 
 /* Atmospheric page background using user cinematic artwork */
@@ -2222,26 +2232,26 @@ body::before {
   position: fixed;
   inset: 0;
   background-image: 
-    radial-gradient(ellipse 90% 60% at 50% 0%, rgba(139, 92, 246, 0.12) 0%, transparent 70%),
-    radial-gradient(ellipse 70% 50% at 80% 30%, rgba(56, 189, 248, 0.08) 0%, transparent 60%),
-    radial-gradient(ellipse 80% 50% at 10% 70%, rgba(244, 63, 94, 0.08) 0%, transparent 60%),
-    url('/watchlist-bg.jpg');
+    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(139, 92, 246, 0.3) 0%, rgba(56, 189, 248, 0.15) 50%, transparent 80%),
+    radial-gradient(ellipse 60% 45% at 85% 20%, rgba(56, 189, 248, 0.22) 0%, transparent 60%),
+    radial-gradient(ellipse 70% 45% at 15% 65%, rgba(244, 63, 94, 0.18) 0%, transparent 60%),
+    radial-gradient(circle at 50% 25%, rgba(255, 255, 255, 0.08) 0%, transparent 60%),
+    url('/watchlist-broken-glass.jpg');
   background-size: cover;
-  background-position: center top;
+  background-position: center 15%;
   background-repeat: no-repeat;
-  opacity: 0.22;
+  opacity: 0.48;
   pointer-events: none;
   z-index: 0;
-  mix-blend-mode: luminosity;
-  filter: contrast(1.15) brightness(0.7);
+  filter: contrast(1.22) brightness(0.92) saturate(1.15);
 }
 
 .wl-page-overlay {
   position: fixed;
   inset: 0;
   background: 
-    linear-gradient(to bottom, rgba(8, 11, 20, 0.6) 0%, rgba(8, 11, 20, 0.85) 40%, rgba(8, 11, 20, 0.98) 100%),
-    radial-gradient(circle at 50% 20%, transparent 30%, rgba(8, 11, 20, 0.95) 90%);
+    linear-gradient(to bottom, rgba(8, 11, 20, 0.25) 0%, rgba(8, 11, 20, 0.65) 35%, rgba(8, 11, 20, 0.94) 85%, rgba(8, 11, 20, 0.98) 100%),
+    radial-gradient(circle at 50% 20%, transparent 20%, rgba(8, 11, 20, 0.8) 85%);
   pointer-events: none;
   z-index: 0;
 }
@@ -2249,7 +2259,7 @@ body::before {
 /* ── Hero ── */
 .wl-hero {
   position: relative;
-  padding: 6.5rem 5% 2rem;
+  padding: 5.5rem 5% 1.25rem;
   overflow: hidden;
   text-align: left;
   z-index: 1;
@@ -2258,6 +2268,7 @@ body::before {
 .wl-hero-bg {
   position: absolute;
   inset: 0;
+  background: radial-gradient(ellipse 70% 80% at 40% 0%, rgba(139, 92, 246, 0.22) 0%, rgba(56, 189, 248, 0.1) 40%, transparent 75%);
   pointer-events: none;
 }
 
@@ -2276,23 +2287,23 @@ body::before {
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--wl-purple, #8B5CF6);
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.35rem;
 }
 
 .wl-hero-title {
-  font-size: clamp(2.8rem, 5.5vw, 4.5rem);
+  font-size: clamp(2.4rem, 5vw, 3.8rem);
   font-weight: 900;
   letter-spacing: -0.035em;
   color: var(--wl-text-primary, #F8FAFC);
-  margin: 0 0 0.5rem;
+  margin: 0 0 0.35rem;
   line-height: 1.05;
 }
 
 .wl-hero-subtitle {
   color: var(--wl-text-secondary, #9CA3B8);
-  font-size: 1.05rem;
+  font-size: 0.95rem;
   font-weight: 400;
-  margin: 0 0 1.25rem;
+  margin: 0 0 1rem;
 }
 
 /* Overall progress */
@@ -2300,13 +2311,13 @@ body::before {
   display: flex;
   align-items: center;
   gap: 1rem;
-  max-width: 500px;
-  margin: 0 auto;
+  max-width: 440px;
+  margin: 0;
 }
 
 .wl-overall-progress-bar {
   flex: 1;
-  height: 6px;
+  height: 5px;
   background: rgba(255, 255, 255, 0.08);
   border-radius: 10px;
   overflow: hidden;
@@ -2315,11 +2326,11 @@ body::before {
 .wl-overall-progress-fill {
   height: 100%;
   border-radius: 10px;
-  background: linear-gradient(90deg, #70a1ff, #a29bfe);
+  background: linear-gradient(90deg, #8B5CF6, #38BDF8);
 }
 
 .wl-overall-progress-label {
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   color: #888;
   white-space: nowrap;
 }
@@ -2328,8 +2339,8 @@ body::before {
 .wl-stats-row {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 1.25rem;
-  padding: 0 5% 1.75rem;
+  gap: 1rem;
+  padding: 0 5% 1.25rem;
   position: relative;
   z-index: 10;
 }
@@ -2352,8 +2363,8 @@ body::before {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 5% 1.75rem;
-  gap: 1.25rem;
+  padding: 0 5% 1rem;
+  gap: 1rem;
   flex-wrap: wrap;
   position: relative;
   z-index: 10;
@@ -2402,35 +2413,35 @@ body::before {
   display: inline;
 }
 
-/* ── Redesigned Sync & Restore Banner (Design 6) ── */
+/* ── Redesigned Compact Sync & Restore Banner (Design 6) ── */
 .wl-restore-panel {
-  margin: 0 5% 2rem;
+  margin: 0 5% 1.25rem;
   position: relative;
-  border-radius: 20px;
-  border: 1px solid rgba(56, 189, 248, 0.25);
-  background: linear-gradient(135deg, rgba(16, 21, 34, 0.85) 0%, rgba(15, 23, 42, 0.75) 100%);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
+  border-radius: 14px;
+  border: 1px solid rgba(56, 189, 248, 0.22);
+  background: linear-gradient(135deg, rgba(16, 21, 34, 0.9) 0%, rgba(15, 23, 42, 0.8) 100%);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   overflow: hidden;
-  box-shadow: 0 16px 40px -12px rgba(0, 0, 0, 0.5), 0 0 35px -5px rgba(56, 189, 248, 0.12);
+  box-shadow: 0 10px 28px -10px rgba(0, 0, 0, 0.5), 0 0 24px -6px rgba(56, 189, 248, 0.1);
   z-index: 10;
   transition: all 0.3s ease;
 }
 
 .wl-restore-panel:hover {
-  border-color: rgba(56, 189, 248, 0.4);
-  box-shadow: 0 20px 48px -10px rgba(0, 0, 0, 0.6), 0 0 45px 0px rgba(56, 189, 248, 0.18);
+  border-color: rgba(56, 189, 248, 0.35);
+  box-shadow: 0 14px 34px -8px rgba(0, 0, 0, 0.6), 0 0 32px 0px rgba(56, 189, 248, 0.15);
 }
 
 .wl-restore-art {
   position: absolute;
   inset: 0;
-  background-image: radial-gradient(circle at 100% 50%, rgba(56, 189, 248, 0.15), transparent 60%),
-                    radial-gradient(circle at 0% 100%, rgba(37, 99, 235, 0.12), transparent 50%),
-                    url('/watchlist-smoke.jpg');
+  background-image: radial-gradient(circle at 100% 50%, rgba(56, 189, 248, 0.12), transparent 60%),
+                    radial-gradient(circle at 0% 100%, rgba(37, 99, 235, 0.1), transparent 50%),
+                    url('/watchlist-smoke-neon.png');
   background-size: cover;
   background-position: center;
-  opacity: 0.12;
+  opacity: 0.15;
   pointer-events: none;
   mix-blend-mode: screen;
 }
@@ -2438,10 +2449,9 @@ body::before {
 .wl-restore-content {
   position: relative;
   z-index: 2;
-  padding: 1.5rem 2rem;
+  padding: 0.85rem 1.4rem;
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
 }
 
 .wl-restore-top {
@@ -2449,44 +2459,44 @@ body::before {
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 1.25rem;
+  gap: 0.85rem;
 }
 
 .wl-restore-left {
   display: flex;
   align-items: center;
-  gap: 1.1rem;
+  gap: 0.9rem;
 }
 
 .wl-restore-icon-box {
-  width: 54px;
-  height: 54px;
-  border-radius: 16px;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
   background: linear-gradient(135deg, rgba(56, 189, 248, 0.15) 0%, rgba(37, 99, 235, 0.25) 100%);
-  border: 1px solid rgba(56, 189, 248, 0.3);
+  border: 1px solid rgba(56, 189, 248, 0.28);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 8px 24px -4px rgba(37, 99, 235, 0.35);
+  box-shadow: 0 6px 18px -4px rgba(37, 99, 235, 0.3);
   flex-shrink: 0;
 }
 
 .wl-restore-header-text h3 {
-  font-size: 1.15rem;
+  font-size: 0.98rem;
   font-weight: 800;
   color: #F8FAFC;
   margin: 0;
   display: flex;
   align-items: center;
-  gap: 0.6rem;
+  gap: 0.5rem;
   letter-spacing: -0.01em;
 }
 
 .wl-restore-badge {
-  font-size: 0.68rem;
+  font-size: 0.64rem;
   font-weight: 700;
   letter-spacing: 0.04em;
-  padding: 0.2rem 0.55rem;
+  padding: 0.15rem 0.5rem;
   border-radius: 50px;
   display: inline-flex;
   align-items: center;
@@ -2508,33 +2518,48 @@ body::before {
 
 .wl-restore-header-text p {
   color: var(--wl-text-secondary, #9CA3B8);
-  font-size: 0.85rem;
-  margin: 0.25rem 0 0;
-  max-width: 540px;
-  line-height: 1.4;
+  font-size: 0.78rem;
+  margin: 0.15rem 0 0;
+  max-width: 500px;
+  line-height: 1.35;
 }
 
 .wl-restore-action-btn {
   background: linear-gradient(135deg, #2563EB 0%, #059669 100%);
   border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 12px;
-  padding: 0.75rem 1.4rem;
+  border-radius: 10px;
+  padding: 0.55rem 1.1rem;
   color: #fff;
-  font-size: 0.88rem;
+  font-size: 0.82rem;
   font-weight: 700;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: 0.6rem;
-  box-shadow: 0 8px 24px -4px rgba(37, 99, 235, 0.4);
+  gap: 0.5rem;
+  box-shadow: 0 6px 18px -4px rgba(37, 99, 235, 0.35);
   transition: all 0.25s ease;
   white-space: nowrap;
 }
 
 .wl-restore-action-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 28px -4px rgba(37, 99, 235, 0.6);
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px -4px rgba(37, 99, 235, 0.5);
   border-color: rgba(255, 255, 255, 0.4);
+}
+
+/* ── Split Layout Sync Modal Responsive ── */
+@media (max-width: 768px) {
+  .sync-modal-container {
+    grid-template-columns: 1fr !important;
+    max-height: 90vh !important;
+    overflow-y: auto !important;
+  }
+  .sync-brand-panel {
+    padding: 1.5rem 1.25rem !important;
+  }
+  .sync-controls-panel {
+    padding: 1.5rem 1.25rem !important;
+  }
 }
 
 .wl-restore-features {
@@ -2707,9 +2732,15 @@ body::before {
   inset: 0;
   background-size: cover;
   background-position: center;
-  opacity: 0.12;
+  opacity: 0.22;
   pointer-events: none;
-  filter: contrast(1.2) brightness(0.65);
+  filter: contrast(1.25) brightness(0.75) saturate(1.1);
+  mix-blend-mode: luminosity;
+  transition: opacity 0.3s ease;
+}
+
+.wl-tier-row:hover .wl-tier-bg-art {
+  opacity: 0.32;
 }
 
 /* Tier Header */
@@ -2799,11 +2830,23 @@ body::before {
 .wl-tier-name-display {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.6rem;
+  padding: 0.35rem 0.85rem;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--tier-border, rgba(255, 255, 255, 0.1));
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  transition: all 0.25s ease;
+}
+
+.wl-tier-name-display:hover {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: var(--tier-color, rgba(255, 255, 255, 0.3));
+  box-shadow: 0 4px 18px var(--tier-glow, rgba(0, 0, 0, 0.3));
 }
 
 .wl-tier-name {
-  font-size: 1.05rem;
+  font-size: 1.02rem;
   font-weight: 700;
   color: #F8FAFC;
   margin: 0;

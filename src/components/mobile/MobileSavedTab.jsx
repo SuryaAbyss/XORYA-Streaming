@@ -61,7 +61,7 @@ const MobileSavedTab = ({ onExploreClick }) => {
             const poster = item.poster ? imageUrl(item.poster, 'w500') : '/logo.png';
             const handlePlay = (e) => {
               e.stopPropagation();
-              navigate(`/watch/${item.type || 'movie'}/${item.tmdbId}`);
+              navigate(`/watch/${item.type || 'movie'}/${item.tmdbId}?autofs=true`);
             };
 
             const handleRemove = (e) => {

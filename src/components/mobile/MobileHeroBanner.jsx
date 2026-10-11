@@ -94,7 +94,7 @@ const MobileHeroBanner = ({ movies = [] }) => {
     if (releaseInfo.isUnreleased) {
       openModal(currentMovie.id, mediaType);
     } else {
-      navigate(`/watch/${mediaType}/${currentMovie.id}`);
+      navigate(`/watch/${mediaType}/${currentMovie.id}?autofs=true`);
     }
   };
 

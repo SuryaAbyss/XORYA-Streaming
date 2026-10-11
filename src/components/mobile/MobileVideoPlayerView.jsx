@@ -41,6 +41,9 @@ const MobileVideoPlayerView = ({
   seasons = [],
   episodes = [],
   recommendations = [],
+  playerFrameRef,
+  iframeRef,
+  onIframeLoad,
 }) => {
   const navigate = useNavigate();
   const [showServerDrawer, setShowServerDrawer] = useState(false);
@@ -143,7 +146,7 @@ const MobileVideoPlayerView = ({
     { id: 12, name: 'Adventure' },
   ];
 
-  const currentServerObj = servers.find((s) => s.id === activeServer) || servers.find((s) => s.id === '111movies') || servers[0] || { name: '111Movies' };
+  const currentServerObj = servers.find((s) => s.id === activeServer) || servers.find((s) => s.id === 'embedwave') || servers[0] || { name: 'EmbedWave' };
 
   return (
     <div
@@ -272,6 +275,7 @@ const MobileVideoPlayerView = ({
       >
         {/* 16:9 Cinema Player Card */}
         <section
+          ref={playerFrameRef}
           className="relative mx-auto overflow-hidden bg-black/90 shadow-2xl w-full aspect-[16/9] rounded-2xl border border-white/10"
           style={{
             position: 'relative',
@@ -287,12 +291,14 @@ const MobileVideoPlayerView = ({
         >
           {playerUrl ? (
             <iframe
+              ref={iframeRef}
               src={playerUrl}
               title={`${title} Stream`}
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
               allowFullScreen
               referrerPolicy={currentServerObj?.referrerPolicy || undefined}
               loading="eager"
+              onLoad={onIframeLoad}
               className="w-full h-full border-0 bg-black"
               style={{ width: '100%', height: '100%', border: 'none', backgroundColor: '#000000' }}
             />

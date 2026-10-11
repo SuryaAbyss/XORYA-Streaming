@@ -79,7 +79,7 @@ const MobileHomeView = ({ category = 'all', top10Data = [] }) => {
       const targetMovie = trending[0] || trendingTV[0];
       if (targetMovie) {
         const type = targetMovie.title ? 'movie' : 'tv';
-        navigate(`/watch/${type}/${targetMovie.id}`);
+        navigate(`/watch/${type}/${targetMovie.id}?autofs=true`);
       }
       return;
     }

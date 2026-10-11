@@ -123,7 +123,7 @@ const VideoPlayer = () => {
         } catch {
             // localStorage can be unavailable in private or embedded contexts.
         }
-        return isMobile ? '111movies' : 'vidfast';
+        return isMobile ? 'embedwave' : 'vidfast';
     };
 
 
@@ -310,21 +310,42 @@ const VideoPlayer = () => {
 
         if (autoFS === 'true' && isMob) {
             const triggerFS = () => {
-                const elem = playerFrameRef.current;
+                const elem = playerFrameRef.current || iframeRef.current;
                 if (!elem || document.fullscreenElement) return;
-                const requestMethod = elem.requestFullscreen || elem.webkitRequestFullscreen || elem.mozRequestFullScreen || elem.msRequestFullscreen;
+                const requestMethod = elem.requestFullscreen || elem.webkitRequestFullscreen || elem.mozRequestFullScreen || elem.msRequestFullscreen || elem.webkitEnterFullscreen;
                 if (requestMethod) {
-                    requestMethod.call(elem).catch((err) => {
-                        console.warn('Automated fullscreen request blocked by browser gesture policy:', err);
-                    });
+                    try {
+                        const promise = requestMethod.call(elem);
+                        if (promise && promise.catch) {
+                            promise.catch((err) => {
+                                console.warn('Automated fullscreen request blocked by browser gesture policy:', err);
+                            });
+                        }
+                    } catch (e) {
+                        console.warn('Fullscreen call failed:', e);
+                    }
                 }
             };
 
-            const timer1 = setTimeout(triggerFS, 300);
-            const timer2 = setTimeout(triggerFS, 1000);
+            const timer1 = setTimeout(triggerFS, 150);
+            const timer2 = setTimeout(triggerFS, 600);
+            const timer3 = setTimeout(triggerFS, 1400);
+
+            // Also attach one-time user interaction listener if browser policy requires direct gesture
+            const handleFirstTouch = () => {
+                triggerFS();
+                window.removeEventListener('touchend', handleFirstTouch);
+                window.removeEventListener('click', handleFirstTouch);
+            };
+            window.addEventListener('touchend', handleFirstTouch, { once: true, passive: true });
+            window.addEventListener('click', handleFirstTouch, { once: true, passive: true });
+
             return () => {
                 clearTimeout(timer1);
                 clearTimeout(timer2);
+                clearTimeout(timer3);
+                window.removeEventListener('touchend', handleFirstTouch);
+                window.removeEventListener('click', handleFirstTouch);
             };
         }
     }, [loading]);
@@ -815,6 +836,9 @@ const VideoPlayer = () => {
                 seasons={seasons}
                 episodes={episodesList}
                 recommendations={recommendations}
+                playerFrameRef={playerFrameRef}
+                iframeRef={iframeRef}
+                onIframeLoad={handleIframeLoad}
             />
         );
     }

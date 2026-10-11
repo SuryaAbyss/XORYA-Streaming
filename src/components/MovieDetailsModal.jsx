@@ -654,7 +654,7 @@ const MovieDetailsModal = () => {
                                                 data-ep-item
                                                 onClick={() => {
                                                     closeModal();
-                                                    navigate(`/watch/tv/${selectedMovieId}/season/${sNumber || 1}/episode/1`);
+                                                    navigate(`/watch/tv/${selectedMovieId}/season/${sNumber || 1}/episode/1?autofs=true`);
                                                 }}
                                                 style={{
                                                     display: 'flex',
@@ -906,7 +906,7 @@ const MovieDetailsModal = () => {
                                     if (!isMustWatch) toggleHeart();
                                 } else {
                                     closeModal();
-                                    navigate(`/watch/${selectedMediaType}/${selectedMovieId}`);
+                                    navigate(`/watch/${selectedMediaType}/${selectedMovieId}?autofs=true`);
                                 }
                             }}
                             style={{
@@ -1063,7 +1063,7 @@ const MovieDetailsModal = () => {
                                                 onMouseLeave={(e) => e.currentTarget.style.transform = 'translateX(0)'}
                                                 onClick={() => {
                                                     closeModal();
-                                                    navigate(`/watch/tv/${selectedMovieId}/season/${sNumber || 1}/episode/1`);
+                                                    navigate(`/watch/tv/${selectedMovieId}/season/${sNumber || 1}/episode/1?autofs=true`);
                                                 }}
                                             >
                                                 <div style={{ textAlign: 'right' }}>

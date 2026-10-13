@@ -1,8 +1,9 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getMovieDetails, getTVShowDetails, imageUrl, getSeasonDetails, getTVShowImages, getMovieImages } from '../api/tmdb';
-import { X, Play, Heart, Bookmark, Volume2, VolumeX, ChevronDown, Calendar, Clock, Sparkles } from 'lucide-react';
+import { X, Play, Heart, Bookmark, Volume2, VolumeX, ChevronDown, Calendar, Clock, Sparkles, Download } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import DownloadOptionsModal from './DownloadOptionsModal';
 import useYouTubePlayer from '../hooks/useYouTubePlayer';
 import { useMovieModal } from '../context/MovieModalContext';
 import { useWatchlist } from '../hooks/useWatchlist';
@@ -24,6 +25,7 @@ const MovieDetailsModal = () => {
     const [trailerKey, setTrailerKey] = useState(null);
     const [showTrailer, setShowTrailer] = useState(false);
     const [isVideoPlaying, setIsVideoPlaying] = useState(false);
+    const [showDownloadOptions, setShowDownloadOptions] = useState(false);
     const trailerStartTimerRef = useRef(null);
     const playerContainerRef = useRef(null);
 
@@ -597,6 +599,33 @@ const MovieDetailsModal = () => {
                                     <Bookmark size={20} fill={isMaybeLater ? '#3b82f6' : 'none'} color={isMaybeLater ? '#3b82f6' : 'currentColor'} />
                                 </motion.button>
 
+                                {/* Download */}
+                                <motion.button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setShowDownloadOptions(true);
+                                    }}
+                                    whileTap={{ scale: 0.85 }}
+                                    title="Download Options"
+                                    aria-label="Download Options"
+                                    style={{
+                                        width: '50px',
+                                        height: '50px',
+                                        borderRadius: '50%',
+                                        border: '2px solid rgba(255,255,255,0.3)',
+                                        background: 'rgba(255,255,255,0.06)',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        color: 'white',
+                                        cursor: 'pointer',
+                                        backdropFilter: 'blur(8px)',
+                                        flexShrink: 0,
+                                    }}
+                                >
+                                    <Download size={20} />
+                                </motion.button>
+
                                 {/* Mute (only when trailer is playing) */}
                                 {showTrailer && trailerKey && (
                                     <button
@@ -708,6 +737,15 @@ const MovieDetailsModal = () => {
                         )}
                     </div>
                 </div>
+                <DownloadOptionsModal
+                    isOpen={showDownloadOptions}
+                    onClose={() => setShowDownloadOptions(false)}
+                    contentData={movie}
+                    type={selectedMediaType}
+                    initialSeason={preloadSeason}
+                    initialEpisode={preloadEpisode}
+                    seasonsList={seasonsList}
+                />
             </div>
         );
     }
@@ -978,6 +1016,28 @@ const MovieDetailsModal = () => {
                             <Bookmark size={20} fill={isMaybeLater ? '#3b82f6' : 'none'} color={isMaybeLater ? '#3b82f6' : 'currentColor'} />
                         </motion.button>
 
+                        <motion.button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setShowDownloadOptions(true);
+                            }}
+                            whileTap={{ scale: 0.85 }}
+                            whileHover={{ scale: 1.08 }}
+                            transition={{ duration: 0.2 }}
+                            title="Download Options"
+                            aria-label="Download Options"
+                            style={{
+                                width: '48px', height: '48px', borderRadius: '50%',
+                                border: '2px solid rgba(255,255,255,0.5)', background: 'rgba(0,0,0,0.4)',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                color: 'white', cursor: 'pointer', transition: 'background 0.2s, border-color 0.2s', backdropFilter: 'blur(5px)'
+                            }}
+                            onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.2)'; e.currentTarget.style.borderColor = 'white'; }}
+                            onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(0,0,0,0.4)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.5)'; }}
+                        >
+                            <Download size={20} />
+                        </motion.button>
+
                         {showTrailer && trailerKey && (
                             <button onClick={toggleMute} style={{
                                 width: '48px', height: '48px', borderRadius: '50%',
@@ -1161,6 +1221,15 @@ const MovieDetailsModal = () => {
                     </div>
                 </div>
             </div>
+            <DownloadOptionsModal
+                isOpen={showDownloadOptions}
+                onClose={() => setShowDownloadOptions(false)}
+                contentData={movie}
+                type={selectedMediaType}
+                initialSeason={preloadSeason}
+                initialEpisode={preloadEpisode}
+                seasonsList={seasonsList}
+            />
         </div>
     );
 };

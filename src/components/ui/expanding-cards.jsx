@@ -5,7 +5,6 @@ import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ExternalLink, Check, Trash2, Clock, Eye, ChevronLeft, ChevronRight } from "lucide-react";
 import ProgressTracker from "./ProgressTracker";
-import { createLayout } from "animejs";
 
 /**
  * @typedef {Object} CardItem
@@ -39,7 +38,6 @@ export const ExpandingCards = ({ items, tierColor, defaultActiveIndex = 0, class
   const navigate = useNavigate();
 
   const containerRef = React.useRef(null);
-  const layoutRef = React.useRef(null);
 
   const [showLeftArrow, setShowLeftArrow] = React.useState(false);
   const [showRightArrow, setShowRightArrow] = React.useState(false);
@@ -53,21 +51,6 @@ export const ExpandingCards = ({ items, tierColor, defaultActiveIndex = 0, class
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  React.useEffect(() => {
-    if (containerRef.current) {
-      layoutRef.current = createLayout(containerRef.current, {
-        children: '.ec-card',
-        duration: 350,
-        leaveTo: {
-          transform: 'translateY(-100px) scale(.25)',
-          opacity: 0,
-          duration: 350,
-          ease: 'out(3)'
-        }
-      });
-    }
-  }, []);
-
   const updateArrows = () => {
     if (containerRef.current && items.length > 10) {
       const { scrollLeft, scrollWidth, clientWidth } = containerRef.current;
@@ -79,16 +62,22 @@ export const ExpandingCards = ({ items, tierColor, defaultActiveIndex = 0, class
     }
   };
 
-  // Scroll active card into view smoothly
+  // Scroll active card horizontally into view within the container only (prevents window jumping)
   React.useEffect(() => {
     if (activeIndex !== null && containerRef.current && items[activeIndex]) {
-      const activeCardEl = containerRef.current.querySelector(`[data-id="${items[activeIndex].id}"]`);
+      const activeCardEl = containerRef.current.querySelector(`[data-id="${items[activeIndex].id || items[activeIndex].tmdbId}"]`);
       if (activeCardEl) {
-        activeCardEl.scrollIntoView({
-          behavior: 'smooth',
-          block: 'nearest',
-          inline: 'nearest'
-        });
+        const container = containerRef.current;
+        const cardLeft = activeCardEl.offsetLeft;
+        const cardRight = cardLeft + activeCardEl.offsetWidth;
+        const scrollLeft = container.scrollLeft;
+        const clientWidth = container.clientWidth;
+
+        if (cardLeft < scrollLeft) {
+          container.scrollTo({ left: Math.max(0, cardLeft - 16), behavior: 'smooth' });
+        } else if (cardRight > scrollLeft + clientWidth) {
+          container.scrollTo({ left: cardRight - clientWidth + 16, behavior: 'smooth' });
+        }
       }
     }
     updateArrows();
@@ -109,18 +98,13 @@ export const ExpandingCards = ({ items, tierColor, defaultActiveIndex = 0, class
     };
   }, [items]);
 
-  const handleLeave = (itemId, onCompleteAction) => {
-    const cardEl = containerRef.current?.querySelector(`[data-id="${itemId}"]`);
-    if (cardEl && layoutRef.current) {
-      layoutRef.current.update(({ root }) => {
-        cardEl.style.display = 'none';
-      }).then(() => {
-        onCompleteAction();
-      });
-    } else {
-      onCompleteAction();
-    }
-  };
+  React.useEffect(() => {
+    setActiveIndex(prev => {
+      if (items.length === 0) return 0;
+      if (prev >= items.length) return Math.max(0, items.length - 1);
+      return prev;
+    });
+  }, [items.length]);
 
   const scroll = (direction) => {
     if (containerRef.current) {
@@ -140,9 +124,9 @@ export const ExpandingCards = ({ items, tierColor, defaultActiveIndex = 0, class
   const gridStyle = React.useMemo(() => {
     if (activeIndex === null) return {};
     
-    // Always use horizontal layout with fixed card widths to avoid squeezing
+    // Balanced horizontal layout with comfortable spine width
     const columns = items
-      .map((_, index) => (index === activeIndex ? "280px" : "55px"))
+      .map((_, index) => (index === activeIndex ? "315px" : "60px"))
       .join(" ");
     return { gridTemplateColumns: columns, gridTemplateRows: '1fr' };
   }, [activeIndex, items.length]);
@@ -184,8 +168,8 @@ export const ExpandingCards = ({ items, tierColor, defaultActiveIndex = 0, class
       >
         {items.map((item, index) => (
           <li
-            key={item.id}
-            data-id={item.id}
+            key={item.id || item.tmdbId || index}
+            data-id={item.id || item.tmdbId}
             className="ec-card"
             onMouseEnter={() => isDesktop ? setActiveIndex(index) : null}
             onClick={() => handleInteraction(index)}
@@ -211,6 +195,15 @@ export const ExpandingCards = ({ items, tierColor, defaultActiveIndex = 0, class
             <div className="ec-overlay" />
 
             <article className="ec-article">
+              {item.progress && (
+                <div className="ec-top-badge">
+                  <ProgressTracker 
+                    progress={item.progress} 
+                    onChange={item.onProgressChange} 
+                  />
+                </div>
+              )}
+
               <h3 className="ec-title-collapsed">
                 {item.title}
               </h3>
@@ -232,39 +225,51 @@ export const ExpandingCards = ({ items, tierColor, defaultActiveIndex = 0, class
                           e.stopPropagation();
                           item.onViewDetails?.();
                         }}
+                        title="View Details"
                       >
-                        <ExternalLink size={10} />
-                        View Details
+                        <ExternalLink size={12} />
+                        <span>Details</span>
                       </button>
 
                       <div className="ec-status-group">
                         <button 
                           type="button"
-                          className={`ec-status-btn ${item.status === 'watched' ? 'active' : ''}`}
+                          className={`ec-status-btn status-watched ${item.status === 'watched' ? 'active' : ''}`}
                           onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
-                            handleLeave(item.id, () => item.onStatusChange?.('watched'));
+                            item.onStatusChange?.('watched');
                           }}
                           title="Mark as Watched"
+                          aria-label="Mark as Watched"
                         >
-                          <Check size={14} />
+                          <Check size={13} strokeWidth={2.5} />
                         </button>
                         <button 
                           type="button"
-                          className={`ec-status-btn ${item.status === 'watching' ? 'active' : ''}`}
-                          onClick={(e) => { e.preventDefault(); e.stopPropagation(); item.onStatusChange?.('watching'); }}
+                          className={`ec-status-btn status-watching ${item.status === 'watching' ? 'active' : ''}`}
+                          onClick={(e) => { 
+                            e.preventDefault(); 
+                            e.stopPropagation(); 
+                            item.onStatusChange?.('watching'); 
+                          }}
                           title="Mark as Watching"
+                          aria-label="Mark as Watching"
                         >
-                          <Eye size={14} />
+                          <Eye size={13} strokeWidth={2.5} />
                         </button>
                         <button 
                           type="button"
-                          className={`ec-status-btn ${item.status === 'pending' ? 'active' : ''}`}
-                          onClick={(e) => { e.preventDefault(); e.stopPropagation(); item.onStatusChange?.('pending'); }}
+                          className={`ec-status-btn status-pending ${item.status === 'pending' ? 'active' : ''}`}
+                          onClick={(e) => { 
+                            e.preventDefault(); 
+                            e.stopPropagation(); 
+                            item.onStatusChange?.('pending'); 
+                          }}
                           title="Move to To-Watch"
+                          aria-label="Move to To-Watch"
                         >
-                          <Clock size={14} />
+                          <Clock size={13} strokeWidth={2.5} />
                         </button>
                       </div>
 
@@ -274,21 +279,15 @@ export const ExpandingCards = ({ items, tierColor, defaultActiveIndex = 0, class
                         onClick={(e) => {
                           e.preventDefault();
                           e.stopPropagation();
-                          handleLeave(item.id, () => item.onDelete?.());
+                          item.onDelete?.();
                         }}
                         title="Remove from Watchlist"
+                        aria-label="Remove from Watchlist"
                       >
-                        <Trash2 size={14} />
+                        <Trash2 size={13} />
                       </button>
                     </div>
                   </div>
-
-                  {item.progress && (
-                    <ProgressTracker 
-                      progress={item.progress} 
-                      onChange={item.onProgressChange} 
-                    />
-                  )}
                 </div>
               </div>
             </article>

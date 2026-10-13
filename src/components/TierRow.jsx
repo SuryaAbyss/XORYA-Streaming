@@ -41,7 +41,7 @@ const TierRow = ({
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
-  const [showWatched, setShowWatched] = useState(false);
+  const [showWatched, setShowWatched] = useState(true);
   const [sortBy, setSortBy] = useState('date'); // 'date' | 'rating' | 'year' | 'alphabetical'
   const [showSortMenu, setShowSortMenu] = useState(false);
   const inputRef = useRef(null);
@@ -75,8 +75,9 @@ const TierRow = ({
   const watched = entries.filter(e => e.status === 'watched').length;
   const pct = entries.length > 0 ? Math.round((watched / entries.length) * 100) : 0;
   
+  const isWatchedTier = tier.name.toLowerCase().includes('watched') || tier.id === 'tier_watched';
   const visibleEntries = entries
-    .filter(e => showWatched || e.status !== 'watched')
+    .filter(e => isWatchedTier || showWatched || e.status !== 'watched')
     .sort((a, b) => {
       if (sortBy === 'rating') {
         const rA = parseFloat(a.rating) || 0;
@@ -108,18 +109,23 @@ const TierRow = ({
           opacity: 0
         }}
       >
-        {/* Ambient subtle artwork for tiers: uses entry backdrop or rotates through iconic posters */}
+        {/* Ambient subtle artwork for tiers: uses the latest watched entry artwork or iconic cinema art */}
         <div 
           className="wl-tier-bg-art" 
           style={{
-            backgroundImage: entries.length > 0 && entries[0]?.backdrop 
-              ? `url(${imageUrl(entries[0].backdrop, 'w780')})`
-              : `url(${[
-                  '/watchlist-cinema-grid.jpg',
-                  '/watchlist-broken-glass.jpg',
-                  '/watchlist-pulp-fiction.jpg',
-                  '/watchlist-horror.jpg'
-                ][(index || 0) % 4]})`
+            backgroundImage: `url(${(() => {
+              const latestEntry = entries.length > 0
+                ? [...entries].sort((a, b) => (b.updatedAt || b.addedAt || 0) - (a.updatedAt || a.addedAt || 0))[0]
+                : null;
+              return latestEntry
+                ? (latestEntry.backdrop ? imageUrl(latestEntry.backdrop, 'w1280') : (latestEntry.poster ? imageUrl(latestEntry.poster, 'w780') : null))
+                : [
+                    '/watchlist-cinema-grid.jpg',
+                    '/watchlist-broken-glass.jpg',
+                    '/watchlist-pulp-fiction.jpg',
+                    '/watchlist-horror.jpg'
+                  ][(index || 0) % 4];
+            })()})`
           }} 
         />
 
@@ -367,9 +373,9 @@ const TierRow = ({
                   progress: entry.type === 'tv' ? (entry.progress || { season: 1, episode: 1 }) : (entry.progress && entry.progress.percent !== undefined ? entry.progress : null),
                   icon: entry.type === 'tv' ? <Tv size={16} /> : <Film size={16} />,
                   onViewDetails: () => openModal(entry.tmdbId, entry.type),
-                  onStatusChange: (status) => onStatusChange(entry.id, status),
-                  onProgressChange: (s, e, p) => onProgress(entry.id, s, e, p),
-                  onDelete: () => onRemoveEntry(entry.id)
+                  onStatusChange: (status) => onStatusChange(entry.id || entry.tmdbId, status),
+                  onProgressChange: (s, e, p) => onProgress(entry.id || entry.tmdbId, s, e, p),
+                  onDelete: () => onRemoveEntry(entry.id || entry.tmdbId)
                 }))}
                 className="mb-4"
               />

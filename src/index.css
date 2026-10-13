@@ -2731,16 +2731,19 @@ body::before {
   position: absolute;
   inset: 0;
   background-size: cover;
-  background-position: center;
-  opacity: 0.22;
+  background-position: center 25%;
+  background-repeat: no-repeat;
+  opacity: 0.28;
   pointer-events: none;
-  filter: contrast(1.25) brightness(0.75) saturate(1.1);
+  filter: contrast(1.18) brightness(0.8) saturate(1.15);
   mix-blend-mode: luminosity;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.4s ease;
+  mask-image: radial-gradient(ellipse 95% 85% at 50% 35%, black 45%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 95% 85% at 50% 35%, black 45%, transparent 100%);
 }
 
 .wl-tier-row:hover .wl-tier-bg-art {
-  opacity: 0.32;
+  opacity: 0.38;
 }
 
 /* Tier Header */
@@ -3404,6 +3407,7 @@ body::before {
   filter: grayscale(1);
   transform: scale(1.05);
   object-position: center 20%;
+  pointer-events: none;
 }
 
 .ec-backdrop {
@@ -3448,17 +3452,30 @@ body::before {
 
 .ec-title-collapsed {
   display: block;
-  transform: rotate(90deg);
-  transform-origin: left bottom;
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: rgba(255, 255, 255, 0.7);
-  white-space: nowrap;
+  writing-mode: vertical-rl;
   position: absolute;
-  left: 20px;
-  bottom: 40px;
-  transition: opacity 0.3s ease;
+  top: 22px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.8rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: rgba(255, 255, 255, 0.88);
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.95), 0 0 3px rgba(0, 0, 0, 0.9);
+  white-space: nowrap;
+  max-height: 215px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  pointer-events: none;
+  z-index: 3;
+  opacity: 1;
+  transition: opacity 0.3s ease, color 0.2s ease, text-shadow 0.2s ease;
+}
+
+.ec-card:not([data-active="true"]):hover .ec-title-collapsed {
+  color: #fff;
+  text-shadow: 0 0 14px var(--tier-color, #70a1ff), 0 2px 8px rgba(0, 0, 0, 0.95);
 }
 
 .ec-card[data-active="true"] .ec-title-collapsed {
@@ -3519,92 +3536,160 @@ body::before {
   overflow: hidden;
 }
 
-.ec-details-btn {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  background: #fff;
-  color: #000;
-  border: none;
-  border-radius: 50px;
-  padding: 0.6rem 1rem;
-  font-size: 0.75rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.ec-details-btn:hover {
-  transform: scale(1.05);
-  box-shadow: 0 40px 10px -35px rgba(255, 255, 255, 0.4);
-}
-
 .ec-actions {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  margin-top: 0.5rem;
+  gap: 0.5rem;
+  margin-top: 0.6rem;
+  position: relative;
+  z-index: 10;
+  pointer-events: auto;
+  flex-wrap: nowrap;
 }
 
+/* 1. Sleek Details Pill Button */
+.ec-details-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  height: 32px;
+  padding: 0 0.85rem;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+.ec-details-btn:hover {
+  background: rgba(255, 255, 255, 0.95);
+  color: #000;
+  border-color: #fff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(255, 255, 255, 0.25);
+}
+
+.ec-details-btn:active {
+  transform: translateY(0);
+}
+
+/* 2. Sleek Glass Status Group */
 .ec-status-group {
-  display: flex;
-  background: rgba(255, 255, 255, 0.05);
-  padding: 0.25rem;
-  border-radius: 50px;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  height: 32px;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 2px;
+  border-radius: 999px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .ec-status-btn {
-  width: 32px;
-  height: 32px;
-  border-radius: 50px;
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
   border: none;
   background: transparent;
-  color: rgba(255, 255, 255, 0.3);
+  color: rgba(255, 255, 255, 0.45);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 0;
 }
 
 .ec-status-btn:hover {
   color: #fff;
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.12);
 }
 
 .ec-status-btn.active {
-  background: var(--tier-color, #70a1ff);
-  color: #000;
+  background: var(--tier-color, #ff4757);
+  color: #fff;
+  box-shadow: 0 0 10px var(--tier-color, #ff4757);
+}
+
+.ec-status-btn.status-watched.active {
+  background: #10B981;
+  color: #fff;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.6);
+}
+
+.ec-status-btn.status-watching.active {
+  background: #ff4757;
+  color: #fff;
+  box-shadow: 0 0 10px rgba(255, 71, 87, 0.6);
+}
+
+.ec-status-btn.status-pending.active {
+  background: #70A1FF;
+  color: #fff;
+  box-shadow: 0 0 10px rgba(112, 161, 255, 0.6);
+}
+
+.ec-top-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 10;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity 0.35s ease, transform 0.35s ease;
+  pointer-events: none;
+}
+
+.ec-card[data-active="true"] .ec-top-badge {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
 }
 
 .ec-progress-section {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 1.5rem;
-  padding: 0.75rem 1rem;
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  margin-bottom: 0.25rem;
-  flex-shrink: 0;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  padding: 4px 12px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
 }
 
 .ec-progress-label-btn {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  font-size: 0.9rem;
+  gap: 5px;
+  font-size: 0.72rem;
   font-weight: 700;
   color: #fff;
   background: transparent;
   border: none;
   cursor: pointer;
   padding: 0;
-  transition: opacity 0.2s;
+  letter-spacing: 0.04em;
+  transition: color 0.2s ease;
+}
+
+.ec-progress-label-btn .dot {
+  opacity: 0.4;
 }
 
 .ec-progress-label-btn:hover {
-  opacity: 0.8;
+  color: var(--tier-color, #70a1ff);
 }
 
 .ec-progress-label-btn.active {
@@ -3754,21 +3839,29 @@ body::before {
 .ec-delete-btn {
   width: 32px;
   height: 32px;
+  min-width: 32px;
   border-radius: 50px;
   border: none;
-  background: rgba(255, 71, 87, 0.1);
+  background: rgba(255, 71, 87, 0.15);
   color: #ff4757;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  z-index: 20;
 }
 
 .ec-delete-btn:hover {
   background: #ff4757;
   color: #fff;
-  transform: rotate(10deg);
+  transform: scale(1.1);
+  box-shadow: 0 0 12px rgba(255, 71, 87, 0.4);
+}
+
+.ec-delete-btn:active {
+  transform: scale(0.95);
 }
 
 .wl-tier-cards-new {

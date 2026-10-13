@@ -4,6 +4,7 @@ import { Agentation } from 'agentation';
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import { MovieModalProvider } from './context/MovieModalContext';
+import { WatchlistProvider } from './context/WatchlistContext';
 import MovieDetailsModal from './components/MovieDetailsModal';
 import Footer from './components/Footer';
 import VisitorTracker from './components/VisitorTracker';
@@ -53,25 +54,27 @@ function App() {
         {isDev && <Agentation />}
         <VisitorTracker />
         <MovieModalProvider>
-          <div className="app">
-            <Navbar />
-            <Suspense fallback={<LemniscateBloomLoader text="Loading..." fullScreen={true} color="#00bcd4" />}>
+          <WatchlistProvider>
+            <div className="app">
+              <Navbar />
+              <Suspense fallback={<LemniscateBloomLoader text="Loading..." fullScreen={true} color="#00bcd4" />}>
 
-              <Routes>
-                <Route path="/" element={<Home category="all" />} />
-                <Route path="/movies" element={<Home category="movies" />} />
-                <Route path="/series" element={<Home category="tv" />} />
-                <Route path="/movie/:id" element={<MovieDetails />} />
-                <Route path="/person/:id" element={<ActorDetails />} />
-                <Route path="/watchlist" element={<Watchlist />} />
-                <Route path="/watch/:type/:id" element={<VideoPlayer />} />
-                <Route path="/watch/:type/:id/season/:season/episode/:episode" element={<VideoPlayer />} />
-                <Route path="/iam-admin" element={<AdminDashboard />} />
-              </Routes>
-            </Suspense>
-            <MovieDetailsModal />
-            <Footer />
-          </div>
+                <Routes>
+                  <Route path="/" element={<Home category="all" />} />
+                  <Route path="/movies" element={<Home category="movies" />} />
+                  <Route path="/series" element={<Home category="tv" />} />
+                  <Route path="/movie/:id" element={<MovieDetails />} />
+                  <Route path="/person/:id" element={<ActorDetails />} />
+                  <Route path="/watchlist" element={<Watchlist />} />
+                  <Route path="/watch/:type/:id" element={<VideoPlayer />} />
+                  <Route path="/watch/:type/:id/season/:season/episode/:episode" element={<VideoPlayer />} />
+                  <Route path="/iam-admin" element={<AdminDashboard />} />
+                </Routes>
+              </Suspense>
+              <MovieDetailsModal />
+              <Footer />
+            </div>
+          </WatchlistProvider>
         </MovieModalProvider>
       </IntroSequence>
     </Router>

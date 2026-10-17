@@ -11,9 +11,11 @@ import {
     ExternalLink,
     ChevronDown,
     Film,
-    Tv
+    Tv,
+    Languages
 } from 'lucide-react';
 import TorrentDownloadModal from './TorrentDownloadModal';
+import SubtitleDownloadModal from './SubtitleDownloadModal';
 
 const DownloadOptionsModal = ({
     isOpen,
@@ -27,6 +29,7 @@ const DownloadOptionsModal = ({
     const [season, setSeason] = useState(initialSeason);
     const [episode, setEpisode] = useState(initialEpisode);
     const [showTorrentModal, setShowTorrentModal] = useState(false);
+    const [showSubtitleModal, setShowSubtitleModal] = useState(false);
 
     useEffect(() => {
         setSeason(initialSeason);
@@ -157,6 +160,19 @@ const DownloadOptionsModal = ({
                     : `https://streamrip.fun/movie/${contentData.id}`;
                 window.open(url, '_blank', 'noopener,noreferrer');
             }
+        },
+        {
+            id: 'subtitlecat',
+            name: 'SubtitleCat',
+            tag: '100+ LANGUAGES',
+            tagBg: 'rgba(253, 186, 41, 0.25)',
+            tagColor: '#fdba29',
+            category: 'SUBTITLES (.SRT)',
+            desc: 'Direct search & download synchronized subtitles in any language',
+            icon: Languages,
+            iconColor: '#fdba29',
+            iconBg: 'rgba(253, 186, 41, 0.18)',
+            onClick: () => setShowSubtitleModal(true)
         }
     ];
 
@@ -499,6 +515,16 @@ const DownloadOptionsModal = ({
             <TorrentDownloadModal
                 isOpen={showTorrentModal}
                 onClose={() => setShowTorrentModal(false)}
+                contentData={contentData}
+                type={type}
+                season={season}
+                episode={episode}
+            />
+
+            {/* Nested SubtitleCat Download Modal */}
+            <SubtitleDownloadModal
+                isOpen={showSubtitleModal}
+                onClose={() => setShowSubtitleModal(false)}
                 contentData={contentData}
                 type={type}
                 season={season}

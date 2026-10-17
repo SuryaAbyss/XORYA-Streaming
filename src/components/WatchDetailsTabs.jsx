@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Star, Users, Calendar, Clock, Film, ExternalLink, Download, Tv, Server, Zap, MonitorPlay, Check, Play, Headphones, HardDrive, Filter, RefreshCw, Sparkles, AlertCircle } from 'lucide-react';
+import { Star, Users, Calendar, Clock, Film, ExternalLink, Download, Tv, Server, Zap, MonitorPlay, Check, Play, Headphones, HardDrive, Filter, RefreshCw, Sparkles, AlertCircle, Languages } from 'lucide-react';
 import { imageUrl } from '../api/tmdb';
 import ServerSelector from './ServerSelector';
 import { servers } from '../config/servers';
 import TorrentDownloadModal from './TorrentDownloadModal';
+import SubtitleDownloadModal from './SubtitleDownloadModal';
 
 const WatchDetailsTabs = ({
     contentData,
@@ -24,6 +25,7 @@ const WatchDetailsTabs = ({
     const [selectedLang, setSelectedLang] = useState('all');
     const [selectedQuality, setSelectedQuality] = useState('all');
     const [showTorrentModal, setShowTorrentModal] = useState(false);
+    const [showSubtitleModal, setShowSubtitleModal] = useState(false);
 
     const [vlcLoading, setVlcLoading] = useState(null);
     const [vlcToast, setVlcToast] = useState(null);
@@ -145,6 +147,8 @@ const WatchDetailsTabs = ({
             window.open(vidVaultUrl, '_blank', 'noopener,noreferrer');
         } else if (option === 'mediatv') {
             window.open(mediaTvUrl, '_blank', 'noopener,noreferrer');
+        } else if (option === 'subtitlecat') {
+            setShowSubtitleModal(true);
         }
     };
 
@@ -1079,6 +1083,61 @@ const WatchDetailsTabs = ({
                                         </div>
                                         <Download size={14} style={{ color: 'var(--theme-accent)', flexShrink: 0 }} />
                                     </div>
+
+                                    {/* Option 5: SubtitleCat */}
+                                    <div
+                                        className="download-tab-card"
+                                        onClick={() => handleDownloadOptionClick('subtitlecat')}
+                                        style={{
+                                            background: 'linear-gradient(135deg, rgba(253, 186, 41, 0.12) 0%, rgba(255, 255, 255, 0.03) 100%)',
+                                            border: '1.5px solid rgba(253, 186, 41, 0.35)',
+                                            borderRadius: '16px',
+                                            padding: '1rem 1.2rem',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '0.8rem',
+                                            cursor: 'pointer',
+                                            boxSizing: 'border-box',
+                                            boxShadow: '0 4px 20px rgba(253, 186, 41, 0.08)',
+                                            transition: 'transform 0.2s, box-shadow 0.2s'
+                                        }}
+                                        onMouseEnter={(e) => {
+                                            e.currentTarget.style.transform = 'translateY(-2px)';
+                                            e.currentTarget.style.boxShadow = '0 8px 24px rgba(253, 186, 41, 0.16)';
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            e.currentTarget.style.transform = 'translateY(0)';
+                                            e.currentTarget.style.boxShadow = '0 4px 20px rgba(253, 186, 41, 0.08)';
+                                        }}
+                                    >
+                                        <div style={{
+                                            width: '38px',
+                                            height: '38px',
+                                            borderRadius: '10px',
+                                            background: 'rgba(253, 186, 41, 0.2)',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            color: '#fdba29',
+                                            flexShrink: 0
+                                        }}>
+                                            <Languages size={18} />
+                                        </div>
+                                        <div style={{ flexGrow: 1, minWidth: 0 }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
+                                                <h4 style={{ fontSize: '0.88rem', fontWeight: '700', margin: 0, color: 'white' }}>
+                                                    Subtitle<span style={{ color: '#fdba29' }}>Cat</span>
+                                                </h4>
+                                                <span style={{ fontSize: '0.6rem', background: '#fdba29', color: '#000', padding: '0.1rem 0.4rem', borderRadius: '10px', fontWeight: '800' }}>
+                                                    100+ LANGS
+                                                </span>
+                                            </div>
+                                            <p style={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '0.72rem', margin: '0.1rem 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                                Direct .SRT Downloads • Synchronized Subtitles
+                                            </p>
+                                        </div>
+                                        <Download size={14} style={{ color: '#fdba29', flexShrink: 0 }} />
+                                    </div>
                                 </div>
                             </div>
                         )}
@@ -1090,6 +1149,16 @@ const WatchDetailsTabs = ({
             <TorrentDownloadModal
                 isOpen={showTorrentModal}
                 onClose={() => setShowTorrentModal(false)}
+                contentData={contentData}
+                type={type}
+                season={sVal}
+                episode={eVal}
+            />
+
+            {/* Dynamic SubtitleCat Downloader Pop-up Modal */}
+            <SubtitleDownloadModal
+                isOpen={showSubtitleModal}
+                onClose={() => setShowSubtitleModal(false)}
                 contentData={contentData}
                 type={type}
                 season={sVal}

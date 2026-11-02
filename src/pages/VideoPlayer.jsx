@@ -14,6 +14,7 @@ import dashjs from 'dashjs';
 import MobileVideoPlayerView from '../components/mobile/MobileVideoPlayerView';
 import { isMobileDevice } from '../utils/deviceDetector';
 import VjsStreamPlayer from '../components/VjsStreamPlayer';
+import DirectStreamPlayer from '../components/player/DirectStreamPlayer';
 import OttPlatformStrip from '../components/OttPlatformStrip';
 
 
@@ -1274,15 +1275,39 @@ const VideoPlayer = () => {
                                         </div>
 
                                         <div style={{ width: '100%', aspectRatio: '16/9', position: 'relative', overflow: 'hidden' }}>
-                                            {directStream ? (
+                                            {servers.find(s => s.id === activeServer)?.isDirectStream ? (
+                                                <DirectStreamPlayer
+                                                    key={`${activeServer}-${id}-${currentSeason}-${currentEpisode}`}
+                                                    src={servers.find(s => s.id === activeServer)?.streamUrl || "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8"}
+                                                    poster={contentData?.backdrop_path ? `https://image.tmdb.org/t/p/original${contentData.backdrop_path}` : undefined}
+                                                    title={type === 'movie' ? contentData?.title : `${contentData?.name} - S${currentSeason}E${currentEpisode}`}
+                                                    tmdbId={id}
+                                                    season={currentSeason}
+                                                    episode={currentEpisode}
+                                                    onNextEpisode={handleNextEpisode}
+                                                />
+                                            ) : directStream ? (
                                                 (directStream.streamUrl || directStream.webStreamUrl || directStream.isDirectPlayable) ? (
-                                                    <VjsStreamPlayer
-                                                        key={directStream.streamUrl || directStream.webStreamUrl}
-                                                        src={directStream.streamUrl || directStream.webStreamUrl}
-                                                        poster={contentData?.backdrop_path ? `https://image.tmdb.org/t/p/original${contentData.backdrop_path}` : undefined}
-                                                        title={directStream.release || directStream.title}
-                                                        onOpenVlc={() => handleLaunchVlc(directStream)}
-                                                    />
+                                                    directStream.streamUrl?.includes('.m3u8') ? (
+                                                        <DirectStreamPlayer
+                                                            key={directStream.streamUrl}
+                                                            src={directStream.streamUrl}
+                                                            poster={contentData?.backdrop_path ? `https://image.tmdb.org/t/p/original${contentData.backdrop_path}` : undefined}
+                                                            title={directStream.release || directStream.title}
+                                                            tmdbId={id}
+                                                            season={currentSeason}
+                                                            episode={currentEpisode}
+                                                            onNextEpisode={handleNextEpisode}
+                                                        />
+                                                    ) : (
+                                                        <VjsStreamPlayer
+                                                            key={directStream.streamUrl || directStream.webStreamUrl}
+                                                            src={directStream.streamUrl || directStream.webStreamUrl}
+                                                            poster={contentData?.backdrop_path ? `https://image.tmdb.org/t/p/original${contentData.backdrop_path}` : undefined}
+                                                            title={directStream.release || directStream.title}
+                                                            onOpenVlc={() => handleLaunchVlc(directStream)}
+                                                        />
+                                                    )
                                                 ) : (
                                                     <iframe
                                                         ref={iframeRef}
@@ -1296,7 +1321,7 @@ const VideoPlayer = () => {
                                                         allowFullScreen
                                                         webkitAllowFullScreen
                                                         mozAllowFullScreen
-                                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen *"
+                                                        allow="accelerometer; autoplay *; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen *"
                                                         scrolling="no"
                                                     />
                                                 )
@@ -1314,7 +1339,7 @@ const VideoPlayer = () => {
                                                     allowFullScreen
                                                     webkitAllowFullScreen
                                                     mozAllowFullScreen
-                                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen *"
+                                                    allow="accelerometer; autoplay *; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen *"
                                                     referrerPolicy={servers.find(s => s.id === activeServer)?.referrerPolicy || undefined}
                                                     scrolling="no"
                                                 />

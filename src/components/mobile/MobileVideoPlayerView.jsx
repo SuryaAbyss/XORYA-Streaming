@@ -19,6 +19,7 @@ import {
 import { imageUrl } from '../../api/tmdb';
 import MobileContentRail from './MobileContentRail';
 import MobileBottomNav from './MobileBottomNav';
+import DirectStreamPlayer from '../player/DirectStreamPlayer';
 
 const formatCurrency = (val) => {
   if (!val || val <= 0) return 'Not Disclosed';
@@ -289,12 +290,22 @@ const MobileVideoPlayerView = ({
             boxShadow: '0 12px 32px rgba(0, 0, 0, 0.75)',
           }}
         >
-          {playerUrl ? (
+          {currentServerObj?.isDirectStream ? (
+            <DirectStreamPlayer
+              key={`${activeServer}-${id}-${currentSeason}-${currentEpisode}`}
+              src={currentServerObj.streamUrl || "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8"}
+              poster={contentData?.backdrop_path ? `https://image.tmdb.org/t/p/original${contentData.backdrop_path}` : undefined}
+              title={title}
+              tmdbId={id}
+              season={currentSeason}
+              episode={currentEpisode}
+            />
+          ) : playerUrl ? (
             <iframe
               ref={iframeRef}
               src={playerUrl}
               title={`${title} Stream`}
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+              allow="accelerometer; autoplay *; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen *"
               allowFullScreen
               referrerPolicy={currentServerObj?.referrerPolicy || undefined}
               loading="eager"

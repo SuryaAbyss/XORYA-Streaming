@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Play, Calendar, Star, Clock, Info, ChevronDown, ChevronUp, X, ChevronLeft, ChevronRight, Tv, Check } from 'lucide-react';
-import { getSeasonDetails, getTVEpisodeCredits, getTVEpisodeImages, getTVShowRecommendations, getTVShowSimilar, getMovieRecommendations, getMovieSimilar, imageUrl } from '../api/tmdb';
+import { getSeasonDetails, getTVEpisodeCredits, getTVEpisodeImages, getMovieImages, getTVShowRecommendations, getTVShowSimilar, getMovieRecommendations, getMovieSimilar, imageUrl } from '../api/tmdb';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 
@@ -43,6 +43,9 @@ const EpisodesSidebar = ({
     const [loadingEpisodeCast, setLoadingEpisodeCast] = useState(false);
     const [episodeStills, setEpisodeStills] = useState([]);
     const [loadingStills, setLoadingStills] = useState(false);
+    const [movieStills, setMovieStills] = useState([]);
+    const [loadingMovieStills, setLoadingMovieStills] = useState(false);
+    const [showAllStills, setShowAllStills] = useState(false);
     const [previewImageIndex, setPreviewImageIndex] = useState(null);
     const [internalRecs, setInternalRecs] = useState([]);
     const [loadingRecs, setLoadingRecs] = useState(false);
@@ -143,13 +146,16 @@ const EpisodesSidebar = ({
     const activeRecs = (recommendations && recommendations.length > 0) ? recommendations : internalRecs;
 
     const currentEp = episodes.find(e => e.episode_number === currentEpisode);
-    const displayedStills = episodeStills.length > 0
-        ? episodeStills
-        : (currentEp?.still_path ? [currentEp.still_path] : (showData?.backdrop_path ? [showData.backdrop_path] : []));
+    const displayedStills = isMovie
+        ? (movieStills.length > 0 ? movieStills : (showData?.backdrop_path ? [showData.backdrop_path] : []))
+        : (episodeStills.length > 0
+            ? episodeStills
+            : (currentEp?.still_path ? [currentEp.still_path] : (showData?.backdrop_path ? [showData.backdrop_path] : [])));
 
     useEffect(() => {
         setPreviewImageIndex(null);
-    }, [currentEpisode, currentSeason]);
+        setShowAllStills(false);
+    }, [showId, currentEpisode, currentSeason]);
 
     // Keyboard support and body lock for lightbox
     useEffect(() => {
@@ -197,6 +203,29 @@ const EpisodesSidebar = ({
 
         fetchEpisodeStills();
     }, [showId, currentSeason, currentEpisode, isMovie]);
+
+    useEffect(() => {
+        const fetchMovieStills = async () => {
+            if (!showId || !isMovie) return;
+            setLoadingMovieStills(true);
+            try {
+                const res = await getMovieImages(showId);
+                const data = res?.data || res;
+                if (data && data.backdrops && data.backdrops.length > 0) {
+                    setMovieStills(data.backdrops.map(b => b.file_path));
+                } else {
+                    setMovieStills([]);
+                }
+            } catch (error) {
+                console.error('Failed to fetch movie stills:', error);
+                setMovieStills([]);
+            } finally {
+                setLoadingMovieStills(false);
+            }
+        };
+
+        fetchMovieStills();
+    }, [showId, isMovie]);
 
     useEffect(() => {
         const fetchEpisodeCast = async () => {
@@ -324,34 +353,154 @@ const EpisodesSidebar = ({
         if (!showData) return <div style={{ color: 'rgba(255,255,255,0.4)', padding: '1.5rem 0.5rem' }}>No details available</div>;
 
         if (isMovie) {
+            const releaseYear = showData.release_date ? new Date(showData.release_date).getFullYear() : null;
+            const subtitleText = showData.tagline || (releaseYear ? `MOVIE • ${releaseYear}` : 'FEATURE FILM');
+
             return (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem', color: 'white', fontSize: '0.9rem', padding: '0.5rem 0' }}>
+                    {/* 1. Movie Overview & Title */}
                     <div>
-                        <h4 style={{ fontSize: '0.95rem', fontWeight: '700', marginBottom: '0.5rem', color: 'var(--theme-accent)' }}>Synopsis</h4>
-                        <p style={{ lineHeight: '1.6', color: 'rgba(255,255,255,0.8)', margin: 0 }}>{showData.overview}</p>
+                        <div style={{
+                            fontSize: '0.78rem',
+                            fontWeight: '700',
+                            color: 'var(--theme-accent)',
+                            marginBottom: '0.3rem',
+                            letterSpacing: '0.5px',
+                            textTransform: 'uppercase'
+                        }}>
+                            {subtitleText}
+                        </div>
+                        <h4 style={{ fontSize: '1.05rem', fontWeight: '800', marginBottom: '0.6rem', color: '#fff' }}>
+                            {showData.title || showData.name || 'Synopsis'}
+                        </h4>
+                        <p style={{ lineHeight: '1.6', color: 'rgba(255,255,255,0.85)', margin: 0, fontSize: '0.88rem' }}>
+                            {showData.overview || 'No synopsis available for this movie.'}
+                        </p>
                     </div>
 
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '1rem', marginTop: '0.5rem' }}>
+                    {/* 2. Small Image Cards Section - TMDB Movie Stills */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '1rem' }}>
+                        <div style={{ fontSize: '0.8rem', fontWeight: '700', color: 'rgba(255, 255, 255, 0.65)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span>Movie Stills ({displayedStills.length})</span>
+                            <span style={{ fontSize: '0.72rem', color: 'var(--theme-accent)', fontWeight: '600' }}>
+                                {showData.title || (releaseYear ? `Released ${releaseYear}` : 'Gallery')}
+                            </span>
+                        </div>
+
+                        {loadingMovieStills ? (
+                            <div style={{ padding: '1rem', textAlign: 'center', color: 'rgba(255,255,255,0.4)', fontSize: '0.8rem' }}>
+                                Fetching movie stills...
+                            </div>
+                        ) : (
+                            <>
+                                <div style={{
+                                    display: 'grid',
+                                    gridTemplateColumns: 'repeat(3, 1fr)',
+                                    gap: '0.65rem',
+                                    ...(showAllStills ? { maxHeight: '340px', overflowY: 'auto', paddingRight: '0.2rem' } : {})
+                                }}>
+                                    {(showAllStills ? displayedStills : displayedStills.slice(0, 3)).map((stillPath, idx) => (
+                                        <div
+                                            key={idx}
+                                            onClick={() => setPreviewImageIndex(idx)}
+                                            title="Click to enlarge image"
+                                            style={{
+                                                borderRadius: '10px',
+                                                overflow: 'hidden',
+                                                border: '1px solid rgba(255, 255, 255, 0.12)',
+                                                background: 'rgba(255, 255, 255, 0.04)',
+                                                boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+                                                cursor: 'pointer',
+                                                transition: 'all 0.25s ease'
+                                            }}
+                                            onMouseEnter={(e) => {
+                                                e.currentTarget.style.borderColor = 'var(--theme-accent)';
+                                                e.currentTarget.style.transform = 'scale(1.03)';
+                                            }}
+                                            onMouseLeave={(e) => {
+                                                e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.12)';
+                                                e.currentTarget.style.transform = 'scale(1)';
+                                            }}
+                                        >
+                                            <div style={{ width: '100%', aspectRatio: '16/9', overflow: 'hidden', position: 'relative' }}>
+                                                <img
+                                                    src={imageUrl(stillPath, 'w300')}
+                                                    alt={`${showData.title || 'Movie'} still ${idx + 1}`}
+                                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                                />
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                {displayedStills.length > 3 && (
+                                    <button
+                                        onClick={() => setShowAllStills(!showAllStills)}
+                                        style={{
+                                            background: 'rgba(255, 255, 255, 0.05)',
+                                            border: '1px solid rgba(255, 255, 255, 0.12)',
+                                            color: 'var(--theme-accent)',
+                                            fontSize: '0.78rem',
+                                            fontWeight: '600',
+                                            padding: '0.45rem 0.8rem',
+                                            borderRadius: '8px',
+                                            cursor: 'pointer',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            gap: '0.35rem',
+                                            marginTop: '0.2rem',
+                                            width: '100%',
+                                            transition: 'all 0.2s ease'
+                                        }}
+                                        onMouseEnter={(e) => {
+                                            e.currentTarget.style.background = 'rgba(var(--theme-accent-rgb), 0.12)';
+                                            e.currentTarget.style.borderColor = 'var(--theme-accent)';
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
+                                            e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.12)';
+                                        }}
+                                    >
+                                        {showAllStills ? (
+                                            <>
+                                                <ChevronUp size={14} /> Show Less
+                                            </>
+                                        ) : (
+                                            <>
+                                                <ChevronDown size={14} /> Show More (+{displayedStills.length - 3})
+                                            </>
+                                        )}
+                                    </button>
+                                )}
+                            </>
+                        )}
+                    </div>
+
+                    {/* 3. Movie Metadata Table */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '1rem' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                             <span style={{ color: 'rgba(255,255,255,0.5)' }}>Release Date</span>
-                            <span>{showData.release_date ? new Date(showData.release_date).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }) : 'N/A'}</span>
+                            <span style={{ fontWeight: '600' }}>
+                                {showData.release_date ? new Date(showData.release_date).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }) : 'N/A'}
+                            </span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                            <span style={{ color: 'rgba(255,255,255,0.5)' }}>Rating</span>
+                            <span style={{ color: '#facc15', fontWeight: '700' }}>
+                                ★ {showData.vote_average ? showData.vote_average.toFixed(1) : 'N/A'} / 10
+                            </span>
                         </div>
                         {showData.runtime > 0 && (
                             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                                 <span style={{ color: 'rgba(255,255,255,0.5)' }}>Runtime</span>
-                                <span>{Math.floor(showData.runtime / 60)}h {showData.runtime % 60}m</span>
+                                <span style={{ fontWeight: '600' }}>{Math.floor(showData.runtime / 60)}h {showData.runtime % 60}m</span>
                             </div>
                         )}
                         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                             <span style={{ color: 'rgba(255,255,255,0.5)' }}>Status</span>
-                            <span>{showData.status || 'Released'}</span>
+                            <span style={{ fontWeight: '600' }}>{showData.status || 'Released'}</span>
                         </div>
-                        {showData.vote_average > 0 && (
-                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                <span style={{ color: 'rgba(255,255,255,0.5)' }}>Rating</span>
-                                <span style={{ color: '#facc15', fontWeight: '700' }}>★ {showData.vote_average.toFixed(1)} / 10</span>
-                            </div>
-                        )}
                         {showData.genres && showData.genres.length > 0 && (
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <span style={{ color: 'rgba(255,255,255,0.5)' }}>Genres</span>
@@ -363,13 +512,13 @@ const EpisodesSidebar = ({
                         {showData.budget > 0 && (
                             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                                 <span style={{ color: 'rgba(255,255,255,0.5)' }}>Budget</span>
-                                <span>${showData.budget.toLocaleString()}</span>
+                                <span style={{ fontWeight: '600' }}>${showData.budget.toLocaleString()}</span>
                             </div>
                         )}
                         {showData.revenue > 0 && (
                             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                                 <span style={{ color: 'rgba(255,255,255,0.5)' }}>Revenue</span>
-                                <span>${showData.revenue.toLocaleString()}</span>
+                                <span style={{ fontWeight: '600' }}>${showData.revenue.toLocaleString()}</span>
                             </div>
                         )}
                     </div>
@@ -416,40 +565,88 @@ const EpisodesSidebar = ({
                             Fetching episode stills...
                         </div>
                     ) : (
-                        <div style={{
-                            display: 'grid',
-                            gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))',
-                            gap: '0.75rem',
-                            maxHeight: '260px',
-                            overflowY: 'auto',
-                            paddingRight: '0.2rem'
-                        }}>
-                            {displayedStills.map((stillPath, idx) => (
-                                <div
-                                    key={idx}
-                                    onClick={() => setPreviewImageIndex(idx)}
-                                    title="Click to enlarge image"
+                        <>
+                            <div style={{
+                                display: 'grid',
+                                gridTemplateColumns: 'repeat(3, 1fr)',
+                                gap: '0.65rem',
+                                ...(showAllStills ? { maxHeight: '340px', overflowY: 'auto', paddingRight: '0.2rem' } : {})
+                            }}>
+                                {(showAllStills ? displayedStills : displayedStills.slice(0, 3)).map((stillPath, idx) => (
+                                    <div
+                                        key={idx}
+                                        onClick={() => setPreviewImageIndex(idx)}
+                                        title="Click to enlarge image"
+                                        style={{
+                                            borderRadius: '10px',
+                                            overflow: 'hidden',
+                                            border: '1px solid rgba(255, 255, 255, 0.12)',
+                                            background: 'rgba(255, 255, 255, 0.04)',
+                                            boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+                                            cursor: 'pointer',
+                                            transition: 'all 0.25s ease'
+                                        }}
+                                        onMouseEnter={(e) => {
+                                            e.currentTarget.style.borderColor = 'var(--theme-accent)';
+                                            e.currentTarget.style.transform = 'scale(1.03)';
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.12)';
+                                            e.currentTarget.style.transform = 'scale(1)';
+                                        }}
+                                    >
+                                        <div style={{ width: '100%', aspectRatio: '16/9', overflow: 'hidden', position: 'relative' }}>
+                                            <img
+                                                src={imageUrl(stillPath, 'w300')}
+                                                alt={`Season ${currentSeason} Episode ${currentEpisode} still ${idx + 1}`}
+                                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                            />
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {displayedStills.length > 3 && (
+                                <button
+                                    onClick={() => setShowAllStills(!showAllStills)}
                                     style={{
-                                        borderRadius: '10px',
-                                        overflow: 'hidden',
+                                        background: 'rgba(255, 255, 255, 0.05)',
                                         border: '1px solid rgba(255, 255, 255, 0.12)',
-                                        background: 'rgba(255, 255, 255, 0.04)',
-                                        boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+                                        color: 'var(--theme-accent)',
+                                        fontSize: '0.78rem',
+                                        fontWeight: '600',
+                                        padding: '0.45rem 0.8rem',
+                                        borderRadius: '8px',
                                         cursor: 'pointer',
-                                        transition: 'all 0.25s ease'
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        gap: '0.35rem',
+                                        marginTop: '0.2rem',
+                                        width: '100%',
+                                        transition: 'all 0.2s ease'
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        e.currentTarget.style.background = 'rgba(var(--theme-accent-rgb), 0.12)';
+                                        e.currentTarget.style.borderColor = 'var(--theme-accent)';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
+                                        e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.12)';
                                     }}
                                 >
-                                    <div style={{ width: '100%', aspectRatio: '16/9', overflow: 'hidden', position: 'relative' }}>
-                                        <img
-                                            src={imageUrl(stillPath, 'w300')}
-                                            alt={`Season ${currentSeason} Episode ${currentEpisode} still ${idx + 1}`}
-                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                        />
-                                    </div>
-                                </div>
-                            ))}
-
-                        </div>
+                                    {showAllStills ? (
+                                        <>
+                                            <ChevronUp size={14} /> Show Less
+                                        </>
+                                    ) : (
+                                        <>
+                                            <ChevronDown size={14} /> Show More (+{displayedStills.length - 3})
+                                        </>
+                                    )}
+                                </button>
+                            )}
+                        </>
                     )}
                 </div>
 
@@ -1474,7 +1671,7 @@ const EpisodesSidebar = ({
                                 {/* Main Preview Image */}
                                 <img
                                     src={imageUrl(displayedStills[previewImageIndex], 'original')}
-                                    alt={`Season ${currentSeason} Episode ${currentEpisode} Preview ${previewImageIndex + 1}`}
+                                    alt={isMovie ? `${showData?.title || 'Movie'} Preview ${previewImageIndex + 1}` : `Season ${currentSeason} Episode ${currentEpisode} Preview ${previewImageIndex + 1}`}
                                     style={{
                                         width: 'auto',
                                         height: 'auto',

@@ -98,7 +98,7 @@ const ServerSelector = ({ servers, activeServer, onServerChange, onReload }) => 
                     alignItems: 'center',
                     gap: '2px'
                 }}>
-                    {isPoorCategory ? '⚠️ Legacy' : isTestingCategory ? '🔧 Test' : '⚡ 1080p'}
+                    {server.isDirectStream ? '✨ DIRECT HLS' : isPoorCategory ? '⚠️ Legacy' : isTestingCategory ? '🔧 Test' : '⚡ 1080p'}
                 </span>
             </motion.button>
         );

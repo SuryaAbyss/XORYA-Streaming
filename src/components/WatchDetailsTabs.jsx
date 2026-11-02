@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Star, Users, Calendar, Clock, Film, ExternalLink, Download, Tv, Server, Zap, MonitorPlay, Check, Play, Headphones, HardDrive, Filter, RefreshCw, Sparkles, AlertCircle, Languages } from 'lucide-react';
 import { imageUrl } from '../api/tmdb';
 import ServerSelector from './ServerSelector';
-import { servers } from '../config/servers';
+import { servers, isLocalhost } from '../config/servers';
 import TorrentDownloadModal from './TorrentDownloadModal';
 import SubtitleDownloadModal from './SubtitleDownloadModal';
 
@@ -663,6 +663,72 @@ const WatchDetailsTabs = ({
                                         );
                                     })}
                                 </div>
+
+                                {/* Vega Direct-Stream Prototype Showcase Banner (Localhost / Dev Only) */}
+                                {isLocalhost && (
+                                    <div style={{
+                                        background: 'linear-gradient(135deg, rgba(var(--theme-accent-rgb), 0.15) 0%, rgba(8, 12, 20, 0.9) 100%)',
+                                        border: '1.5px solid rgba(var(--theme-accent-rgb), 0.4)',
+                                        borderRadius: '16px',
+                                        padding: '1.1rem 1.4rem',
+                                        marginBottom: '1.25rem',
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        alignItems: 'center',
+                                        flexWrap: 'wrap',
+                                        gap: '1rem',
+                                        boxShadow: '0 8px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(var(--theme-accent-rgb), 0.15)'
+                                    }}>
+                                        <div>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.35rem' }}>
+                                                <span style={{
+                                                    background: 'var(--theme-accent)',
+                                                    color: '#000',
+                                                    fontSize: '0.68rem',
+                                                    fontWeight: '800',
+                                                    padding: '0.2rem 0.55rem',
+                                                    borderRadius: '6px',
+                                                    textTransform: 'uppercase',
+                                                    letterSpacing: '0.06em'
+                                                }}>
+                                                    Vega Architecture Prototype
+                                                </span>
+                                                <span style={{ color: '#fff', fontWeight: '700', fontSize: '0.98rem' }}>
+                                                    Direct HLS Stream Player
+                                                </span>
+                                            </div>
+                                            <p style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.8rem', margin: 0, lineHeight: '1.4' }}>
+                                                Ad-free direct video engine with HLS adaptive bitrate, multi-audio tracks, custom subtitles, and TheIntroDB skip detection.
+                                            </p>
+                                        </div>
+                                        <button
+                                            onClick={() => {
+                                                if (onServerChange) onServerChange('vega-direct-demo');
+                                                window.scrollTo({ top: 0, behavior: 'smooth' });
+                                            }}
+                                            style={{
+                                                background: activeServer === 'vega-direct-demo' ? 'rgba(255, 255, 255, 0.15)' : 'var(--theme-accent)',
+                                                color: activeServer === 'vega-direct-demo' ? '#fff' : '#000',
+                                                border: activeServer === 'vega-direct-demo' ? '1px solid var(--theme-accent)' : 'none',
+                                                padding: '0.55rem 1.3rem',
+                                                borderRadius: '999px',
+                                                fontWeight: '700',
+                                                fontSize: '0.84rem',
+                                                cursor: 'pointer',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '0.45rem',
+                                                boxShadow: '0 4px 16px rgba(var(--theme-accent-rgb), 0.35)',
+                                                transition: 'transform 0.15s ease'
+                                            }}
+                                            onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.04)'}
+                                            onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                                        >
+                                            <Play size={14} fill={activeServer === 'vega-direct-demo' ? '#fff' : '#000'} />
+                                            {activeServer === 'vega-direct-demo' ? 'Active in Player ⚡' : 'Test Direct Player'}
+                                        </button>
+                                    </div>
+                                )}
 
                                 {/* Loading Skeleton */}
                                 {loadingStreams && streams.length === 0 ? (

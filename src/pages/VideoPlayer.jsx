@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 
 import { motion, AnimatePresence } from 'framer-motion';
@@ -6,6 +6,7 @@ import { ArrowLeft, Heart, Bookmark, ChevronLeft, ChevronRight, Tv, Languages, S
 import { getMovieDetails, getTVShowDetails, imageUrl, getMovieImages, getTVShowImages, getCollectionDetails, getMovieRecommendations, getMovieSimilar, getTVShowRecommendations, getTVShowSimilar, getSeasonDetails, getTrendingTVShows, getTrendingMovies, tmdb } from '../api/tmdb';
 import { useWatchlist } from '../hooks/useWatchlist';
 import { servers, getServerUrl } from '../config/servers';
+import SEO from '../components/SEO';
 import EpisodesSidebar from '../components/EpisodesSidebar';
 import MovieRow from '../components/MovieRow';
 import WatchDetailsTabs from '../components/WatchDetailsTabs';
@@ -784,6 +785,44 @@ const VideoPlayer = () => {
         }
     };
 
+    // Dynamic Document Title & SEO for Watching Movie / TV Series
+    const pageTitle = useMemo(() => {
+        if (!contentData) return 'XORYA - Premium Streaming Platform';
+        const contentTitle = type === 'movie' ? contentData.title : contentData.name;
+        if (!contentTitle) return 'XORYA - Premium Streaming Platform';
+
+        if (type === 'tv') {
+            const epName = currentEpisodeDetails?.name && !/^Episode\s+\d+$/i.test(currentEpisodeDetails.name.trim())
+                ? `: ${currentEpisodeDetails.name}`
+                : '';
+            return `${contentTitle} - S${currentSeason}E${currentEpisode}${epName} | XORYA`;
+        }
+        return `${contentTitle} | XORYA`;
+    }, [contentData, type, currentSeason, currentEpisode, currentEpisodeDetails]);
+
+    useEffect(() => {
+        document.title = pageTitle;
+    }, [pageTitle]);
+
+    useEffect(() => {
+        return () => {
+            document.title = 'XORYA - Premium Streaming Platform';
+        };
+    }, []);
+
+    const pageDescription = useMemo(() => {
+        if (type === 'tv') {
+            const epOverview = currentEpisodeDetails?.overview;
+            if (epOverview) return epOverview;
+            return contentData?.overview || 'Watch TV show episodes online in HD on XORYA.';
+        }
+        return contentData?.overview || 'Watch movies online in HD on XORYA.';
+    }, [type, currentEpisodeDetails, contentData]);
+
+    const pageImage = useMemo(() => {
+        return imageUrl(contentData?.backdrop_path || contentData?.poster_path, 'w1280');
+    }, [contentData]);
+
 
 
 
@@ -823,24 +862,33 @@ const VideoPlayer = () => {
         const totalEps = episodeCounts[currentSeason] || 10;
         const episodesList = Array.from({ length: totalEps }, (_, i) => ({ episode_number: i + 1 }));
         return (
-            <MobileVideoPlayerView
-                type={type}
-                id={id}
-                contentData={contentData}
-                playerUrl={getServerUrl(activeServer, type, id, currentSeason, currentEpisode)}
-                servers={servers}
-                activeServer={activeServer}
-                onServerChange={(newServer) => setActiveServer(newServer)}
-                currentSeason={currentSeason}
-                currentEpisode={currentEpisode}
-                onEpisodeChange={handleEpisodeSelect}
-                seasons={seasons}
-                episodes={episodesList}
-                recommendations={recommendations}
-                playerFrameRef={playerFrameRef}
-                iframeRef={iframeRef}
-                onIframeLoad={handleIframeLoad}
-            />
+            <>
+                <SEO
+                    title={pageTitle}
+                    description={pageDescription}
+                    image={pageImage}
+                    url={typeof window !== 'undefined' ? window.location.href : ''}
+                    type={type === 'movie' ? 'video.movie' : 'video.tv_show'}
+                />
+                <MobileVideoPlayerView
+                    type={type}
+                    id={id}
+                    contentData={contentData}
+                    playerUrl={getServerUrl(activeServer, type, id, currentSeason, currentEpisode)}
+                    servers={servers}
+                    activeServer={activeServer}
+                    onServerChange={(newServer) => setActiveServer(newServer)}
+                    currentSeason={currentSeason}
+                    currentEpisode={currentEpisode}
+                    onEpisodeChange={handleEpisodeSelect}
+                    seasons={seasons}
+                    episodes={episodesList}
+                    recommendations={recommendations}
+                    playerFrameRef={playerFrameRef}
+                    iframeRef={iframeRef}
+                    onIframeLoad={handleIframeLoad}
+                />
+            </>
         );
     }
 
@@ -852,6 +900,13 @@ const VideoPlayer = () => {
             paddingTop: '38px',
             overflow: 'hidden' // Ensure pattern doesn't cause scrollbars if it overflows
         }}>
+            <SEO
+                title={pageTitle}
+                description={pageDescription}
+                image={pageImage}
+                url={typeof window !== 'undefined' ? window.location.href : ''}
+                type={type === 'movie' ? 'video.movie' : 'video.tv_show'}
+            />
             {/* Blurred Background Image */}
             <div
                 style={{

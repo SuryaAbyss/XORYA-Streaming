@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import './WatchlistCard.css';
 import Lenis from 'lenis';
+import SEO from '../components/SEO';
 import {
   Plus, Download, Upload, Trash2, X, Search,
   Eye, Clock, CheckCircle2, LayoutList, Film, Tv, Cloud
@@ -562,6 +563,10 @@ const Watchlist = () => {
 
   return (
     <div className="wl-page">
+      <SEO
+        title="Watchlist | XORYA"
+        description="Manage and track your movie and series watchlist on XORYA."
+      />
       {/* ── Atmospheric Page Background (Design 6) ── */}
       <div className="wl-page-backdrop" />
       <div className="wl-page-overlay" />

@@ -5,6 +5,7 @@ import { ArrowLeft, Film, Star, User, Award, Play, Newspaper, ExternalLink } fro
 import { getPersonDetails, getPersonCombinedCredits, imageUrl } from '../api/tmdb';
 import { getActorNews } from '../api/imdb';
 import InteractiveMovieCard from '../components/InteractiveMovieCard';
+import SEO from '../components/SEO';
 
 const ActorDetails = () => {
     const { id } = useParams();
@@ -85,6 +86,12 @@ const ActorDetails = () => {
             paddingBottom: '5rem',
             overflowX: 'hidden',
         }}>
+            <SEO
+                title={`${person.name} | XORYA`}
+                description={person.biography?.slice(0, 160) || `Explore movies, TV shows, and biography of ${person.name} on XORYA.`}
+                image={imageUrl(person.profile_path, 'h632')}
+                type="profile"
+            />
             {/* Header / Back Action */}
             <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '1rem 2rem' }}>
                 <button 

@@ -5,6 +5,7 @@ import { isMobileDevice } from '../utils/deviceDetector';
 
 const ServerSelector = ({ servers, activeServer, onServerChange, onReload }) => {
     const [isExpanded, setIsExpanded] = React.useState(false);
+    const [showPoorServers, setShowPoorServers] = React.useState(false);
     // Detect mobile for grid layout (excludes TVs)
     const isMobile = isMobileDevice();
 
@@ -25,6 +26,14 @@ const ServerSelector = ({ servers, activeServer, onServerChange, onReload }) => 
     const implicitPoor = remainingServers.slice(actualSplitIndex + 1);
     const poorServers = [...explicitPoor, ...implicitPoor];
 
+    // If active server is in poor servers, automatically reveal them so selected server is visible
+    React.useEffect(() => {
+        if (poorServers.some(s => s.id === activeServer)) {
+            setIsExpanded(true);
+            setShowPoorServers(true);
+        }
+    }, [activeServer]);
+
     const displayedGood = isExpanded ? goodServers : goodServers.slice(0, 6);
     const displayedPoor = isExpanded ? poorServers : poorServers;
     const displayedTesting = testingServers;
@@ -42,26 +51,26 @@ const ServerSelector = ({ servers, activeServer, onServerChange, onReload }) => 
             <motion.button
                 key={server.id}
                 onClick={() => onServerChange(server.id)}
-                whileHover={{ scale: 1.04, boxShadow: `0 8px 24px rgba(${baseColor}, 0.18)` }}
+                whileHover={{ scale: 1.04, boxShadow: isActive ? '0 0 24px rgba(239, 68, 68, 0.55)' : `0 8px 24px rgba(${baseColor}, 0.18)` }}
                 whileTap={{ scale: 0.97 }}
                 style={{
                     padding: isMobile ? '0.6rem 0.5rem' : '0.75rem 1.4rem',
                     background: isActive
-                        ? `linear-gradient(135deg, rgba(${baseColor}, 0.15) 0%, rgba(${baseColor}, 0.05) 100%)`
+                        ? 'linear-gradient(135deg, rgba(239, 68, 68, 0.16) 0%, rgba(239, 68, 68, 0.05) 100%)'
                         : 'rgba(255, 255, 255, 0.02)',
                     backdropFilter: 'blur(16px)',
                     WebkitBackdropFilter: 'blur(16px)',
                     border: isActive
-                        ? `1.5px solid rgba(${baseColor}, 0.45)`
+                        ? '2px solid #ef4444'
                         : '1px solid rgba(255, 255, 255, 0.08)',
                     borderRadius: '14px',
                     color: isActive ? '#fff' : 'rgba(255, 255, 255, 0.75)',
                     fontSize: isMobile ? '0.82rem' : '0.88rem',
-                    fontWeight: isActive ? '600' : '500',
+                    fontWeight: isActive ? '700' : '500',
                     cursor: 'pointer',
                     transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                     boxShadow: isActive
-                        ? `0 8px 24px 0 rgba(${baseColor}, 0.15)`
+                        ? '0 0 18px rgba(239, 68, 68, 0.45), 0 6px 20px rgba(0, 0, 0, 0.35)'
                         : '0 4px 15px rgba(0, 0, 0, 0.05)',
                     display: 'flex',
                     flexDirection: 'column',
@@ -70,7 +79,7 @@ const ServerSelector = ({ servers, activeServer, onServerChange, onReload }) => 
                     width: isMobile ? '100%' : 'auto',
                     minHeight: isMobile ? '56px' : 'auto',
                     justifyContent: 'center',
-                    textShadow: isActive ? `0 0 10px rgba(${baseColor}, 0.3)` : 'none',
+                    textShadow: isActive ? '0 0 10px rgba(239, 68, 68, 0.4)' : 'none',
                     position: 'relative',
                     overflow: 'hidden'
                 }}
@@ -80,20 +89,20 @@ const ServerSelector = ({ servers, activeServer, onServerChange, onReload }) => 
                         width: '6px',
                         height: '6px',
                         borderRadius: '50%',
-                        background: isActive ? `rgb(${baseColor})` : 'rgba(255, 255, 255, 0.3)',
-                        boxShadow: isActive ? `0 0 6px rgb(${baseColor})` : 'none',
+                        background: isActive ? '#ef4444' : 'rgba(255, 255, 255, 0.3)',
+                        boxShadow: isActive ? '0 0 8px #ef4444' : 'none',
                         display: 'inline-block'
                     }} />
                     <span>{server.name}</span>
                 </div>
                 <span style={{
                     fontSize: '0.62rem',
-                    opacity: isActive ? 0.95 : 0.55,
-                    fontWeight: '600',
+                    opacity: isActive ? 1 : 0.55,
+                    fontWeight: '700',
                     textTransform: 'uppercase',
                     letterSpacing: '0.5px',
                     marginTop: '0.2rem',
-                    color: isActive ? `rgb(${baseColor})` : 'rgba(255, 255, 255, 0.7)',
+                    color: isActive ? '#ef4444' : 'rgba(255, 255, 255, 0.7)',
                     display: 'flex',
                     alignItems: 'center',
                     gap: '2px'
@@ -107,7 +116,10 @@ const ServerSelector = ({ servers, activeServer, onServerChange, onReload }) => 
     const renderShowLessButton = () => (
         <motion.button
             key="show-less-btn"
-            onClick={() => setIsExpanded(false)}
+            onClick={() => {
+                setIsExpanded(false);
+                setShowPoorServers(false);
+            }}
             whileHover={{ scale: 1.05, background: 'rgba(255, 255, 255, 0.08)' }}
             whileTap={{ scale: 0.95 }}
             style={{
@@ -256,7 +268,7 @@ const ServerSelector = ({ servers, activeServer, onServerChange, onReload }) => 
 
             {/* Testing Servers Section - only visible when expanded */}
             {isExpanded && displayedTesting.length > 0 && (
-                <div style={{ marginBottom: poorServers.length > 0 ? '2rem' : '0' }}>
+                <div style={{ marginBottom: (showPoorServers && poorServers.length > 0) ? '2rem' : '0' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.2rem' }}>
                         <div style={{
                             background: 'rgba(245, 158, 11, 0.1)',
@@ -308,47 +320,115 @@ const ServerSelector = ({ servers, activeServer, onServerChange, onReload }) => 
                 </div>
             )}
 
-            {/* Poor Quality Servers Section - only visible when expanded */}
-            {isExpanded && poorServers.length > 0 && (
-                <>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.2rem' }}>
-                        <div style={{
-                            background: 'rgba(244, 67, 54, 0.1)',
-                            border: '1px solid rgba(244, 67, 54, 0.25)',
-                            borderRadius: '8px',
-                            padding: '6px',
+            {/* Dedicated Button to Expand Backup / Poor Servers */}
+            {isExpanded && poorServers.length > 0 && !showPoorServers && (
+                <div style={{
+                    marginTop: '1.2rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.8rem',
+                    flexWrap: 'wrap'
+                }}>
+                    <motion.button
+                        key="expand-bad-servers-btn"
+                        onClick={() => setShowPoorServers(true)}
+                        whileHover={{ scale: 1.03, background: 'rgba(244, 67, 54, 0.12)' }}
+                        whileTap={{ scale: 0.97 }}
+                        style={{
+                            padding: isMobile ? '0.65rem 1rem' : '0.75rem 1.4rem',
+                            background: 'rgba(244, 67, 54, 0.05)',
+                            backdropFilter: 'blur(16px)',
+                            WebkitBackdropFilter: 'blur(16px)',
+                            border: '1px solid rgba(244, 67, 54, 0.3)',
+                            borderRadius: isMobile ? '14px' : '30px',
+                            color: '#f87171',
+                            fontSize: isMobile ? '0.82rem' : '0.88rem',
+                            fontWeight: '600',
+                            cursor: 'pointer',
                             display: 'flex',
                             alignItems: 'center',
-                            justifyContent: 'center',
-                            color: '#f44336'
-                        }}>
-                            <AlertTriangle size={18} />
-                        </div>
-                        <h3 style={{
-                            color: 'white',
-                            fontSize: '1.05rem',
-                            fontWeight: '700',
-                            margin: 0,
-                            letterSpacing: '0.3px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '0.6rem'
-                        }}>
-                            Poor Quality / Backup Servers
-                            <span style={{
-                                fontSize: '0.65rem',
-                                color: '#f44336',
-                                background: 'rgba(244, 67, 54, 0.12)',
-                                border: '1px solid rgba(244, 67, 54, 0.2)',
-                                padding: '2px 8px',
-                                borderRadius: '20px',
-                                fontWeight: '700',
-                                textTransform: 'uppercase',
-                                letterSpacing: '0.5px'
+                            gap: '0.55rem',
+                            transition: 'all 0.25s ease'
+                        }}
+                    >
+                        <AlertTriangle size={15} style={{ color: '#ef4444' }} />
+                        Show Backup / Slow Servers ({poorServers.length})
+                    </motion.button>
+                    {renderShowLessButton()}
+                </div>
+            )}
+
+            {/* Poor Quality Servers Section - only visible when expanded AND showPoorServers is true */}
+            {isExpanded && poorServers.length > 0 && showPoorServers && (
+                <div style={{ marginTop: '1.5rem' }}>
+                    <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        marginBottom: '1.2rem',
+                        flexWrap: 'wrap',
+                        gap: '0.75rem'
+                    }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                            <div style={{
+                                background: 'rgba(244, 67, 54, 0.1)',
+                                border: '1px solid rgba(244, 67, 54, 0.25)',
+                                borderRadius: '8px',
+                                padding: '6px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                color: '#f44336'
                             }}>
-                                Slow
-                            </span>
-                        </h3>
+                                <AlertTriangle size={18} />
+                            </div>
+                            <h3 style={{
+                                color: 'white',
+                                fontSize: '1.05rem',
+                                fontWeight: '700',
+                                margin: 0,
+                                letterSpacing: '0.3px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.6rem'
+                            }}>
+                                Poor Quality / Backup Servers
+                                <span style={{
+                                    fontSize: '0.65rem',
+                                    color: '#f44336',
+                                    background: 'rgba(244, 67, 54, 0.12)',
+                                    border: '1px solid rgba(244, 67, 54, 0.2)',
+                                    padding: '2px 8px',
+                                    borderRadius: '20px',
+                                    fontWeight: '700',
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.5px'
+                                }}>
+                                    Slow
+                                </span>
+                            </h3>
+                        </div>
+
+                        <motion.button
+                            onClick={() => setShowPoorServers(false)}
+                            whileHover={{ scale: 1.05, background: 'rgba(244, 67, 54, 0.15)' }}
+                            whileTap={{ scale: 0.95 }}
+                            style={{
+                                padding: '0.4rem 0.9rem',
+                                background: 'rgba(244, 67, 54, 0.08)',
+                                border: '1px solid rgba(244, 67, 54, 0.25)',
+                                borderRadius: '20px',
+                                color: '#f87171',
+                                fontSize: '0.78rem',
+                                fontWeight: '600',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.35rem'
+                            }}
+                        >
+                            Hide Backup Servers
+                        </motion.button>
                     </div>
                     <div style={{
                         display: isMobile ? 'grid' : 'flex',
@@ -359,7 +439,7 @@ const ServerSelector = ({ servers, activeServer, onServerChange, onReload }) => 
                         {displayedPoor.map((server) => renderServerButton(server, true, false))}
                         {renderShowLessButton()}
                     </div>
-                </>
+                </div>
             )}
 
         </div>

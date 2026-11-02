@@ -412,8 +412,8 @@ const MobileVideoPlayerView = ({
                     width: '100%',
                     padding: '8px 12px',
                     borderRadius: '10px',
-                    border: 'none',
-                    backgroundColor: activeServer === srv.id ? 'rgba(255,255,255,0.15)' : 'transparent',
+                    border: activeServer === srv.id ? '1.5px solid #ef4444' : '1px solid transparent',
+                    backgroundColor: activeServer === srv.id ? 'rgba(239, 68, 68, 0.16)' : 'transparent',
                     color: activeServer === srv.id ? '#ffffff' : '#cbd5e1',
                     display: 'flex',
                     alignItems: 'center',
@@ -422,10 +422,10 @@ const MobileVideoPlayerView = ({
                   }}
                 >
                   <span className="flex items-center gap-2">
-                    <Server className="w-3.5 h-3.5" style={{ width: '14px', height: '14px' }} />
-                    {srv.name}
+                    <Server className="w-3.5 h-3.5" style={{ width: '14px', height: '14px', color: activeServer === srv.id ? '#ef4444' : 'inherit' }} />
+                    <span style={{ fontWeight: activeServer === srv.id ? '700' : '500' }}>{srv.name}</span>
                   </span>
-                  {activeServer === srv.id && <Check className="w-3.5 h-3.5 text-[#00CEC9]" style={{ width: '14px', height: '14px', color: '#00CEC9' }} />}
+                  {activeServer === srv.id && <Check className="w-3.5 h-3.5" style={{ width: '14px', height: '14px', color: '#ef4444' }} />}
                 </button>
               ))}
             </div>
